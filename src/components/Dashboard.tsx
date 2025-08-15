@@ -1,11 +1,12 @@
-@@ .. @@
--const Dashboard: React.FC = () => {
-+export const Dashboard: React.FC = () => {
-   const [currentUser] = useState({
-     prenom: 'Utilisateur',
-     nom: 'Test'
-@@ .. @@
-   );
- };
- 
--export default Dashboard;
+export const Dashboard: React.FC = () => {
+  const [currentUser] = useState({
+    prenom: 'Utilisateur',
+    nom: 'Test'
+  });
+
+  return (
+    <div>
+      {/* Dashboard content */}
+    </div>
+  );
+};
