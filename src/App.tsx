@@ -52,6 +52,7 @@ const ProduitsPage = React.lazy(() => import('@/pages/dashboard/ProduitsPage'));
 const DevisPage = React.lazy(() => import('@/pages/dashboard/DevisPage'));
 const AvoirsPage = React.lazy(() => import('@/pages/dashboard/AvoirsPage'));
 const RecurrencesPage = React.lazy(() => import('@/pages/dashboard/RecurrencesPage'));
+const ArchivePage = React.lazy(() => import('@/pages/dashboard/ArchivePage'));
 // Phase 3 pages
 const BankingPage = React.lazy(() => import('@/pages/dashboard/BankingPage'));
 const ComptabilitePage = React.lazy(() => import('@/pages/dashboard/ComptabilitePage'));
@@ -184,6 +185,7 @@ function App() {
         <Route path="/dashboard/devis" element={<LazyLoad><DevisPage /></LazyLoad>} />
         <Route path="/dashboard/avoirs" element={<LazyLoad><AvoirsPage /></LazyLoad>} />
         <Route path="/dashboard/recurrences" element={<LazyLoad><RecurrencesPage /></LazyLoad>} />
+        <Route path="/dashboard/archive" element={<LazyLoad><ArchivePage /></LazyLoad>} />
         <Route path="/dashboard/banking" element={<LazyLoad><BankingPage /></LazyLoad>} />
         <Route path="/dashboard/comptabilite" element={<LazyLoad><ComptabilitePage /></LazyLoad>} />
         <Route path="/dashboard/tva" element={<LazyLoad><TvaPage /></LazyLoad>} />

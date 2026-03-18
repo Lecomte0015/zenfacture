@@ -17,7 +17,7 @@
 | **Phase 3 - Différenciation** | ██████████ 100% | ✅ **Terminé** |
 | **Phase UX - Design & Expérience** | ██████████ 100% | ✅ **Terminé** |
 | Phase 4 - Déploiement | ████░░░░░░ 40% | 🔄 En cours (4.1, 4.2, 4.4 faits) |
-| **Phase 5 - Parité Bexio (Must-Have)** | ██░░░░░░░░ 25% | 🔄 En cours (5.1 fait) |
+| **Phase 5 - Parité Bexio (Must-Have)** | ████░░░░░░ 50% | 🔄 En cours (5.1, 5.2 faits) |
 | **Phase 6 - Supériorité Bexio (Should-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
 | **Phase 7 - Différenciation avancée (Nice-to-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
 
@@ -41,15 +41,13 @@
 
 ---
 
-#### 5.2 Archivage 10 ans conforme nLPD 🔴 HAUTE PRIORITÉ
-**Pourquoi** : Obligation légale suisse — sans ça, ZenFacture ne peut pas être vendu aux entreprises soumises à la loi.
-- [ ] Migration SQL : colonne `archived_at`, `archive_expiry_at` (NOW() + 10 ans) sur `invoices`, `expenses`, `avoirs`, `devis`
-- [ ] Règle RLS : un document archivé ne peut plus être modifié ou supprimé
-- [ ] Service `archiveService.ts` : `archiveDocument()`, `getArchivedDocuments()`, `exportArchive()`
-- [ ] Page `ArchivePage.tsx` dans le dashboard : liste des documents archivés avec filtres par année
-- [ ] Export archive ZIP (PDF + métadonnées JSON) pour conformité en cas de contrôle fiscal
-- [ ] Marquage automatique à l'archivage : hash SHA-256 du contenu pour preuve d'intégrité
-- [ ] Bannière dans l'UI : "Document archivé — consultation uniquement"
+#### ✅ 5.2 Archivage 10 ans conforme nLPD — TERMINÉ 2026-03-18
+- [x] Migration `20260318300000_archive_nlpd.sql` — colonnes `archived_at`, `archive_expiry_at`, `archive_hash` sur `invoices`, `expenses`, `avoirs`, `devis` + table `archives` + RLS + fonction RPC `archiver_document()`
+- [x] `archiveService.ts` — `generateHash()` SHA-256 Web Crypto, `archiveDocument()`, `getArchivedDocuments()`, `verifyArchiveIntegrity()`, `exportArchivesAsJson()`
+- [x] `useArchives.ts` — hook React avec `archive()`, `refreshArchives()`
+- [x] `ArchivePage.tsx` — bannière nLPD/CO art. 962, stats cards, filtres, tableau avec badges, vérification intégrité hash, export JSON
+- [x] `App.tsx` — route `/dashboard/archive` ajoutée
+- [x] `Sidebar.tsx` — lien "Archives (nLPD)" ajouté dans le groupe Finance
 
 ---
 

@@ -5,7 +5,7 @@ import {
   Menu, X, Home, FileText, Users, Code, HelpCircle,
   ChevronDown, ChevronRight, BarChart2, Package, ClipboardList,
   RefreshCw, CreditCard, Upload, Building2, Calculator,
-  BookOpen, Zap, Shield, LogOut, Settings,
+  BookOpen, Zap, Shield, LogOut, Settings, Archive,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -66,6 +66,7 @@ const navGroups: NavGroup[] = [
       { name: 'eBill', href: '/dashboard/ebill', icon: Zap },
       { name: 'Fiduciaire', href: '/dashboard/fiduciaire', icon: Shield },
       { name: 'Import', href: '/dashboard/import', icon: Upload },
+      { name: 'Archives (nLPD)', href: '/dashboard/archive', icon: Archive },
     ],
   },
   {
