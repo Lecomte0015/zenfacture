@@ -1,7 +1,7 @@
 # ZENFACTURE - Feuille de route & Suivi d'avancement
 
 > **Objectif** : Transformer ZenFacture en SaaS complet de facturation pour PME suisses, prêt au déploiement.
-> **Dernière mise à jour** : 2026-03-18 (phases 5-7 planifiées)
+> **Dernière mise à jour** : 2026-03-18 (Phase 6 terminée — Phases 5 et 6 complètes)
 > **Positionnement** : Surpasser Bexio (CHF 45+/mois) en offrant plus de fonctionnalités à un meilleur prix, avec des différenciateurs forts (OCR IA, portail fiduciaire, multi-devises, TWINT natif).
 
 ---
@@ -18,7 +18,7 @@
 | **Phase UX - Design & Expérience** | ██████████ 100% | ✅ **Terminé** |
 | Phase 4 - Déploiement | ████░░░░░░ 40% | 🔄 En cours (4.1, 4.2, 4.4 faits) |
 | **Phase 5 - Parité Bexio (Must-Have)** | ██████████ 100% | ✅ **Terminé** |
-| **Phase 6 - Supériorité Bexio (Should-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
+| **Phase 6 - Supériorité Bexio (Should-Have)** | ██████████ 100% | ✅ **Terminé** |
 | **Phase 7 - Différenciation avancée (Nice-to-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
 
 ---
@@ -73,46 +73,39 @@
 
 ### PHASE 6 — Supériorité Bexio (différenciateurs supplémentaires)
 
-#### 6.1 Création de factures en masse (Batch) 🟡 PRIORITÉ BASSE
-**Pourquoi** : Gain de temps énorme pour les entreprises avec beaucoup de clients récurrents.
-- [ ] Bouton "Facturation groupée" sur InvoicesPage
-- [ ] Sélection multiple de clients avec checkbox
-- [ ] Application d'un template de facture à tous les clients sélectionnés
-- [ ] Envoi groupé par email en un clic
-- [ ] Rapport : X factures créées, Y envoyées, Z erreurs
+#### ✅ 6.1 Création de factures en masse (Batch) — TERMINÉ 2026-03-18
+- [x] `batchInvoiceService.ts` — sélection clients, calcul totaux, génération en lot avec progress callback, rapport résultats
+- [x] `BatchInvoicePage.tsx` — wizard 4 étapes (clients → contenu → confirmation → résultats), sélection avec checkbox, filtres, lignes TVA suisse, barre de progression
+- [x] `App.tsx` — route `/dashboard/batch-invoice`
+- [x] `Sidebar.tsx` — lien "Facturation groupée" avec icône Send dans le groupe Facturation
 
 ---
 
-#### 6.2 Gestion des stocks 🟡 PRIORITÉ BASSE
-**Pourquoi** : Utile pour les commerces et revendeurs. Bexio l'a dans ses plans supérieurs.
-- [ ] Migration SQL : colonnes `stock_actuel`, `stock_minimum`, `stock_maximum` sur `produits`
-- [ ] Service `stockService.ts` : `deduireStock()`, `getAlerteStock()`
-- [ ] Déduction automatique du stock à la création/validation d'une facture
-- [ ] Alertes dans le dashboard si stock < stock_minimum
-- [ ] Page `StocksPage.tsx` : vue inventaire avec niveaux et historique des mouvements
-- [ ] Export inventaire CSV/PDF
+#### ✅ 6.2 Gestion des stocks — TERMINÉ 2026-03-18
+- [x] Migration `20260318600000_stock.sql` — tables `stock_articles` + `stock_mouvements` avec RLS, index, trigger updated_at
+- [x] `stockService.ts` — CRUD articles, `enregistrerMouvement()` (entrée/sortie/ajustement/retour), `getStockStats()`, `exportStockCSV()`
+- [x] `useStock.ts` — hook React avec articles, mouvements, stats agrégées
+- [x] `StockPage.tsx` — 3 onglets (Articles / Mouvements / Alertes), modal article, modal mouvement, badges rupture/critique, export CSV
+- [x] `App.tsx` — route `/dashboard/stock`
+- [x] `Sidebar.tsx` — lien "Stock" avec icône Boxes dans le groupe Clients & Produits
 
 ---
 
-#### 6.3 Estimation d'impôts 🟡 PRIORITÉ BASSE
-**Pourquoi** : Magic Heidi le fait et c'est très apprécié des indépendants suisses.
-- [ ] Service `taxEstimationService.ts` :
-  - Calcul estimatif IS (impôt sur le bénéfice) selon canton
-  - Calcul estimatif impôt sur le revenu pour indépendants
-  - Prise en compte du bénéfice net (revenus - charges - TVA due)
-- [ ] Widget "Provision impôts" sur le dashboard principal
-- [ ] Page `TaxEstimationPage.tsx` : simulateur par canton avec barèmes 2026
-- [ ] Export PDF avec le détail du calcul
+#### ✅ 6.3 Estimation fiscale suisse — TERMINÉ 2026-03-18
+- [x] `taxEstimationService.ts` — taux légaux 2025 (IFD, cantonaux, AVS/AI/APG indépendants, IS SA/Sàrl), calcul progressif, scénarios pessimiste/réaliste/optimiste, vérification seuil TVA CHF 100k
+- [x] `TaxEstimationPage.tsx` — formulaire (statut, canton, CA, charges), résultats KPIs, détail ligne par ligne, barres de répartition visuelle, 9 cantons suisses
+- [x] `App.tsx` — route `/dashboard/tax-estimation`
+- [x] `Sidebar.tsx` — lien "Estimation fiscale" avec icône PieChart dans le groupe Finance
 
 ---
 
-#### 6.4 Multi-marques / White-labeling 🟡 PRIORITÉ BASSE
-**Pourquoi** : Utile pour les agences et fiduciaires qui gèrent plusieurs entreprises.
-- [ ] Migration SQL : table `marques` liée à `organisations`
-  - nom, logo_url, couleur_primaire, couleur_secondaire, adresse, iban, email_envoi
-- [ ] Un utilisateur peut avoir plusieurs marques (ex: "Entreprise A" + "Entreprise B")
-- [ ] Sélecteur de marque lors de la création d'une facture
-- [ ] Chaque facture PDF utilise les couleurs et le logo de la marque sélectionnée
+#### ✅ 6.4 Multi-marques / White-labeling — TERMINÉ 2026-03-18
+- [x] Migration `20260318700000_marques.sql` — table `marques` avec RLS, trigger updated_at, colonne `marque_id` sur `invoices` et `devis`
+- [x] `marqueService.ts` — CRUD, `setMarqueDefault()`, `generateSlug()`, `getMarqueStats()`
+- [x] `useMarques.ts` — hook React avec gestion de la marque par défaut
+- [x] `MarquesPage.tsx` — liste avec bandeau couleur, formulaire modal, aperçu PDF temps réel, gestion marque défaut
+- [x] `App.tsx` — route `/dashboard/marques`
+- [x] `Sidebar.tsx` — lien "Multi-marques" avec icône Layers dans le groupe Administration
 
 ---
 

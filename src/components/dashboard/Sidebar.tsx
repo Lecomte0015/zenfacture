@@ -6,6 +6,7 @@ import {
   ChevronDown, ChevronRight, BarChart2, Package, ClipboardList,
   RefreshCw, CreditCard, Upload, Building2, Calculator,
   BookOpen, Zap, Shield, LogOut, Settings, Archive,
+  Timer, Wallet, Send, Boxes, PieChart, Layers,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -36,6 +37,7 @@ const navGroups: NavGroup[] = [
       { name: 'Devis', href: '/dashboard/devis', icon: ClipboardList },
       { name: 'Avoirs', href: '/dashboard/avoirs', icon: CreditCard },
       { name: 'Récurrences', href: '/dashboard/recurrences', icon: RefreshCw },
+      { name: 'Facturation groupée', href: '/dashboard/batch-invoice', icon: Send },
     ],
   },
   {
@@ -45,6 +47,7 @@ const navGroups: NavGroup[] = [
     items: [
       { name: 'Clients', href: '/dashboard/clients', icon: Users },
       { name: 'Produits', href: '/dashboard/produits', icon: Package },
+      { name: 'Stock', href: '/dashboard/stock', icon: Boxes },
     ],
   },
   {
@@ -67,6 +70,7 @@ const navGroups: NavGroup[] = [
       { name: 'Fiduciaire', href: '/dashboard/fiduciaire', icon: Shield },
       { name: 'Import', href: '/dashboard/import', icon: Upload },
       { name: 'Archives (nLPD)', href: '/dashboard/archive', icon: Archive },
+      { name: 'Estimation fiscale', href: '/dashboard/tax-estimation', icon: PieChart },
     ],
   },
   {
@@ -82,6 +86,9 @@ const navGroups: NavGroup[] = [
     label: 'Administration',
     emoji: '⚙️',
     items: [
+      { name: 'Suivi du temps', href: '/dashboard/time-tracking', icon: Timer },
+      { name: 'Salaires', href: '/dashboard/payroll', icon: Wallet },
+      { name: 'Multi-marques', href: '/dashboard/marques', icon: Layers },
       { name: 'Équipe', href: '/dashboard/team', icon: Users },
       { name: 'API', href: '/dashboard/api', icon: Code, feature: 'api' },
       { name: 'Support', href: '/dashboard/support', icon: HelpCircle },
