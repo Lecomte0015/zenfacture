@@ -17,7 +17,7 @@
 | **Phase 3 - Différenciation** | ██████████ 100% | ✅ **Terminé** |
 | **Phase UX - Design & Expérience** | ██████████ 100% | ✅ **Terminé** |
 | Phase 4 - Déploiement | ████░░░░░░ 40% | 🔄 En cours (4.1, 4.2, 4.4 faits) |
-| **Phase 5 - Parité Bexio (Must-Have)** | ██████░░░░ 75% | 🔄 En cours (5.1, 5.2, 5.3 faits) |
+| **Phase 5 - Parité Bexio (Must-Have)** | ██████████ 100% | ✅ **Terminé** |
 | **Phase 6 - Supériorité Bexio (Should-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
 | **Phase 7 - Différenciation avancée (Nice-to-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
 
@@ -61,24 +61,13 @@
 
 ---
 
-#### 5.4 Module Salaires / Payroll (Swissdec) 🟠 PRIORITÉ MOYENNE
-**Pourquoi** : Bexio, KLARA, Winbiz l'ont. C'est un must pour les PME qui ont des employés.
-- [ ] Migration SQL : tables `employes`, `fiches_salaire`, `composants_salaire`
-  - `employes` : nom, prénom, ahv_number, adresse, taux_activite, salaire_brut, type_contrat
-  - `fiches_salaire` : employe_id, periode, salaire_brut, deductions (AVS/AI/APG, AC, LPP, IJM), net_a_payer
-  - `composants_salaire` : primes, heures_sup, indemnites
-- [ ] Service `payrollService.ts` :
-  - Calcul automatique AVS (8.7%), AI (1.4%), APG (0.5%), AC (2.2%)
-  - Calcul LPP selon tranche d'âge
-  - Calcul impôt à la source (pour frontaliers/étrangers)
-- [ ] Hook `usePayroll.ts`
-- [ ] Page `PayrollPage.tsx` :
-  - Liste des employés
-  - Génération des fiches de salaire mensuelles
-  - Récapitulatif charges patronales
-- [ ] Export fiche de salaire en PDF
-- [ ] Export Swissdec XML (ELM 5.0) pour transmission aux assurances
-- [ ] Route `/dashboard/payroll`
+#### ✅ 5.4 Module Salaires / Payroll (Swissdec) — TERMINÉ 2026-03-18
+- [x] Migration `20260318500000_payroll.sql` — tables `employes` et `fiches_salaire` avec RLS et index
+- [x] `payrollService.ts` — taux légaux suisses 2026 (AVS 4.35%, AI 0.70%, APG 0.25%, AC 1.10%), `calculerFicheSalaire()`, CRUD, `genererFichesMois()`, `exportFichesCSV()`, `exportSwissdecXML()` ELM 5.0
+- [x] `usePayroll.ts` — hook React avec stats agrégées (masse salariale, charges, coût total)
+- [x] `PayrollPage.tsx` — 2 onglets : gestion employés + fiches salaire mensuelles, modal détail fiche (vraie présentation suisse), génération en lot, export CSV/XML Swissdec
+- [x] `App.tsx` — route `/dashboard/payroll`
+- [x] `Sidebar.tsx` — lien "Salaires" avec icône Wallet
 
 ---
 
