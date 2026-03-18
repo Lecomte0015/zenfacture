@@ -17,7 +17,7 @@
 | **Phase 3 - Différenciation** | ██████████ 100% | ✅ **Terminé** |
 | **Phase UX - Design & Expérience** | ██████████ 100% | ✅ **Terminé** |
 | Phase 4 - Déploiement | ████░░░░░░ 40% | 🔄 En cours (4.1, 4.2, 4.4 faits) |
-| **Phase 5 - Parité Bexio (Must-Have)** | ████░░░░░░ 50% | 🔄 En cours (5.1, 5.2 faits) |
+| **Phase 5 - Parité Bexio (Must-Have)** | ██████░░░░ 75% | 🔄 En cours (5.1, 5.2, 5.3 faits) |
 | **Phase 6 - Supériorité Bexio (Should-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
 | **Phase 7 - Différenciation avancée (Nice-to-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
 
@@ -51,21 +51,13 @@
 
 ---
 
-#### 5.3 Time Tracking & Gestion de projets 🟠 PRIORITÉ MOYENNE
-**Pourquoi** : Bexio, Smallinvoice, KLARA l'ont. Indispensable pour indépendants qui facturent à l'heure.
-- [ ] Migration SQL : tables `projets`, `sessions_temps`, `taches`
-  - `projets` : nom, client_id, budget_heures, tarif_horaire, statut
-  - `sessions_temps` : projet_id, start_at, end_at, description, facturable
-  - `taches` : projet_id, titre, statut, heures_estimees, heures_reelles
-- [ ] Service `timeTrackingService.ts` : CRUD projets, démarrer/arrêter un timer, saisie manuelle
-- [ ] Hook `useTimeTracking.ts`
-- [ ] Page `TimeTrackingPage.tsx` :
-  - Vue chronomètre (démarrer/arrêter une session)
-  - Vue liste des sessions par projet
-  - Vue récapitulatif : heures totales, heures facturables, CA potentiel
-- [ ] Composant `TimeTracker.tsx` : widget flottant dans le dashboard (toujours visible)
-- [ ] **Intégration facturation** : bouton "Facturer ces heures" → crée une ligne de facture automatiquement
-- [ ] Route `/dashboard/time-tracking`
+#### ✅ 5.3 Time Tracking & Gestion de projets — TERMINÉ 2026-03-18
+- [x] Migration `20260318400000_time_tracking.sql` — tables `projets`, `sessions_temps`, `taches` avec RLS et index
+- [x] `timeTrackingService.ts` — CRUD projets/sessions/tâches, `startTimer`, `stopTimer`, `getActiveTimer`, `getProjetStats`
+- [x] `useTimeTracking.ts` — hook React, `timerDuration` en temps réel (setInterval), `activeTimer`
+- [x] `TimeTrackingPage.tsx` — 3 onglets : chronomètre HH:MM:SS temps réel, sessions, kanban tâches (3 colonnes), stats globales
+- [x] `App.tsx` — route `/dashboard/time-tracking`
+- [x] `Sidebar.tsx` — lien "Suivi du temps" avec icône Timer
 
 ---
 

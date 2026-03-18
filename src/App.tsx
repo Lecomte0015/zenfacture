@@ -48,6 +48,7 @@ const AdminOrganisationsPage = React.lazy(() => import('@/pages/admin/AdminOrgan
 const AdminRemindersPage = React.lazy(() => import('@/pages/admin/AdminRemindersPage'));
 const AdminSettingsPage = React.lazy(() => import('@/pages/admin/AdminSettingsPage'));
 
+const TimeTrackingPage = React.lazy(() => import('@/pages/dashboard/TimeTrackingPage'));
 const ProduitsPage = React.lazy(() => import('@/pages/dashboard/ProduitsPage'));
 const DevisPage = React.lazy(() => import('@/pages/dashboard/DevisPage'));
 const AvoirsPage = React.lazy(() => import('@/pages/dashboard/AvoirsPage'));
@@ -192,6 +193,7 @@ function App() {
         <Route path="/dashboard/ebill" element={<LazyLoad><EbillPage /></LazyLoad>} />
         <Route path="/dashboard/fiduciaire" element={<LazyLoad><FiduciairePage /></LazyLoad>} />
         <Route path="/dashboard/import" element={<LazyLoad><ImportPage /></LazyLoad>} />
+        <Route path="/dashboard/time-tracking" element={<LazyLoad><TimeTrackingPage /></LazyLoad>} />
         <Route path="/dashboard/team" element={
           <LazyLoad>
             <TeamPage />
