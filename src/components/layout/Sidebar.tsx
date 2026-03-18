@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, Users, LifeBuoy, Code, Menu, X, Bell, DollarSign, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, LifeBuoy, Code, Menu, X, Bell, DollarSign, BarChart2, Timer, Wallet } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -9,7 +9,9 @@ const navigation = [
   { name: 'Dépenses', href: '/dashboard/expenses', icon: DollarSign },
   { name: 'Rapports', href: '/dashboard/reports', icon: BarChart2 },
   { name: 'Clients', href: '/dashboard/clients', icon: Users },
+  { name: 'Suivi du temps', href: '/dashboard/time-tracking', icon: Timer },
   { name: 'Équipe', href: '/dashboard/team', icon: Users },
+  { name: 'Salaires', href: '/dashboard/payroll', icon: Wallet },
   { name: 'Rappels', href: '/dashboard/admin/rappels', icon: Bell },
   { name: 'Support', href: '/support', icon: LifeBuoy },
 ];
