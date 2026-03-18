@@ -17,7 +17,7 @@
 | **Phase 3 - Différenciation** | ██████████ 100% | ✅ **Terminé** |
 | **Phase UX - Design & Expérience** | ██████████ 100% | ✅ **Terminé** |
 | Phase 4 - Déploiement | ████░░░░░░ 40% | 🔄 En cours (4.1, 4.2, 4.4 faits) |
-| **Phase 5 - Parité Bexio (Must-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
+| **Phase 5 - Parité Bexio (Must-Have)** | ██░░░░░░░░ 25% | 🔄 En cours (5.1 fait) |
 | **Phase 6 - Supériorité Bexio (Should-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
 | **Phase 7 - Différenciation avancée (Nice-to-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
 
@@ -32,17 +32,12 @@
 
 ### PHASE 5 — Parité Must-Have (fonctionnalités manquantes critiques)
 
-#### 5.1 Cron automatique pour les factures récurrentes 🔴 HAUTE PRIORITÉ
-**Pourquoi** : L'UI existe mais les factures ne se génèrent pas toutes seules — sans ça, la fonctionnalité est inutile.
-- [ ] Edge Function Supabase `supabase/functions/generate-recurring-invoices/index.ts`
-  - Déclenchée par pg_cron (tous les jours à 08h00 heure suisse)
-  - Sélectionne toutes les `factures_recurrentes` actives dont `prochaine_date <= NOW()`
-  - Crée automatiquement une nouvelle facture dans `invoices`
-  - Met à jour `prochaine_date` selon la fréquence (hebdo/mensuel/trimestriel/annuel)
-  - Envoie l'email automatiquement si `envoi_auto = true`
-- [ ] Migration SQL pour configurer pg_cron dans Supabase
-- [ ] Page RecurrencesPage : afficher la `prochaine_date` et l'historique des factures générées
-- [ ] Hook `useRecurrences` : ajouter `pause()` et `reprendre()` une récurrence
+#### ✅ 5.1 Cron automatique pour les factures récurrentes — TERMINÉ 2026-03-18
+- [x] Edge Function `supabase/functions/generate-recurring-invoices/index.ts` — génère les factures dues chaque jour à 07h00 UTC
+- [x] Migration `20260318200000_recurring_invoices_cron.sql` — colonne `envoi_auto`, index optimisé, pg_cron planifié
+- [x] `RecurrencesPage.tsx` — affichage `prochaine_emission`, badge orange si < 7 jours, bouton "Générer maintenant", bannière info 08h00
+- [x] `useRecurrences.ts` — `pauseRecurrence()` et `reprendreRecurrence()` ajoutés
+- [x] `recurrenceService.ts` — `pauseRecurrence()`, `reprendreRecurrence()`, `getHistoriqueFactures()`, type `envoi_auto` ajouté
 
 ---
 

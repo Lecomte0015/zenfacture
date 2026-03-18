@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { RecurrenceData, getRecurrences, createRecurrence, updateRecurrence, deleteRecurrence } from '../services/recurrenceService';
+import { RecurrenceData, getRecurrences, createRecurrence, updateRecurrence, deleteRecurrence, pauseRecurrence as servicePauseRecurrence, reprendreRecurrence as serviceReprendreRecurrence } from '../services/recurrenceService';
 import { useAuth } from '../context/AuthContext';
 import { useOrganisation } from '../context/OrganisationContext';
 
@@ -44,10 +44,22 @@ export const useRecurrences = () => {
     setTotal(prev => prev - 1);
   };
 
+  const pauseRecurrence = async (id: string) => {
+    const updated = await servicePauseRecurrence(id);
+    setRecurrences(prev => prev.map(r => r.id === id ? { ...r, ...updated } : r));
+    return updated;
+  };
+
+  const reprendreRecurrence = async (id: string) => {
+    const updated = await serviceReprendreRecurrence(id);
+    setRecurrences(prev => prev.map(r => r.id === id ? { ...r, ...updated } : r));
+    return updated;
+  };
+
   useEffect(() => {
     if (isAuthenticated && organisationId) fetchRecurrences();
     else { setRecurrences([]); setLoading(false); }
   }, [isAuthenticated, organisationId]);
 
-  return { recurrences, loading, error, total, addRecurrence, editRecurrence, removeRecurrence, refreshRecurrences: fetchRecurrences, organisationId };
+  return { recurrences, loading, error, total, addRecurrence, editRecurrence, removeRecurrence, pauseRecurrence, reprendreRecurrence, refreshRecurrences: fetchRecurrences, organisationId };
 };

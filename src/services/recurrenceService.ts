@@ -17,6 +17,7 @@ export interface RecurrenceData {
   date_debut: string;
   date_fin: string | null;
   actif: boolean;
+  envoi_auto?: boolean;
   notes: string | null;
   cree_le: string;
   mis_a_jour_le: string;
@@ -81,4 +82,28 @@ export const deleteRecurrence = async (id: string): Promise<void> => {
 
 export const toggleRecurrence = async (id: string, actif: boolean): Promise<RecurrenceData> => {
   return updateRecurrence(id, { actif });
+};
+
+/**
+ * Pause une récurrence active (actif = false).
+ */
+export const pauseRecurrence = async (id: string): Promise<RecurrenceData> => {
+  return updateRecurrence(id, { actif: false });
+};
+
+/**
+ * Reprend une récurrence en pause (actif = true).
+ */
+export const reprendreRecurrence = async (id: string): Promise<RecurrenceData> => {
+  return updateRecurrence(id, { actif: true });
+};
+
+/**
+ * Récupère l'historique des factures liées à une récurrence.
+ * TODO: La table `invoices` ne possède pas encore de colonne `facture_recurrente_id`.
+ * En attendant d'ajouter cette colonne, cette fonction retourne un tableau vide.
+ */
+export const getHistoriqueFactures = async (_recurrenceId: string): Promise<any[]> => {
+  // TODO: implémenter quand la colonne facture_recurrente_id sera ajoutée à invoices
+  return [];
 };
