@@ -1,7 +1,8 @@
 # ZENFACTURE - Feuille de route & Suivi d'avancement
 
 > **Objectif** : Transformer ZenFacture en SaaS complet de facturation pour PME suisses, prêt au déploiement.
-> **Dernière mise à jour** : 2026-03-18
+> **Dernière mise à jour** : 2026-03-18 (phases 5-7 planifiées)
+> **Positionnement** : Surpasser Bexio (CHF 45+/mois) en offrant plus de fonctionnalités à un meilleur prix, avec des différenciateurs forts (OCR IA, portail fiduciaire, multi-devises, TWINT natif).
 
 ---
 
@@ -16,10 +17,197 @@
 | **Phase 3 - Différenciation** | ██████████ 100% | ✅ **Terminé** |
 | **Phase UX - Design & Expérience** | ██████████ 100% | ✅ **Terminé** |
 | Phase 4 - Déploiement | ████░░░░░░ 40% | 🔄 En cours (4.1, 4.2, 4.4 faits) |
+| **Phase 5 - Parité Bexio (Must-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
+| **Phase 6 - Supériorité Bexio (Should-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
+| **Phase 7 - Différenciation avancée (Nice-to-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
 
 ---
 
-## 🎯 CE QU'IL RESTE À FAIRE (Prochaines étapes)
+## 🚀 PROCHAINES PHASES — Ce qu'il reste à faire pour surpasser Bexio
+
+> Les fonctionnalités sont classées **du plus important au moins important**.
+> Apps mobiles natives et moyens de paiement Stripe seront traités séparément après ces phases.
+
+---
+
+### PHASE 5 — Parité Must-Have (fonctionnalités manquantes critiques)
+
+#### 5.1 Cron automatique pour les factures récurrentes 🔴 HAUTE PRIORITÉ
+**Pourquoi** : L'UI existe mais les factures ne se génèrent pas toutes seules — sans ça, la fonctionnalité est inutile.
+- [ ] Edge Function Supabase `supabase/functions/generate-recurring-invoices/index.ts`
+  - Déclenchée par pg_cron (tous les jours à 08h00 heure suisse)
+  - Sélectionne toutes les `factures_recurrentes` actives dont `prochaine_date <= NOW()`
+  - Crée automatiquement une nouvelle facture dans `invoices`
+  - Met à jour `prochaine_date` selon la fréquence (hebdo/mensuel/trimestriel/annuel)
+  - Envoie l'email automatiquement si `envoi_auto = true`
+- [ ] Migration SQL pour configurer pg_cron dans Supabase
+- [ ] Page RecurrencesPage : afficher la `prochaine_date` et l'historique des factures générées
+- [ ] Hook `useRecurrences` : ajouter `pause()` et `reprendre()` une récurrence
+
+---
+
+#### 5.2 Archivage 10 ans conforme nLPD 🔴 HAUTE PRIORITÉ
+**Pourquoi** : Obligation légale suisse — sans ça, ZenFacture ne peut pas être vendu aux entreprises soumises à la loi.
+- [ ] Migration SQL : colonne `archived_at`, `archive_expiry_at` (NOW() + 10 ans) sur `invoices`, `expenses`, `avoirs`, `devis`
+- [ ] Règle RLS : un document archivé ne peut plus être modifié ou supprimé
+- [ ] Service `archiveService.ts` : `archiveDocument()`, `getArchivedDocuments()`, `exportArchive()`
+- [ ] Page `ArchivePage.tsx` dans le dashboard : liste des documents archivés avec filtres par année
+- [ ] Export archive ZIP (PDF + métadonnées JSON) pour conformité en cas de contrôle fiscal
+- [ ] Marquage automatique à l'archivage : hash SHA-256 du contenu pour preuve d'intégrité
+- [ ] Bannière dans l'UI : "Document archivé — consultation uniquement"
+
+---
+
+#### 5.3 Time Tracking & Gestion de projets 🟠 PRIORITÉ MOYENNE
+**Pourquoi** : Bexio, Smallinvoice, KLARA l'ont. Indispensable pour indépendants qui facturent à l'heure.
+- [ ] Migration SQL : tables `projets`, `sessions_temps`, `taches`
+  - `projets` : nom, client_id, budget_heures, tarif_horaire, statut
+  - `sessions_temps` : projet_id, start_at, end_at, description, facturable
+  - `taches` : projet_id, titre, statut, heures_estimees, heures_reelles
+- [ ] Service `timeTrackingService.ts` : CRUD projets, démarrer/arrêter un timer, saisie manuelle
+- [ ] Hook `useTimeTracking.ts`
+- [ ] Page `TimeTrackingPage.tsx` :
+  - Vue chronomètre (démarrer/arrêter une session)
+  - Vue liste des sessions par projet
+  - Vue récapitulatif : heures totales, heures facturables, CA potentiel
+- [ ] Composant `TimeTracker.tsx` : widget flottant dans le dashboard (toujours visible)
+- [ ] **Intégration facturation** : bouton "Facturer ces heures" → crée une ligne de facture automatiquement
+- [ ] Route `/dashboard/time-tracking`
+
+---
+
+#### 5.4 Module Salaires / Payroll (Swissdec) 🟠 PRIORITÉ MOYENNE
+**Pourquoi** : Bexio, KLARA, Winbiz l'ont. C'est un must pour les PME qui ont des employés.
+- [ ] Migration SQL : tables `employes`, `fiches_salaire`, `composants_salaire`
+  - `employes` : nom, prénom, ahv_number, adresse, taux_activite, salaire_brut, type_contrat
+  - `fiches_salaire` : employe_id, periode, salaire_brut, deductions (AVS/AI/APG, AC, LPP, IJM), net_a_payer
+  - `composants_salaire` : primes, heures_sup, indemnites
+- [ ] Service `payrollService.ts` :
+  - Calcul automatique AVS (8.7%), AI (1.4%), APG (0.5%), AC (2.2%)
+  - Calcul LPP selon tranche d'âge
+  - Calcul impôt à la source (pour frontaliers/étrangers)
+- [ ] Hook `usePayroll.ts`
+- [ ] Page `PayrollPage.tsx` :
+  - Liste des employés
+  - Génération des fiches de salaire mensuelles
+  - Récapitulatif charges patronales
+- [ ] Export fiche de salaire en PDF
+- [ ] Export Swissdec XML (ELM 5.0) pour transmission aux assurances
+- [ ] Route `/dashboard/payroll`
+
+---
+
+### PHASE 6 — Supériorité Bexio (différenciateurs supplémentaires)
+
+#### 6.1 Création de factures en masse (Batch) 🟡 PRIORITÉ BASSE
+**Pourquoi** : Gain de temps énorme pour les entreprises avec beaucoup de clients récurrents.
+- [ ] Bouton "Facturation groupée" sur InvoicesPage
+- [ ] Sélection multiple de clients avec checkbox
+- [ ] Application d'un template de facture à tous les clients sélectionnés
+- [ ] Envoi groupé par email en un clic
+- [ ] Rapport : X factures créées, Y envoyées, Z erreurs
+
+---
+
+#### 6.2 Gestion des stocks 🟡 PRIORITÉ BASSE
+**Pourquoi** : Utile pour les commerces et revendeurs. Bexio l'a dans ses plans supérieurs.
+- [ ] Migration SQL : colonnes `stock_actuel`, `stock_minimum`, `stock_maximum` sur `produits`
+- [ ] Service `stockService.ts` : `deduireStock()`, `getAlerteStock()`
+- [ ] Déduction automatique du stock à la création/validation d'une facture
+- [ ] Alertes dans le dashboard si stock < stock_minimum
+- [ ] Page `StocksPage.tsx` : vue inventaire avec niveaux et historique des mouvements
+- [ ] Export inventaire CSV/PDF
+
+---
+
+#### 6.3 Estimation d'impôts 🟡 PRIORITÉ BASSE
+**Pourquoi** : Magic Heidi le fait et c'est très apprécié des indépendants suisses.
+- [ ] Service `taxEstimationService.ts` :
+  - Calcul estimatif IS (impôt sur le bénéfice) selon canton
+  - Calcul estimatif impôt sur le revenu pour indépendants
+  - Prise en compte du bénéfice net (revenus - charges - TVA due)
+- [ ] Widget "Provision impôts" sur le dashboard principal
+- [ ] Page `TaxEstimationPage.tsx` : simulateur par canton avec barèmes 2026
+- [ ] Export PDF avec le détail du calcul
+
+---
+
+#### 6.4 Multi-marques / White-labeling 🟡 PRIORITÉ BASSE
+**Pourquoi** : Utile pour les agences et fiduciaires qui gèrent plusieurs entreprises.
+- [ ] Migration SQL : table `marques` liée à `organisations`
+  - nom, logo_url, couleur_primaire, couleur_secondaire, adresse, iban, email_envoi
+- [ ] Un utilisateur peut avoir plusieurs marques (ex: "Entreprise A" + "Entreprise B")
+- [ ] Sélecteur de marque lors de la création d'une facture
+- [ ] Chaque facture PDF utilise les couleurs et le logo de la marque sélectionnée
+
+---
+
+### PHASE 7 — Différenciation avancée (Nice-to-Have)
+
+#### 7.1 Envoi postal via Swiss Post / ePost 🟢 OPTIONNEL
+**Pourquoi** : KLARA l'a (partenariat Swiss Post). Différenciateur pour clients peu digitalisés.
+- [ ] Intégration API Swiss Post IncaMail ou ePost
+- [ ] Bouton "Envoyer par courrier" dans InvoiceModal
+- [ ] Tarification à l'acte (ex: CHF 1.50/envoi) facturée à l'utilisateur
+- [ ] Suivi de l'état de l'envoi postal
+
+---
+
+#### 7.2 Détection de fraude IA 🟢 OPTIONNEL
+**Pourquoi** : Yooz et certains ERP haut de gamme l'ont. Différenciateur fort pour PME en croissance.
+- [ ] Service `fraudDetectionService.ts` :
+  - Détection montants atypiques (>3x la moyenne client)
+  - Détection IBAN modifié récemment
+  - Détection doublons (même montant + même client + même période)
+  - Scoring de risque (0-100)
+- [ ] Badge de risque sur chaque facture entrant (dépenses)
+- [ ] Alerte email à l'admin si score > 70
+
+---
+
+#### 7.3 Intégrité Blockchain (audit trail) 🟢 OPTIONNEL
+**Pourquoi** : Banana Accounting le fait — excellent argument légal pour l'archivage.
+- [ ] À chaque création/modification d'une facture : calculer un hash SHA-256 du contenu
+- [ ] Stocker le hash dans une table `audit_trail` avec timestamp et user_id
+- [ ] Chaîner les hashes (hash_n = SHA-256(hash_{n-1} + contenu_n)) pour détection de falsification
+- [ ] Page `AuditTrailPage.tsx` : historique complet des modifications avec vérification d'intégrité
+- [ ] Export rapport d'audit PDF pour contrôle fiscal
+
+---
+
+#### 7.4 Boutique en ligne / POS 🟢 OPTIONNEL
+**Pourquoi** : KLARA l'a. Marché de niche mais différenciateur pour commerces.
+- [ ] Intégration Stripe pour paiements en ligne
+- [ ] Page produits publique (catalogue)
+- [ ] Panier + checkout
+- [ ] Génération automatique de facture à la vente
+- [ ] Terminal POS simplifié (scan QR produit + paiement TWINT)
+
+---
+
+## ✅ DÉJÀ FAIT — Nos différenciateurs vs Bexio
+
+> Ces fonctionnalités sont **déjà implémentées** et constituent notre avantage concurrentiel.
+
+| Fonctionnalité | ZenFacture | Bexio |
+|---|---|---|
+| OCR IA (Claude Vision) pour scan reçus | ✅ Natif | ❌ Absent |
+| TWINT intégré nativement dans la facture | ✅ Natif | ❌ Partiel |
+| Paiement en ligne (TWINT, cartes, PostFinance) via Payrexx | ✅ Natif | ✅ Payant en plus |
+| Portail fiduciaire dédié | ✅ Inclus | ✅ Payant en plus |
+| Réconciliation bancaire ISO 20022 | ✅ Inclus | ✅ Payant en plus |
+| eBill SIX | ✅ Inclus | ✅ Payant en plus |
+| Import depuis Bexio/Crésus | ✅ Inclus | ❌ Absent |
+| TVA déclaration automatique (formulaire 200 AFC) | ✅ Inclus | ✅ Partiel |
+| Comptabilité complète (bilan, grand livre, P&L) | ✅ Inclus | ✅ Payant en plus |
+| Internationalisation FR/DE/EN | ✅ Inclus | ✅ Inclus |
+| PWA installable sur mobile | ✅ Inclus | ❌ App payante |
+| Back-office admin complet | ✅ Inclus | ❌ Absent |
+| Prix cible | **CHF 25-29/mois** | **CHF 45+/mois** |
+
+---
+
+## 🎯 CE QU'IL RESTE À FAIRE (Prochaines étapes — historique)
 
 ### ✅ FAIT — Priorité 1 : Envoi d'emails (Phase 2) — 2026-03-13
 - [x] Service email Resend → `src/services/emailService.ts`
@@ -526,6 +714,14 @@ src/
 ---
 
 ## Changelog
+
+### 2026-03-18 - Planification Phases 5-7 (Roadmap mis à jour)
+- 📋 **Analyse concurrentielle Bexio complète** : identification des fonctionnalités manquantes
+- 📋 **Phase 5 planifiée** : cron récurrences, archivage 10 ans nLPD, time tracking, payroll Swissdec
+- 📋 **Phase 6 planifiée** : batch facturation, gestion stocks, estimation impôts, multi-marques
+- 📋 **Phase 7 planifiée** : envoi postal Swiss Post, fraude IA, blockchain audit, boutique/POS
+- 📋 **Tableau différenciateurs** : mise en évidence des avantages ZenFacture vs Bexio déjà en place
+- ℹ️ Apps mobiles natives et Stripe abonnements : reportés après les phases 5-7
 
 ### 2026-03-18 - Priorité Moyenne & Basse — Complétées ✅
 - ✅ **InvoiceModal.tsx** : Statut facture mis à `sent` après envoi email réussi + rafraîchissement liste parente
