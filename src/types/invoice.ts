@@ -36,7 +36,7 @@ export interface Invoice {
   currency?: string;
   date: string;
   dueDate: string;
-  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'pending';
   notes?: string;
   terms?: string;
   paymentMethod?: string;

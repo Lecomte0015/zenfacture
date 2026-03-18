@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const RegisterPage = () => {
   const [name, setName] = useState('');
+  const [organisationName, setOrganisationName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -11,22 +13,34 @@ const RegisterPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      return setError('Les mots de passe ne correspondent pas');
+      return setError(t('auth.passwordMismatch'));
     }
     
     setError('');
     setIsLoading(true);
     
     try {
-      await register(name, email, password);
-      navigate('/dashboard');
-    } catch (err) {
-      setError('Une erreur est survenue lors de l\'inscription');
+      const result = await register(name, email, password, organisationName);
+
+      // Si l'inscription nécessite une confirmation par email
+      if (result && 'requiresConfirmation' in result && result.requiresConfirmation) {
+        // Afficher un message de succès avec des instructions
+        setError('');
+        alert('Un email de confirmation a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception et cliquer sur le lien pour activer votre compte.');
+        // Rediriger vers la page de connexion
+        navigate('/login', { state: { email, message: 'Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.' } });
+      }
+      // Si l'utilisateur est connecté directement, ne pas naviguer manuellement
+      // La redirection se fera automatiquement via PublicOnlyRoute
+    } catch (err: any) {
+      // Afficher le message d'erreur spécifique renvoyé par la fonction register
+      setError(err.message || 'Une erreur est survenue lors de l\'inscription');
       console.error('Registration error:', err);
     } finally {
       setIsLoading(false);
@@ -37,12 +51,12 @@ const RegisterPage = () => {
     <div className="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Créer un compte
+          {t('auth.registerTitle')}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Ou{' '}
+          {t('auth.hasAccount')}{' '}
           <Link to="/login" className="font-medium text-primary hover:text-primary-700">
-            connectez-vous à votre compte existant
+            {t('auth.loginLink')}
           </Link>
         </p>
       </div>
@@ -77,7 +91,7 @@ const RegisterPage = () => {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Nom complet
+                {t('auth.fullName')}
               </label>
               <div className="mt-1">
                 <input
@@ -93,8 +107,26 @@ const RegisterPage = () => {
             </div>
 
             <div>
+              <label htmlFor="organisation" className="block text-sm font-medium text-gray-700">
+                Nom de l'entreprise / organisation
+              </label>
+              <div className="mt-1">
+                <input
+                  id="organisation"
+                  name="organisation"
+                  type="text"
+                  required
+                  placeholder="Ex: Ma Société SA"
+                  value={organisationName}
+                  onChange={(e) => setOrganisationName(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                />
+              </div>
+            </div>
+
+            <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Adresse email
+                {t('auth.email')}
               </label>
               <div className="mt-1">
                 <input
@@ -112,7 +144,7 @@ const RegisterPage = () => {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Mot de passe
+                {t('auth.password')}
               </label>
               <div className="mt-1">
                 <input
@@ -132,7 +164,7 @@ const RegisterPage = () => {
 
             <div>
               <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
-                Confirmer le mot de passe
+                {t('auth.confirmPassword')}
               </label>
               <div className="mt-1">
                 <input
@@ -178,10 +210,10 @@ const RegisterPage = () => {
                 className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
                   isLoading
                     ? 'bg-primary-400 cursor-not-allowed'
-                    : 'bg-primary hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
+                    : 'bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
                 }`}
               >
-                {isLoading ? 'Inscription en cours...' : 'Créer un compte'}
+                {isLoading ? t('common.saving') : t('auth.registerButton')}
               </button>
             </div>
           </form>

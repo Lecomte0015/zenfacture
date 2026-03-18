@@ -76,13 +76,15 @@ export const PricingPage = () => {
             </span>
             <button
               type="button"
-              className="mx-4 flex h-6 w-11 items-center rounded-full bg-primary p-1"
+              className="mx-4 flex h-6 w-11 items-center rounded-full bg-primary-600 p-1 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
               onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annually' : 'monthly')}
+              aria-pressed={billingCycle === 'annually'}
+              aria-label="Basculer entre tarification mensuelle et annuelle"
             >
               <span
                 className={classNames(
                   billingCycle === 'monthly' ? 'translate-x-1' : 'translate-x-6',
-                  'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out'
+                  'inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out'
                 )}
               />
             </button>
@@ -142,9 +144,9 @@ export const PricingPage = () => {
                 href={tier.href}
                 className={classNames(
                   tier.featured
-                    ? 'bg-primary-600 text-white hover:bg-primary-700'
-                    : 'bg-white text-primary-600 hover:bg-gray-50',
-                  'mt-8 block w-full rounded-md border border-transparent px-6 py-3 text-center font-medium'
+                    ? 'bg-primary-600 text-white hover:bg-primary-700 hover:text-white'
+                    : 'bg-gray-100 text-gray-900 hover:bg-primary-600 hover:text-white',
+                  'mt-8 block w-full rounded-md border border-gray-200 px-6 py-3 text-center font-medium transition-colors duration-200'
                 )}
               >
                 {tier.featured ? 'Commencer l\'essai gratuit' : 'Essai gratuit'}

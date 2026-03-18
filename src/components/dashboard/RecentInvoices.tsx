@@ -1,534 +1,447 @@
-import React, { useState, useMemo } from 'react';
-import { FiDownload, FiPrinter, FiMail, FiEdit2, FiTrash2, FiSearch } from 'react-icons/fi';
+import React, { useMemo, useState } from 'react';
+import { FiDownload, FiPrinter, FiMail, FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
 import { toast } from 'react-toastify';
-import { Invoice, InvoiceItem } from '../../types/invoice';
+import { InvoiceData } from '@/services/invoiceService';
 import 'react-toastify/dist/ReactToastify.css';
+import FeatureGuard from '../FeatureGuard';
+import { Button } from '@/components/ui/button';
+import { useTrial } from '@/hooks';
+import { useAuth } from '@/context/AuthContext';
+// Bannière d'essai terminé intégrée directement dans le composant
 
+// Type pour les propriétés du composant
 interface RecentInvoicesProps {
-  invoices: Invoice[];
-  onDeleteInvoice: (id: string) => void;
-  onEditInvoice: (invoice: Invoice) => void;
-  onStatusChange: (id: string, status: Invoice['status']) => void;
-  searchTerm: string;
-  statusFilter: string;
+  invoices: InvoiceData[];
+  onDelete: (id: string) => void;
+  onEdit: (invoice: InvoiceData) => void;
+  onStatusChange?: (id: string, status: InvoiceData['status']) => void;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
-const RecentInvoices: React.FC<RecentInvoicesProps> = ({ 
-  invoices, 
-  onEditInvoice, 
-  onDeleteInvoice,
-  onStatusChange,
-  searchTerm: initialSearchTerm = '',
-  statusFilter: initialStatusFilter = 'all'
+declare global {
+  interface Window {
+    jsPDF: any;
+  }
+}
+
+type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+
+
+const RecentInvoices: React.FC<RecentInvoicesProps> = ({
+  invoices = [],
+  onDelete,
+  onEdit,
+  onStatusChange = () => {},
+  isLoading = false,
+  error = null,
 }) => {
-  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
-  const [statusFilter, setStatusFilter] = useState<string>(initialStatusFilter);
-  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'all'>('all');
+
   const filteredInvoices = useMemo(() => {
-    return invoices.filter(invoice => {
-      // Filter by search term
-      const matchesSearch = searchTerm === '' || 
-        (invoice.client?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (invoice.invoiceNumber?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (invoice.clientEmail?.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      // Filter by status
-      const matchesStatus = statusFilter === 'all' || invoice.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
+    if (!invoices) return [];
+    
+    return invoices.filter((invoice: InvoiceData) => {
+      try {
+        const searchLower = searchTerm.toLowerCase();
+        const clientName = invoice.client_name || 'Client inconnu';
+        const invoiceNumber = invoice.invoice_number || `FACT-${invoice.id.slice(0, 8).toUpperCase()}`;
+        const clientEmail = invoice.client_email || '';
+        
+        const matchesSearch = searchTerm === '' || 
+          clientName.toLowerCase().includes(searchLower) ||
+          invoiceNumber.toLowerCase().includes(searchLower) ||
+          clientEmail.toLowerCase().includes(searchLower);
+        
+        const matchesStatus = statusFilter === 'all' || invoice.status === statusFilter;
+        
+        return matchesSearch && matchesStatus;
+      } catch (error) {
+        console.error('Error filtering invoices:', error);
+        return false;
+      }
     });
   }, [invoices, searchTerm, statusFilter]);
 
-  const calculateTotalAmount = (invoice: Invoice): number => {
-    return (invoice.items || []).reduce((sum, item) => {
-      return sum + ((item.quantity || 0) * (item.unitPrice || 0));
-    }, 0);
+  const handlePrint = (invoice: InvoiceData, e: React.MouseEvent<HTMLButtonElement>): void => {
+    e.stopPropagation();
+    try {
+      window.print();
+    } catch (error) {
+      console.error('Error printing invoice:', error);
+      toast.error('Erreur lors de l\'impression de la facture');
+    }
   };
 
-  const handleDownload = async (invoice: Invoice, e: React.MouseEvent) => {
+  const handleSendEmail = async (invoice: InvoiceData, e: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
     e.stopPropagation();
-    
-    const toastId = toast.loading('Préparation du téléchargement...');
-    
     try {
-      const { jsPDF } = await import('jspdf');
-      const doc = new jsPDF({
+      const subject = `Facture ${invoice.invoice_number} - ZENFACTURE SA`;
+      const body = `Bonjour,%0D%0A%0D%0AVeuillez trouver ci-jointe la facture n°${invoice.invoice_number} d'un montant de ${invoice.total?.toFixed(2)} CHF.%0D%0A%0D%0ACordialement,%0AL'équipe ZENFACTURE SA`;
+      window.location.href = `mailto:${invoice.client_email}?subject=${encodeURIComponent(subject)}&body=${body}`;
+    } catch (error) {
+      console.error('Error preparing email:', error);
+      toast.error('Erreur lors de la préparation de l\'email');
+    }
+  };
+
+  const handleDownload = async (invoice: InvoiceData, e: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
+    e.stopPropagation();
+    try {
+      const { default: jsPDF } = await import('jspdf');
+      const doc = new window.jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
       
-      // En-tête
+      // Add PDF content
+      doc.setFont('helvetica', 'bold');
       doc.setFontSize(20);
-      doc.setFont('helvetica', 'bold');
-      doc.text('FACTURE', 20, 20);
+      doc.text('FACTURE', 105, 20, { align: 'center' });
       
-      // Informations de l'entreprise (à droite)
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('ZENFACTURE SA', 140, 20);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Rue du Marché 10', 140, 25);
-      doc.text('2501 Biel/Bienne', 140, 30);
-      doc.text('Suisse', 140, 35);
-      doc.text('TVA: CHE-XXX.XXX.XXX', 140, 40);
-      doc.text('Tél: +41 32 123 45 67', 140, 45);
-      doc.text('Email: contact@zenfacture.ch', 140, 50);
+      // Add invoice details
+      doc.setFontSize(12);
+      doc.text(`N° ${invoice.invoice_number}`, 15, 30);
+      doc.text(`Date: ${new Date(invoice.date).toLocaleDateString('fr-FR')}`, 15, 40);
       
-      // Informations du client (à gauche)
-      doc.setFont('helvetica', 'bold');
-      doc.text('Facturé à:', 20, 50);
-      doc.setFont('helvetica', 'normal');
-      doc.text(invoice.client || 'Client inconnu', 20, 55);
-      
-      if (invoice.clientAddress) {
-        doc.text(invoice.clientAddress, 20, 60);
-        let addressY = 65;
-        
-        if (invoice.clientPostalCode && invoice.clientCity) {
-          doc.text(`${invoice.clientPostalCode} ${invoice.clientCity}`, 20, addressY);
-          addressY += 5;
-        }
-        
-        if (invoice.clientCountry) {
-          doc.text(invoice.clientCountry, 20, addressY);
-        }
+      // Add client information
+      doc.text('Facturé à:', 15, 60);
+      doc.text(invoice.client_name, 15, 70);
+      if (invoice.client_company) doc.text(invoice.client_company, 15, 75);
+      if (invoice.client_address) doc.text(invoice.client_address, 15, 80);
+      if (invoice.client_zip && invoice.client_city) {
+        doc.text(`${invoice.client_zip} ${invoice.client_city}`, 15, 85);
       }
       
-      // Détails de la facture
-      doc.setFont('helvetica', 'bold');
-      doc.text('Détails de la facture', 20, 85);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`N° de facture: ${invoice.invoiceNumber || invoice.id || ''}`, 20, 90);
-      doc.text(`Date: ${invoice.date ? new Date(invoice.date).toLocaleDateString('fr-CH') : 'Non spécifiée'}`, 20, 95);
+      // Add items table
+      const startY = 110;
+      const lineHeight = 7;
+      let currentY = startY;
       
-      if (invoice.dueDate) {
-        doc.text(`Date d'échéance: ${new Date(invoice.dueDate).toLocaleDateString('fr-CH')}`, 20, 100);
-      }
-      
-      // Tableau des articles
-      let y = 115;
-      
-      // En-tête du tableau
+      // Table header
       doc.setFillColor(240, 240, 240);
-      doc.rect(20, y, 170, 8, 'F');
+      doc.rect(15, startY - 10, 180, 10, 'F');
       doc.setFont('helvetica', 'bold');
-      doc.text('Description', 22, y + 5);
-      doc.text('Qté', 110, y + 5, { align: 'right' } as any);
-      doc.text('Prix unitaire', 140, y + 5, { align: 'right' } as any);
-      doc.text('Total', 170, y + 5, { align: 'right' } as any);
+      doc.text('Description', 20, startY - 4);
+      doc.text('Qté', 120, startY - 4, { align: 'right' });
+      doc.text('Prix unitaire', 140, startY - 4, { align: 'right' });
+      doc.text('Total', 180, startY - 4, { align: 'right' });
       
-      // Lignes des articles
-      y += 10;
+      // Table rows
       doc.setFont('helvetica', 'normal');
-      const items = invoice.items || [];
-      
-      items.forEach((item: InvoiceItem) => {
-        // Dessine une ligne de séparation
-        doc.setDrawColor(220, 220, 220);
-        doc.line(20, y - 2, 190, y - 2);
-        
-        // Description avec retour à la ligne si nécessaire
-        const description = item.description || 'Article sans description';
-        const splitDescription = doc.splitTextToSize(description, 80);
-        
-        // Hauteur de la cellule basée sur le nombre de lignes de description
-        const cellHeight = Math.max(10, splitDescription.length * 5);
-        
-        // Dessine le fond de la cellule
-        doc.setFillColor(255, 255, 255);
-        doc.rect(20, y - 2, 170, cellHeight, 'F');
-        
-        // Dessine la bordure de la cellule
-        doc.rect(20, y - 2, 170, cellHeight);
-        
-        // Texte de la description
-        doc.text(splitDescription, 22, y + 3);
-        
-        // Quantité, prix unitaire et total
-        doc.text((item.quantity || 0).toString(), 110, y + 3, { align: 'right' } as any);
-        doc.text(`${(item.unitPrice || 0).toFixed(2)} ${invoice.currency || 'CHF'}`, 140, y + 3, { align: 'right' } as any);
-        doc.text(`${((item.quantity || 0) * (item.unitPrice || 0)).toFixed(2)} ${invoice.currency || 'CHF'}`, 170, y + 3, { align: 'right' } as any);
-        
-        y += cellHeight;
+      invoice.items.forEach((item, index) => {
+        const y = startY + (index * lineHeight);
+        doc.text(item.description, 20, y);
+        doc.text(item.quantity.toString(), 120, y, { align: 'right' });
+        doc.text(`${item.unit_price.toFixed(2)} CHF`, 140, y, { align: 'right' });
+        doc.text(`${(item.quantity * item.unit_price).toFixed(2)} CHF`, 180, y, { align: 'right' });
+        currentY = y;
       });
       
-      // Ligne de séparation avant le total
-      doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.5);
-      doc.line(140, y, 190, y);
-      y += 5;
-      
-      // Calcul des totaux
-      const subtotal = items.reduce((sum, item) => sum + ((item.quantity || 0) * (item.unitPrice || 0)), 0);
-      const taxRate = invoice.taxRate || 7.7; // TVA suisse par défaut
-      const taxAmount = subtotal * (taxRate / 100);
-      const total = subtotal + taxAmount;
-      
-      // Affichage des totaux
+      // Totals
+      currentY += 15;
       doc.setFont('helvetica', 'bold');
-      doc.text('Sous-total:', 150, y, { align: 'right' } as any);
-      doc.text(`${subtotal.toFixed(2)} ${invoice.currency || 'CHF'}`, 190, y, { align: 'right' } as any);
-      y += 7;
+      doc.text('Sous-total:', 150, currentY, { align: 'right' });
+      doc.text(`${invoice.subtotal.toFixed(2)} CHF`, 180, currentY, { align: 'right' });
       
-      doc.text(`TVA (${taxRate}%):`, 150, y, { align: 'right' } as any);
-      doc.text(`${taxAmount.toFixed(2)} ${invoice.currency || 'CHF'}`, 190, y, { align: 'right' } as any);
-      y += 7;
+      currentY += 7;
+      doc.text(`TVA (${invoice.items[0]?.tax_rate || 8.1}%):`, 150, currentY, { align: 'right' });
+      doc.text(`${invoice.tax_amount.toFixed(2)} CHF`, 180, currentY, { align: 'right' });
       
-      doc.setFontSize(12);
-      doc.text('Total:', 150, y, { align: 'right' } as any);
-      doc.text(`${total.toFixed(2)} ${invoice.currency || 'CHF'}`, 190, y, { align: 'right' } as any);
+      currentY += 10;
+      doc.setFontSize(14);
+      doc.text('Total:', 150, currentY, { align: 'right' });
+      doc.text(`${invoice.total.toFixed(2)} CHF`, 180, currentY, { align: 'right' });
       
-      // Ajout d'un QR code de paiement (version simplifiée)
-      y += 15;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Paiement par QR-bill', 20, y);
+      // Save the PDF
+      doc.save(`facture-${invoice.invoice_number}.pdf`);
       
-      // Espace pour le QR code (sera généré côté client)
-      doc.setDrawColor(200, 200, 200);
-      doc.rect(20, y + 5, 40, 40, 'S');
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.text('(Le QR code sera généré', 65, y + 15);
-      doc.text('après paiement)', 65, y + 20);
-      
-      // Détails de paiement
-      doc.setFontSize(10);
-      doc.text('Veuillez effectuer le virement à:', 65, y + 30);
-      doc.text('Bénéficiaire: ZENFACTURE SA', 65, y + 35);
-      doc.text('IBAN: CH93 0076 2011 6238 5295 7', 65, y + 40);
-      doc.text(`Montant: ${total.toFixed(2)} ${invoice.currency || 'CHF'}`, 65, y + 45);
-      doc.text(`Référence: ${invoice.invoiceNumber || invoice.id || ''}`, 65, y + 50);
-      
-      // Pied de page
-      doc.setFontSize(8);
-      doc.text('ZENFACTURE SA - Rue du Marché 10 - 2501 Biel/Bienne - Suisse', 105, 287, { align: 'center' } as any);
-      doc.text('TVA: CHE-XXX.XXX.XXX - Tél: +41 32 123 45 67 - Email: contact@zenfacture.ch', 105, 290, { align: 'center' } as any);
-      
-      // Enregistrement du PDF
-      doc.save(`facture-${invoice.invoiceNumber || invoice.id || 'sans-numero'}.pdf`);
-      
-      toast.dismiss(toastId);
-      toast.success('Téléchargement terminé !');
+      toast.success('Téléchargement du PDF réussi');
     } catch (error) {
-      console.error('Erreur lors de la génération du PDF:', error);
-      toast.dismiss(toastId);
+      console.error('Error generating PDF:', error);
       toast.error('Erreur lors de la génération du PDF');
     }
   };
 
-  const handleSendEmail = (invoice: Invoice, e: React.MouseEvent) => {
+  const handleDelete = (invoice: InvoiceData, e: React.MouseEvent<HTMLButtonElement>): void => {
     e.stopPropagation();
-    const subject = `Facture ${invoice.invoiceNumber || invoice.id || ''} - ZENFACTURE SA`;
-    const totalAmount = invoice.items?.reduce((sum, item) => 
-      sum + ((item.quantity || 0) * (item.unitPrice || 0)), 0) || 0;
-    const body = `Bonjour,\n\nVeuillez trouver ci-joint la facture n°${invoice.invoiceNumber || invoice.id || ''} d'un montant de ${totalAmount.toFixed(2)} ${invoice.currency || 'CHF'}.\n\nCordialement,\nL'équipe ZENFACTURE SA`;
-    const mailtoLink = `mailto:${invoice.clientEmail || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoLink;
-    toast.info('Ouvrez votre client de messagerie pour envoyer la facture');
-  };
-
-  const handleDelete = (invoice: Invoice, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette facture ?')) {
-      onDeleteInvoice(invoice.id);
-      toast.success('Facture supprimée avec succès');
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer la facture ${invoice.invoice_number || invoice.id} ?`)) {
+      onDelete(invoice.id);
     }
   };
 
-  const handlePrint = (invoice: Invoice, e: React.MouseEvent) => {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border-l-4 border-red-400 p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm text-red-700">
+              {error}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { canAccessFeature, isTrialExpired, hasActiveSubscription } = useTrial();
+  const { user } = useAuth();
+  
+  // Fonction pour gérer la création d'une nouvelle facture
+  const handleAddNewInvoice = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      toast.error('Impossible d\'ouvrir la fenêtre d\'impression. Veuillez désactiver votre bloqueur de fenêtres popup.');
+    
+    // Vérifier si l'utilisateur peut créer une nouvelle facture
+    if (!canAccessFeature('invoices', { currentUsage: filteredInvoices.length })) {
+      toast.error('Vous avez atteint la limite de factures pour votre forfait.');
       return;
     }
-
-    const totalAmount = calculateTotalAmount(invoice);
-    const taxRate = invoice.taxRate || 0;
-    const totalWithTax = totalAmount * (1 + taxRate / 100);
-
-    // Création d'un contenu HTML simple pour l'impression
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8" />
-        <title>Facture ${invoice.invoiceNumber || invoice.id || ''}</title>
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
-          .header { display: flex; justify-content: space-between; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
-          .company-info { text-align: right; }
-          h1 { color: #2d3748; margin: 0 0 5px 0; font-size: 24px; }
-          h2 { color: #4a5568; font-size: 18px; margin: 20px 0 10px 0; }
-          .client-info, .invoice-info { margin-bottom: 20px; }
-          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-          th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
-          th { background-color: #f8fafc; font-weight: 600; }
-          .text-right { text-align: right; }
-          .total-row { font-weight: bold; }
-          .notes { margin-top: 30px; padding: 15px; background-color: #f8fafc; border-radius: 4px; }
-          .status { 
-            display: inline-block; 
-            padding: 4px 8px; 
-            border-radius: 4px; 
-            font-size: 12px; 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            letter-spacing: 0.05em; 
-          }
-          .status-draft { background-color: #e2e8f0; color: #4a5568; }
-          .status-sent { background-color: #bee3f8; color: #2b6cb0; }
-          .status-paid { background-color: #c6f6d5; color: #2f855a; }
-          .status-overdue { background-color: #fed7d7; color: #c53030; }
-          .status-cancelled { background-color: #e2e8f0; color: #4a5568; text-decoration: line-through; }
-          .status-pending { background-color: #feebc8; color: #b7791f; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div>
-            <h1>ZENFACTURE SA</h1>
-            <p>Rue du Marché 10<br>2501 Biel/Bienne<br>Suisse</p>
-          </div>
-          <div class="company-info">
-            <p>Date: ${new Date(invoice.date).toLocaleDateString()}</p>
-            ${invoice.dueDate ? `<p>Échéance: ${new Date(invoice.dueDate).toLocaleDateString()}</p>` : ''}
-          </div>
-        </div>
-
-        <div class="client-info">
-          <h2>À :</h2>
-          <p>
-            ${invoice.client || 'Client inconnu'}<br>
-            ${invoice.clientAddress || ''}<br>
-            ${invoice.clientPostalCode || ''} ${invoice.clientCity || ''}<br>
-            ${invoice.clientCountry || ''}
-          </p>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Description</th>
-              <th class="text-right">Quantité</th>
-              <th class="text-right">Prix unitaire</th>
-              <th class="text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${(invoice.items || []).map(item => `
-              <tr>
-                <td>${item.description || 'Article sans description'}</td>
-                <td class="text-right">${item.quantity || 0}</td>
-                <td class="text-right">${(item.unitPrice || 0).toFixed(2)} ${invoice.currency || 'CHF'}</td>
-                <td class="text-right">${((item.quantity || 0) * (item.unitPrice || 0)).toFixed(2)} ${invoice.currency || 'CHF'}</td>
-              </tr>
-            `).join('')}
-            <tr class="total-row">
-              <td colspan="3" class="text-right">Sous-total:</td>
-              <td class="text-right">${totalAmount.toFixed(2)} ${invoice.currency || 'CHF'}</td>
-            </tr>
-            ${taxRate > 0 ? `
-              <tr class="total-row">
-                <td colspan="3" class="text-right">TVA (${taxRate}%):</td>
-                <td class="text-right">${(totalAmount * (taxRate / 100)).toFixed(2)} ${invoice.currency || 'CHF'}</td>
-              </tr>
-              <tr class="total-row">
-                <td colspan="3" class="text-right">Total TTC:</td>
-                <td class="text-right">${totalWithTax.toFixed(2)} ${invoice.currency || 'CHF'}</td>
-              </tr>
-            ` : ''}
-          </tbody>
-        </table>
-
-        ${invoice.notes ? `
-          <div class="notes">
-            <h2>Notes:</h2>
-            <p>${invoice.notes}</p>
-          </div>
-        ` : ''}
-
-        <div class="footer" style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #718096; font-size: 0.9em;">
-          <p>Merci pour votre confiance !</p>
-          <p>ZENFACTURE SA - Rue du Marché 10 - 2501 Biel/Bienne - Suisse</p>
-          <p>Email: contact@zenfacture.ch - Tél: +41 32 123 45 67</p>
-        </div>
-      </body>
-      </html>
-    `;
-
-    printWindow.document.open();
-    printWindow.document.write(printContent);
-    printWindow.document.close();
+    
+    // Créer une facture vide pour l'édition
+    const newInvoice: Omit<InvoiceData, 'id' | 'created_at' | 'updated_at'> & { id: string } = {
+      id: 'new',
+      user_id: user?.id || '',
+      invoice_number: '',
+      client_name: '',
+      client_email: '',
+      date: new Date().toISOString(),
+      due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 jours plus tard
+      status: 'draft',
+      items: [],
+      subtotal: 0,
+      tax_amount: 0,
+      total: 0,
+      notes: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    onEdit(newInvoice as unknown as InvoiceData);
   };
 
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-medium text-gray-900">Factures récentes</h2>
-          <div className="flex space-x-2">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiSearch className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Rechercher..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+    <div className="bg-white shadow rounded-lg p-6">
+      {/* Bannière d'essai terminé */}
+      {isTrialExpired && !hasActiveSubscription && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
             </div>
-            <select
-              className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as Invoice['status'] | 'all')}
-            >
-              <option value="all">Tous les statuts</option>
-              <option value="draft">Brouillon</option>
-              <option value="sent">Envoyée</option>
-              <option value="paid">Payée</option>
-              <option value="cancelled">Annulée</option>
-            </select>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                Votre période d'essai est terminée. <a href="/pricing" className="font-medium text-yellow-700 underline hover:text-yellow-600">Mettez à niveau votre forêt</a> pour continuer à profiter de toutes les fonctionnalités.
+              </p>
+            </div>
           </div>
         </div>
+      )}
+      
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4 md:mb-0">Factures récentes</h2>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Rechercher une facture..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          <select
+            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as InvoiceStatus | 'all')}
+          >
+            <option value="all">Tous les statuts</option>
+            <option value="draft">Brouillon</option>
+            <option value="sent">Envoyée</option>
+            <option value="paid">Payée</option>
+            <option value="overdue">En retard</option>
+            <option value="cancelled">Annulée</option>
+          </select>
+        </div>
+      </div>
 
-        <div className="overflow-x-auto">
+      <div className="overflow-x-auto">
+        {filteredInvoices.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            Aucune facture trouvée
+          </div>
+        ) : (
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   N° Facture
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Client
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Montant
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Statut
                 </th>
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredInvoices.length > 0 ? (
-                filteredInvoices.map((invoice) => {
-                  const invoiceNumber = invoice.invoiceNumber || `FAC-${invoice.id.slice(0, 8).toUpperCase()}`;
-                  const clientName = invoice.client || 'Client inconnu';
-                  const totalAmount = calculateTotalAmount(invoice);
-
-                  return (
-                    <tr 
-                      key={invoice.id} 
-                      className="hover:bg-gray-50 cursor-pointer"
-                      onClick={() => onEditInvoice(invoice)}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {invoiceNumber}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {clientName}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(invoice.date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {totalAmount.toFixed(2)} {invoice.currency || 'CHF'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <select
-                          className={`px-2 py-1 text-xs font-semibold rounded-md border-0 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                            invoice.status === 'paid' 
-                              ? 'bg-green-100 text-green-800' 
-                              : invoice.status === 'sent' 
-                                ? 'bg-blue-100 text-blue-800' 
-                                : invoice.status === 'cancelled' 
-                                  ? 'bg-red-100 text-red-800' 
-                                  : 'bg-yellow-100 text-yellow-800'
-                          }`}
-                          value={invoice.status}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            onStatusChange(invoice.id, e.target.value as Invoice['status']);
+              {filteredInvoices.map((invoice) => (
+                <tr 
+                  key={invoice.id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => onEdit(invoice)}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {invoice.invoice_number || `FACT-${invoice.id.slice(0, 8).toUpperCase()}`}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {invoice.client_name || 'Client inconnu'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(invoice.date).toLocaleDateString('fr-FR')}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {invoice.total?.toFixed(2)} CHF
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                      invoice.status === 'sent' ? 'bg-blue-100 text-blue-800' :
+                      invoice.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                      invoice.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                      invoice.status === 'cancelled' ? 'bg-gray-100 text-gray-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {invoice.status === 'paid' ? 'Payée' :
+                       invoice.status === 'sent' ? 'Envoyée' :
+                       invoice.status === 'overdue' ? 'En retard' :
+                       invoice.status === 'draft' ? 'Brouillon' :
+                       invoice.status === 'cancelled' ? 'Annulée' :
+                       'Inconnu'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end space-x-2">
+                      <FeatureGuard requiredFeature="export_pdf">
+                        <button
+                          onClick={(e) => {
+                            if (!canAccessFeature('export_pdf')) {
+                              toast.error('Cette fonctionnalité n\'est pas incluse dans votre forêt actuel.');
+                              return;
+                            }
+                            handleDownload(invoice, e);
                           }}
-                          onClick={(e) => e.stopPropagation()}
+                          className="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Télécharger en PDF"
+                          disabled={isTrialExpired && !hasActiveSubscription}
                         >
-                          <option value="draft">Brouillon</option>
-                          <option value="sent">Envoyée</option>
-                          <option value="paid">Payée</option>
-                          <option value="cancelled">Annulée</option>
-                        </select>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end space-x-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDownload(invoice, e);
-                            }}
-                            className="text-blue-600 hover:text-blue-900"
-                            title="Télécharger"
-                          >
-                            <FiDownload size={18} />
-                          </button>
-                          <button
-                            onClick={(e) => handlePrint(invoice, e)}
-                            className="text-gray-600 hover:text-gray-900"
-                            title="Imprimer"
-                          >
-                            <FiPrinter size={18} />
-                          </button>
-                          <button
-                            onClick={(e) => handleSendEmail(invoice, e)}
-                            className="text-green-600 hover:text-green-900"
-                            title="Envoyer par email"
-                          >
-                            <FiMail size={18} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEditInvoice(invoice);
-                            }}
-                            className="text-yellow-600 hover:text-yellow-900"
-                            title="Modifier"
-                          >
-                            <FiEdit2 size={18} />
-                          </button>
-                          <button
-                            onClick={(e) => handleDelete(invoice, e)}
-                            className="text-red-600 hover:text-red-900"
-                            title="Supprimer"
-                          >
-                            <FiTrash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
-                    Aucune facture trouvée
+                          <FiDownload size={16} />
+                        </button>
+                      </FeatureGuard>
+                      
+                      <FeatureGuard requiredFeature="print_invoice">
+                        <button
+                          onClick={(e) => handlePrint(invoice, e)}
+                          className="text-gray-600 hover:text-gray-800 p-1 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Imprimer"
+                          disabled={isTrialExpired && !hasActiveSubscription}
+                        >
+                          <FiPrinter size={16} />
+                        </button>
+                      </FeatureGuard>
+                      
+                      <FeatureGuard requiredFeature="email_invoice">
+                        <button
+                          onClick={(e) => {
+                            if (!canAccessFeature('email_invoice')) {
+                              toast.error('L\'envoi d\'emails n\'est pas inclus dans votre forêt actuel.');
+                              return;
+                            }
+                            handleSendEmail(invoice, e);
+                          }}
+                          className={`text-green-600 hover:text-green-800 p-1 rounded-full hover:bg-green-50 ${
+                            !invoice.client_email || (isTrialExpired && !hasActiveSubscription) ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                          title={!invoice.client_email ? 'Aucun email défini' : 'Envoyer par email'}
+                          disabled={!invoice.client_email || (isTrialExpired && !hasActiveSubscription)}
+                        >
+                          <FiMail size={16} />
+                        </button>
+                      </FeatureGuard>
+                      
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!canAccessFeature('invoices', { currentUsage: filteredInvoices.length })) {
+                            toast.error('Vous avez atteint la limite de factures pour votre forêt.');
+                            return;
+                          }
+                          onEdit(invoice);
+                        }}
+                        className="text-yellow-600 hover:text-yellow-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Modifier"
+                        disabled={isTrialExpired && !hasActiveSubscription}
+                      >
+                        <FiEdit2 size={18} />
+                      </button>
+                      
+                      <button
+                        onClick={(e) => handleDelete(invoice, e)}
+                        className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Supprimer"
+                        disabled={isTrialExpired && !hasActiveSubscription}
+                      >
+                        <FiTrash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
-        </div>
+        )}
+      </div>
+      
+      <div className="mt-6 flex justify-end">
+        <FeatureGuard requiredFeature="create_invoice">
+          <Button
+            onClick={handleAddNewInvoice}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2"
+            disabled={isTrialExpired && !hasActiveSubscription}
+          >
+            <FiPlus size={16} />
+            Nouvelle facture
+          </Button>
+        </FeatureGuard>
       </div>
     </div>
   );
 };
 
-export default RecentInvoices;
+export default React.memo(RecentInvoices);

@@ -1,44 +1,17 @@
+import React from 'react';
 import { FiDollarSign, FiTrendingUp, FiClock, FiCheckCircle } from 'react-icons/fi';
-import { useEffect, useState, useCallback } from 'react';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { toast } from 'react-toastify';
+import { useInvoices } from '@/hooks/useInvoices';
+import { InvoiceData } from '@/services/invoiceService';
 
-interface InvoiceItem {
-  id?: string;
-  description: string;
-  quantity: number;
-  unitPrice: number;
-  amount: number;
-}
-
-interface Invoice {
-  id: string;
-  invoiceNumber: string;
-  amount: string | number;
-  total?: string | number;
-  date: string;
-  dueDate: string;
-  status: 'paid' | 'pending' | 'overdue' | 'draft';
-  clientName?: string;
-  clientEmail?: string;
-  clientAddress?: string;
-  items?: InvoiceItem[];
-  notes?: string;
-  taxRate?: number;
-  taxAmount?: number;
-  discount?: number;
-  subtotal?: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-const formatCurrency = (amount: string | number): string => {
+const formatCurrency = (amount: number | string | undefined): string => {
+  if (amount === undefined || amount === null) return '0.00 CHF';
   const num = typeof amount === 'string' ? parseFloat(amount.replace(',', '.')) || 0 : amount;
-  return new Intl.NumberFormat('fr-CH', { style: 'currency', currency: 'CHF' })
-    .format(num)
-    .replace('CHF', 'CHF')
-    .trim();
+  return new Intl.NumberFormat('fr-CH', { 
+    style: 'currency', 
+    currency: 'CHF',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2 
+  }).format(num);
 };
 
 type SummaryCardProps = {
@@ -103,220 +76,66 @@ const SummaryCard = ({ title, value, change, icon, trend }: SummaryCardProps) =>
   </div>
 );
 
-const SummaryCards = () => {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Fonction pour charger les factures
-  const loadInvoices = useCallback(() => {
-    try {
-      const savedInvoices = localStorage.getItem('zenfacture_invoices');
-      if (savedInvoices) {
-        const parsedInvoices = JSON.parse(savedInvoices);
-        if (Array.isArray(parsedInvoices)) {
-          setInvoices(parsedInvoices);
-        } else {
-          console.warn('Les données des factures ne sont pas un tableau');
-          setInvoices([]);
-        }
-      } else {
-        setInvoices([]);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des factures:', error);
-      toast.error('Erreur lors du chargement des factures');
-      setInvoices([]);
-    } finally {
-      setIsLoading(false);
+const SummaryCards: React.FC = () => {
+  const { invoices = [], loading: isLoading } = useInvoices({ limit: 100 });
+  
+  // Calculer les statistiques des factures
+  const stats = React.useMemo(() => {
+    if (!invoices || invoices.length === 0) {
+      return {
+        totalAmount: 0,
+        paidAmount: 0,
+        pendingAmount: 0,
+        overdueAmount: 0,
+        totalInvoices: 0,
+        paidInvoices: 0,
+        pendingInvoices: 0,
+        overdueInvoices: 0,
+      };
     }
-  }, []);
 
-  // Charger les factures au montage du composant et écouter les changements
-  useEffect(() => {
-    loadInvoices();
-    
-    // Écouter les changements dans le localStorage
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'zenfacture_invoices' || e.key === null) {
-        loadInvoices();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [loadInvoices]);
-
-  // Fonction pour convertir un montant en nombre (gère les virgules et points décimaux)
-  const parseAmount = (amount: string | number): number => {
-    if (typeof amount === 'number') return amount;
-    // Remplacer les virgules par des points et convertir en nombre
-    const num = parseFloat(amount.toString().replace(',', '.'));
-    return isNaN(num) ? 0 : num;
-  };
-
-  // Calculer les statistiques
-  const calculateStats = () => {
     const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
     
-    console.log('Calcul des statistiques pour', invoices.length, 'factures');
-    
-    // Revenus du mois en cours
-    const monthlyRevenue = invoices
-      .filter(invoice => {
-        try {
-          if (!invoice.date) return false;
-          const invoiceDate = new Date(invoice.date);
-          return (
-            invoice.status === 'paid' &&
-            invoiceDate.getMonth() === currentMonth &&
-            invoiceDate.getFullYear() === currentYear
-          );
-        } catch (e) {
-          console.error('Erreur lors du traitement de la date de facture:', e);
-          return false;
-        }
-      })
-      .reduce((sum, invoice) => {
-        // Utiliser le montant total de la facture si disponible, sinon calculer à partir des articles
-        let totalAmount = 0;
-        
-        if (invoice.total !== undefined) {
-          totalAmount = parseAmount(invoice.total);
-        } else if (invoice.amount) {
-          totalAmount = parseAmount(invoice.amount);
-        } else if (invoice.items && Array.isArray(invoice.items)) {
-          totalAmount = invoice.items.reduce((itemSum: number, item: InvoiceItem) => {
-            const itemTotal = parseAmount(item.amount) || (parseAmount(item.quantity) * parseAmount(item.unitPrice));
-            return itemSum + itemTotal;
-          }, 0);
-        }
-        
-        console.log(`Facture ${invoice.id}: ${totalAmount} CHF (${invoice.status})`);
-        return sum + totalAmount;
-      }, 0);
+    return (invoices as InvoiceData[]).reduce<{
+      totalAmount: number;
+      paidAmount: number;
+      pendingAmount: number;
+      overdueAmount: number;
+      totalInvoices: number;
+      paidInvoices: number;
+      pendingInvoices: number;
+      overdueInvoices: number;
+    }>(
+      (acc, invoice) => {
+        const total = invoice.total || 0;
+        const dueDate = invoice.due_date ? new Date(invoice.due_date) : null;
+        const isOverdue = dueDate && dueDate < now && invoice.status !== 'paid';
+        const isPaid = invoice.status === 'paid';
+        const isPending = !isPaid && !isOverdue && invoice.status !== 'cancelled';
 
-    // Factures impayées
-    const unpaidInvoices = invoices.filter(
-      invoice => invoice.status === 'pending' || invoice.status === 'overdue' || !invoice.status
-    );
-    
-    const unpaidAmount = unpaidInvoices.reduce((sum: number, invoice: Invoice) => {
-      if (invoice.total !== undefined) {
-        return sum + parseAmount(invoice.total);
-      } else if (invoice.amount) {
-        return sum + parseAmount(invoice.amount);
-      } else if (invoice.items && Array.isArray(invoice.items)) {
-        const invoiceTotal = invoice.items.reduce((itemSum: number, item: InvoiceItem) => {
-          const itemAmount = item.amount || 0;
-          const itemQuantity = item.quantity || 0;
-          const itemUnitPrice = item.unitPrice || 0;
-          const itemTotal = parseAmount(itemAmount) || (parseAmount(itemQuantity) * parseAmount(itemUnitPrice));
-          return itemSum + itemTotal;
-        }, 0);
-        return sum + invoiceTotal;
+        return {
+          totalAmount: acc.totalAmount + total,
+          paidAmount: isPaid ? acc.paidAmount + total : acc.paidAmount,
+          pendingAmount: isPending ? acc.pendingAmount + total : acc.pendingAmount,
+          overdueAmount: isOverdue ? acc.overdueAmount + total : acc.overdueAmount,
+          totalInvoices: acc.totalInvoices + 1,
+          paidInvoices: isPaid ? acc.paidInvoices + 1 : acc.paidInvoices,
+          pendingInvoices: isPending ? acc.pendingInvoices + 1 : acc.pendingInvoices,
+          overdueInvoices: isOverdue ? acc.overdueInvoices + 1 : acc.overdueInvoices,
+        };
+      },
+      {
+        totalAmount: 0,
+        paidAmount: 0,
+        pendingAmount: 0,
+        overdueAmount: 0,
+        totalInvoices: 0,
+        paidInvoices: 0,
+        pendingInvoices: 0,
+        overdueInvoices: 0,
       }
-      return sum;
-    }, 0);
-
-    // Factures payées
-    const paidInvoices = invoices.filter(invoice => invoice.status === 'paid');
-    const paidCount = paidInvoices.length;
-
-    // Taux de croissance (comparaison avec le mois dernier)
-    const lastMonthRevenue = invoices
-      .filter(invoice => {
-        try {
-          if (!invoice.date) return false;
-          const invoiceDate = new Date(invoice.date);
-          const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-          const year = currentMonth === 0 ? currentYear - 1 : currentYear;
-          
-          return (
-            invoice.status === 'paid' &&
-            invoiceDate.getMonth() === lastMonth &&
-            invoiceDate.getFullYear() === year
-          );
-        } catch (e) {
-          console.error('Erreur lors du traitement de la date de facture (mois dernier):', e);
-          return false;
-        }
-      })
-      .reduce((sum: number, invoice: Invoice) => {
-        if (invoice.total !== undefined) {
-          return sum + parseAmount(invoice.total);
-        } else if (invoice.amount) {
-          return sum + parseAmount(invoice.amount);
-        } else if (invoice.items && Array.isArray(invoice.items)) {
-          return sum + invoice.items.reduce((itemSum: number, item: InvoiceItem) => {
-            const itemAmount = item.amount || 0;
-            const itemQuantity = item.quantity || 0;
-            const itemUnitPrice = item.unitPrice || 0;
-            return itemSum + (parseAmount(itemAmount) || (parseAmount(itemQuantity) * parseAmount(itemUnitPrice)));
-          }, 0);
-        }
-        return sum;
-      }, 0);
-
-    // Calcul du taux de croissance
-    const growthRate = lastMonthRevenue > 0 
-      ? ((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 
-      : monthlyRevenue > 0 ? 100 : 0;
-
-    console.log('Statistiques calculées:', {
-      monthlyRevenue,
-      unpaidInvoices: unpaidInvoices.length,
-      unpaidAmount,
-      paidCount,
-      growthRate,
-      lastMonthRevenue
-    });
-
-    return {
-      monthlyRevenue,
-      unpaidInvoices: unpaidInvoices.length,
-      unpaidAmount,
-      paidCount,
-      growthRate
-    };
-  };
-
-  const { monthlyRevenue, unpaidInvoices, unpaidAmount, paidCount, growthRate } = calculateStats();
-  const currentMonthName = format(new Date(), 'MMMM', { locale: fr });
-
-  const cards = [
-    {
-      title: `Revenus ${currentMonthName}`,
-      value: formatCurrency(monthlyRevenue),
-      change: growthRate >= 0 
-        ? `+${growthRate.toFixed(1)}% par rapport au mois dernier` 
-        : `${growthRate.toFixed(1)}% par rapport au mois dernier`,
-      icon: <FiDollarSign className="h-6 w-6 text-primary-600" />,
-      trend: growthRate >= 0 ? 'up' as const : 'down' as const,
-    },
-    {
-      title: 'Factures impayées',
-      value: formatCurrency(unpaidAmount),
-      change: `${unpaidInvoices} facture${unpaidInvoices > 1 ? 's' : ''} en attente`,
-      icon: <FiClock className="h-6 w-6 text-yellow-600" />,
-      trend: 'up' as const,
-    },
-    {
-      title: 'Factures payées',
-      value: paidCount.toString(),
-      change: `sur ${invoices.length} facture${invoices.length > 1 ? 's' : ''} au total`,
-      icon: <FiCheckCircle className="h-6 w-6 text-green-600" />,
-      trend: 'up' as const,
-    },
-    {
-      title: 'Taux de croissance',
-      value: `${growthRate >= 0 ? '+' : ''}${growthRate.toFixed(1)}%`,
-      change: `par rapport à ${format(new Date(new Date().setMonth(new Date().getMonth() - 1)), 'MMMM', { locale: fr })}`,
-      icon: <FiTrendingUp className="h-6 w-6 text-blue-600" />,
-      trend: growthRate >= 0 ? 'up' as const : 'down' as const,
-    },
-  ];
+    );
+  }, [invoices]);
 
   if (isLoading) {
     return (
@@ -328,11 +147,50 @@ const SummaryCards = () => {
     );
   }
 
+  const {
+    totalAmount,
+    paidAmount,
+    pendingAmount,
+    overdueAmount,
+    totalInvoices,
+    paidInvoices,
+  } = stats;
+
+  // Calculer les pourcentages
+  const paidPercentage = totalAmount > 0 ? Math.round((paidAmount / totalAmount) * 100) : 0;
+  const pendingPercentage = totalAmount > 0 ? Math.round((pendingAmount / totalAmount) * 100) : 0;
+  const overduePercentage = totalAmount > 0 ? Math.round((overdueAmount / totalAmount) * 100) : 0;
+
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      {cards.map((card, index) => (
-        <SummaryCard key={index} {...card} />
-      ))}
+      <SummaryCard
+        title="Chiffre d'affaires"
+        value={formatCurrency(totalAmount)}
+        change={`${paidPercentage}% payé`}
+        icon={<FiDollarSign className="h-6 w-6 text-primary-600" />}
+        trend={paidPercentage >= 50 ? 'up' : 'down'}
+      />
+      <SummaryCard
+        title="Factures payées"
+        value={`${paidInvoices} / ${totalInvoices}`}
+        change={`${totalInvoices > 0 ? Math.round((paidInvoices / totalInvoices) * 100) : 0}%`}
+        icon={<FiCheckCircle className="h-6 w-6 text-green-600" />}
+        trend={paidInvoices / (totalInvoices || 1) >= 0.5 ? 'up' : 'down'}
+      />
+      <SummaryCard
+        title="En attente"
+        value={formatCurrency(pendingAmount)}
+        change={`${pendingPercentage}% du total`}
+        icon={<FiClock className="h-6 w-6 text-yellow-600" />}
+        trend={pendingPercentage > 30 ? 'down' : 'up'}
+      />
+      <SummaryCard
+        title="En retard"
+        value={formatCurrency(overdueAmount)}
+        change={`${overduePercentage}% du total`}
+        icon={<FiTrendingUp className="h-6 w-6 text-red-600" />}
+        trend={overduePercentage > 10 ? 'down' : 'up'}
+      />
     </div>
   );
 };

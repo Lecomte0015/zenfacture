@@ -2,12 +2,45 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="description" content="ZenFacture - Facturation suisse simplifiée pour PME. QR-bill, TVA, comptabilité." />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ZenFacture" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
     <title>ZenFacture - Gestion de factures QR suisse</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Only register SW in production (not during Vite dev)
+      if ('serviceWorker' in navigator && !window.__VITE_IS_MODERN__) {
+        window.addEventListener('load', () => {
+          // In dev mode, unregister any existing SW to avoid caching issues
+          if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+              for (var registration of registrations) {
+                registration.unregister();
+              }
+            });
+          } else {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+          }
+        });
+      }
+    </script>
   </body>
 </html>

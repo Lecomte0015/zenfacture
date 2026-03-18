@@ -1,151 +1,115 @@
-import { useState, useEffect, useCallback } from 'react';
-import { FiPlus, FiDownload } from 'react-icons/fi';
-import SummaryCards from '@/components/dashboard/SummaryCards';
-import RemindersSection from '@/components/dashboard/RemindersSection';
-import RecentInvoices from '@/components/dashboard/RecentInvoices';
-import ExpensesSection from '@/components/dashboard/ExpensesSection';
-import ReportsSection from '@/components/dashboard/ReportsSection';
-import NewInvoiceModal from '@/components/invoices/NewInvoiceModal';
+import { useState, useEffect } from 'react';
+import { useInvoices } from '@/hooks/useInvoices';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from 'react-toastify';
 
-type InvoiceStatus = 'paid' | 'sent' | 'overdue' | 'draft' | 'cancelled';
+// Composants du tableau de bord
+import SummaryCards from '@/components/dashboard/SummaryCards';
+import RecentInvoices from '@/components/dashboard/RecentInvoices';
+import NewInvoiceModal from '@/components/invoices/NewInvoiceModal';
 
-const statusInfo: Record<InvoiceStatus, { text: string; color: string }> = {
+// Types
+type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+
+const statusInfo = {
   paid: { text: 'Payée', color: 'bg-green-100 text-green-800' },
   sent: { text: 'Envoyée', color: 'bg-blue-100 text-blue-800' },
   overdue: { text: 'En retard', color: 'bg-red-100 text-red-800' },
   draft: { text: 'Brouillon', color: 'bg-gray-100 text-gray-800' },
   cancelled: { text: 'Annulée', color: 'bg-gray-200 text-gray-800' }
-};
-
-import { Invoice } from '../types/invoice';
-
-type InvoiceData = Invoice;
+} as const;
 
 const DashboardPage = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const { user } = useAuth();
   const [isNewInvoiceModalOpen, setIsNewInvoiceModalOpen] = useState(false);
-  const [editingInvoice, setEditingInvoice] = useState<InvoiceData | null>(null);
-  const [invoices, setInvoices] = useState<InvoiceData[]>([]);
+  const [editingInvoice, setEditingInvoice] = useState<any>(null);
+  
+  // Utilisation du hook useInvoices pour gérer les factures
+  const { 
+    invoices, 
+    loading: isLoading, 
+    error: invoiceError,
+    addInvoice,
+    editInvoice,
+    removeInvoice
+  } = useInvoices({ limit: 10 });
 
-  // Charger les factures depuis le localStorage
+  // Gestion des erreurs
   useEffect(() => {
-    try {
-      const savedInvoices = localStorage.getItem('zenfacture_invoices');
-      if (savedInvoices) {
-        const parsedInvoices = JSON.parse(savedInvoices);
-        if (Array.isArray(parsedInvoices)) {
-          setInvoices(parsedInvoices);
-        }
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des factures:', error);
+    if (invoiceError) {
+      console.error('Erreur lors du chargement des factures:', invoiceError);
+      toast.error('Erreur lors du chargement des factures');
     }
-  }, []);
+  }, [invoiceError]);
 
-  const handleSaveInvoice = (invoiceData: Invoice) => {
+  // Vérifier si l'utilisateur est connecté
+  useEffect(() => {
+    if (!user) {
+      console.log('Utilisateur non connecté, redirection vers la page de connexion...');
+      // Redirection gérée par le routeur
+      return;
+    }
+    console.log('Utilisateur connecté:', user.id, user.email);
+  }, [user]);
+
+  // Gestion de la sauvegarde d'une facture
+  const handleSaveInvoice = async (invoiceData: any) => {
     try {
-      // Formater correctement les données de la facture
-      const formattedInvoice: Invoice = {
-        ...invoiceData,
-        // S'assurer que le montant total est correctement calculé
-        total: invoiceData.items?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0,
-        // Formater la date au format YYYY-MM-DD si nécessaire
-        date: invoiceData.date ? new Date(invoiceData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-        dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate).toISOString().split('T')[0] : 
-                new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        // S'assurer que le statut est défini et valide
-        status: (['draft', 'sent', 'paid', 'overdue', 'cancelled'].includes(invoiceData.status || '')
-          ? invoiceData.status
-          : 'draft') as 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled',
-        // Formater les montants des articles
-        items: (invoiceData.items || []).map(item => ({
-          ...item,
-          // S'assurer que les montants sont des nombres
-          quantity: Number(item.quantity) || 0,
-          unitPrice: Number(item.unitPrice) || 0,
-          amount: (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0)
-        }))
-      } as Invoice;
+      if (!user) {
+        throw new Error('Utilisateur non connecté');
+      }
 
-      // Récupérer les factures existantes
-      const savedInvoices = localStorage.getItem('zenfacture_invoices');
-      let invoices: InvoiceData[] = [];
-      
-      try {
-        invoices = savedInvoices ? JSON.parse(savedInvoices) : [];
-        if (!Array.isArray(invoices)) {
-          console.warn('Les données des factures ne sont pas un tableau, réinitialisation...');
-          invoices = [];
-        }
-      } catch (e) {
-        console.error('Erreur lors de la lecture des factures existantes:', e);
-        invoices = [];
-      }
-      
-      let updatedInvoices: InvoiceData[];
-      
       if (editingInvoice && editingInvoice.id) {
-        // Mettre à jour la facture existante
-        updatedInvoices = invoices.map((inv: InvoiceData) => 
-          inv.id === editingInvoice.id ? formattedInvoice : inv
-        );
-        toast.success('Facture mise à jour avec succès !');
+        // Mise à jour d'une facture existante
+        await editInvoice(editingInvoice.id, invoiceData);
+        toast.success('Facture mise à jour avec succès');
       } else {
-        // Créer une nouvelle facture avec un ID unique
-        const newInvoice = {
-          ...formattedInvoice,
-          id: `INV-${Date.now()}`,
-          // S'assurer que la date de création est définie pour les nouvelles factures
-          date: formattedInvoice.date || new Date().toISOString().split('T')[0]
-        };
-        
-        // Ajouter la nouvelle facture
-        updatedInvoices = [...invoices, newInvoice];
-        toast.success('Facture créée avec succès !');
+        // Création d'une nouvelle facture
+        await addInvoice({
+          ...invoiceData,
+          user_id: user.id,
+          status: 'draft',
+          created_at: new Date().toISOString()
+        });
+        toast.success('Facture créée avec succès');
       }
       
-      // Sauvegarder dans le localStorage
-      localStorage.setItem('zenfacture_invoices', JSON.stringify(updatedInvoices));
-      
-      // Déclencher un événement personnalisé pour notifier les autres composants
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'zenfacture_invoices',
-        newValue: JSON.stringify(updatedInvoices)
-      }));
+      // Fermer la modale et réinitialiser l'édition
+      setIsNewInvoiceModalOpen(false);
+      setEditingInvoice(null);
       
     } catch (error) {
       console.error('Erreur lors de la sauvegarde de la facture:', error);
-      toast.error('Une erreur est survenue lors de la sauvegarde de la facture');
-    } finally {
-      setIsNewInvoiceModalOpen(false);
-      setEditingInvoice(null);
+      toast.error('Erreur lors de la sauvegarde de la facture');
     }
   };
 
+  // Gestion de la suppression d'une facture
+  const handleDeleteInvoice = async (id: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette facture ?')) {
+      try {
+        await removeInvoice(id);
+        toast.success('Facture supprimée avec succès');
+      } catch (error) {
+        console.error('Erreur lors de la suppression de la facture:', error);
+        toast.error('Erreur lors de la suppression de la facture');
+      }
+    }
+  };
+  
+  // Afficher un message de chargement initial mais ne pas bloquer
+  // (On affiche le dashboard même en loading pour éviter la boucle infinie)
+
+  // Gestion de l'édition d'une facture
   const handleEditInvoice = (invoice: any) => {
     setEditingInvoice(invoice);
     setIsNewInvoiceModalOpen(true);
   };
 
-  const handleStatusChange = (invoiceId: string, newStatus: Invoice['status']) => {
+  // Gestion du changement de statut d'une facture
+  const handleStatusChange = async (invoiceId: string, newStatus: InvoiceStatus) => {
     try {
-      const updatedInvoices = invoices.map(invoice => 
-        invoice.id === invoiceId ? { ...invoice, status: newStatus } : invoice
-      );
-      
-      // Mettre à jour l'état local
-      setInvoices(updatedInvoices);
-      
-      // Sauvegarder dans le localStorage
-      localStorage.setItem('zenfacture_invoices', JSON.stringify(updatedInvoices));
-      
-      // Notifier les autres composants du changement
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'zenfacture_invoices',
-        newValue: JSON.stringify(updatedInvoices)
-      }));
-      
+      await editInvoice(invoiceId, { status: newStatus });
       toast.success('Statut de la facture mis à jour');
     } catch (error) {
       console.error('Erreur lors de la mise à jour du statut:', error);
@@ -153,231 +117,84 @@ const DashboardPage = () => {
     }
   };
 
-  // Fonction pour exporter les factures au format CSV
-  const handleExportInvoices = useCallback(() => {
-    try {
-      // Récupérer les factures depuis le localStorage
-      const savedInvoices = localStorage.getItem('zenfacture_invoices');
-      const invoices = savedInvoices ? JSON.parse(savedInvoices) : [];
-      
-      if (!invoices || invoices.length === 0) {
-        toast.warning('Aucune facture à exporter');
-        return;
-      }
-
-      // Créer les en-têtes CSV
-      const headers = [
-        'N° Facture',
-        'Client',
-        'Montant (CHF)',
-        'Date',
-        'Échéance',
-        'Statut',
-        'Adresse Client',
-        'Ville',
-        'Code Postal',
-        'Pays'
-      ];
-
-      // Créer les lignes de données
-      const csvRows = [];
-      csvRows.push(headers.join(';'));
-
-      // Ajouter chaque facture comme une ligne CSV
-      for (const invoice of invoices) {
-        const row = [
-          `"${invoice.id}"`,
-          `"${invoice.client}"`,
-          `"${invoice.amount}"`,
-          `"${invoice.date}"`,
-          `"${invoice.dueDate}"`,
-          `"${statusInfo[invoice.status as keyof typeof statusInfo]?.text || invoice.status}"`,
-          `"${invoice.clientAddress || ''}"`,
-          `"${invoice.clientCity || ''}"`,
-          `"${invoice.clientPostalCode || ''}"`,
-          `"${invoice.clientCountry || ''}"`
-        ];
-        csvRows.push(row.join(';'));
-      }
-
-      // Créer le contenu CSV
-      const csvContent = csvRows.join('\n');
-      
-      // Créer un blob avec le contenu CSV (avec BOM pour Excel)
-      const BOM = '\uFEFF';
-      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-      
-      // Créer un lien de téléchargement
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `export-factures-${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      
-      // Déclencher le téléchargement
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast.success(`Export réussi : ${invoices.length} facture(s) exportée(s)`);
-    } catch (error) {
-      console.error('Erreur lors de l\'export des factures:', error);
-      toast.error('Une erreur est survenue lors de l\'export des factures');
+  // Si pas d'utilisateur après 5 secondes, afficher un message d'erreur
+  const [showError, setShowError] = useState(false);
+  useEffect(() => {
+    if (!user) {
+      const timer = setTimeout(() => {
+        setShowError(true);
+      }, 5000);
+      return () => clearTimeout(timer);
     }
-  }, []);
+  }, [user]);
 
-  return (
-    <div className="space-y-8">
-      {/* Dashboard Header */}
-      <div className="md:flex md:items-center md:justify-between">
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Bienvenue sur votre espace de gestion ZenFacture
-          </p>
-          
-          {/* Navigation des onglets */}
-          <div className="mt-4 border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'overview'
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Aperçu
-              </button>
-              <button
-                onClick={() => setActiveTab('invoices')}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'invoices'
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Factures
-              </button>
-              <button
-                onClick={() => setActiveTab('expenses')}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'expenses'
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Dépenses
-              </button>
-              <button
-                onClick={() => setActiveTab('reports')}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'reports'
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Rapports
-              </button>
-            </nav>
+  if (!user) {
+    if (showError) {
+      return (
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center bg-red-50 p-8 rounded-lg max-w-md">
+            <h2 className="text-xl font-bold text-red-800 mb-4">Problème de chargement</h2>
+            <p className="text-red-600 mb-4">
+              Impossible de charger votre session utilisateur. Veuillez rafraîchir la page ou vous reconnecter.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            >
+              Rafraîchir la page
+            </button>
           </div>
         </div>
-        
-        {!['expenses', 'reports'].includes(activeTab) && (
-          <div className="mt-4 flex space-x-3 md:mt-0">
-            <button
-              type="button"
-              onClick={handleExportInvoices}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <FiDownload className="-ml-1 mr-2 h-5 w-5 text-gray-500" />
-              Exporter
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-              onClick={() => setIsNewInvoiceModalOpen(true)}
-            >
-              <FiPlus className="-ml-1 mr-2 h-5 w-5" />
-              Nouvelle facture
-            </button>
+      );
+    }
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement de votre session utilisateur...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">Tableau de bord</h1>
+        <button
+          onClick={() => {
+            setEditingInvoice(null);
+            setIsNewInvoiceModalOpen(true);
+          }}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center"
+        >
+          <span className="mr-2">+</span> Nouvelle facture
+        </button>
+      </div>
+
+      {/* Cartes de synthèse */}
+      <SummaryCards />
+
+      {/* Dernières factures */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Dernières factures</h2>
+        {isLoading && invoices.length === 0 ? (
+          <div className="flex items-center justify-center py-12 bg-white rounded-lg shadow">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            <span className="ml-3 text-gray-600">Chargement des factures...</span>
           </div>
+        ) : (
+          <RecentInvoices
+            invoices={invoices}
+            onEdit={handleEditInvoice}
+            onDelete={handleDeleteInvoice}
+            onStatusChange={handleStatusChange}
+            isLoading={isLoading}
+          />
         )}
       </div>
 
-      {/* Contenu des onglets */}
-      <div className="mt-6">
-        {activeTab === 'overview' && (
-          <>
-            <SummaryCards />
-            
-            <div className="mt-8">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-medium text-gray-900">Rappels et notifications</h2>
-                <button className="text-sm text-primary-600 hover:text-primary-800">
-                  Voir tout
-                </button>
-              </div>
-              <RemindersSection invoices={invoices} />
-            </div>
-            
-            <div className="mt-8">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-medium text-gray-900">Factures récentes</h2>
-                <button 
-                  className="text-sm text-primary-600 hover:text-primary-800"
-                  onClick={() => setActiveTab('invoices')}
-                >
-                  Voir tout
-                </button>
-              </div>
-              <RecentInvoices 
-                invoices={invoices} 
-                onEditInvoice={handleEditInvoice} 
-                onDeleteInvoice={(id) => {
-                  const updatedInvoices = invoices.filter(inv => inv.id !== id);
-                  setInvoices(updatedInvoices);
-                  localStorage.setItem('zenfacture_invoices', JSON.stringify(updatedInvoices));
-                }}
-                onStatusChange={handleStatusChange}
-                searchTerm=""
-                statusFilter="all"
-              />
-            </div>
-          </>
-        )}
-        
-        {activeTab === 'invoices' && (
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Gestion des factures</h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                Visualisez et gérez toutes vos factures
-              </p>
-            </div>
-            <div className="border-t border-gray-200">
-              <RecentInvoices 
-                invoices={invoices} 
-                onEditInvoice={handleEditInvoice} 
-                onDeleteInvoice={(id) => {
-                  const updatedInvoices = invoices.filter(inv => inv.id !== id);
-                  setInvoices(updatedInvoices);
-                  localStorage.setItem('zenfacture_invoices', JSON.stringify(updatedInvoices));
-                }}
-                onStatusChange={handleStatusChange}
-                searchTerm=""
-                statusFilter="all"
-              />
-            </div>
-          </div>
-        )}
-        
-        {activeTab === 'expenses' && <ExpensesSection />}
-        
-        {activeTab === 'reports' && <ReportsSection />}
-      </div>
-
-      {/* New Invoice Modal */}
+      {/* Modale de création/édition de facture */}
       <NewInvoiceModal
         isOpen={isNewInvoiceModalOpen}
         onClose={() => {
@@ -385,7 +202,7 @@ const DashboardPage = () => {
           setEditingInvoice(null);
         }}
         onSave={handleSaveInvoice}
-        initialData={editingInvoice || undefined}
+        initialData={editingInvoice}
       />
     </div>
   );

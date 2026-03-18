@@ -120,7 +120,8 @@ export const FeaturesPage = () => {
             <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 to="/register"
-                className="inline-flex items-center justify-center rounded-md border border-transparent bg-primary px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-primary-700"
+                className="inline-flex items-center justify-center rounded-md border border-primary bg-primary px-6 py-3 text-base font-bold text-white shadow-md hover:bg-primary-700 hover:shadow-lg transition-all duration-200"
+                style={{ backgroundColor: 'rgb(0, 87, 255)' }}
               >
                 Commencer l'essai gratuit
               </Link>

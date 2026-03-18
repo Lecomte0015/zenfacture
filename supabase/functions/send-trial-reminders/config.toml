@@ -1,0 +1,43 @@
+# Configuration for the send-trial-reminders Edge Function
+
+[build]
+  # Command to run during build
+  command = "deno cache --import-map=import_map.json index.ts"
+  # Watch these files for changes during development
+  watch = ["*.ts"]
+  # Environment variables for the build process
+  env = {}
+
+[dev]
+  # Port to run the local development server on
+  port = 8000
+  # Watch these files for changes during development
+  watch = true
+  # Environment variables for local development
+  env = {}
+
+[deploy]
+  # Environment variables for production deployment
+  env = {
+    # Required: Your Supabase project URL
+    SUPABASE_URL = ""
+    # Required: Supabase service role key (keep this secret!)
+    SUPABASE_SERVICE_ROLE_KEY = ""
+    # Required: Your site URL for links in emails
+    SITE_URL = "https://votresite.com"
+    # Email configuration (if not using Supabase built-in email)
+    EMAIL_PROVIDER = "resend" # or "sendgrid", "postmark", etc.
+    EMAIL_API_KEY = ""
+    EMAIL_FROM = "no-reply@votredomaine.com"
+  }
+
+# CORS configuration
+[cors]
+  # Allow requests from these origins
+  allow_origins = ["*"]
+  # Allow these HTTP methods
+  allow_methods = ["GET", "POST", "OPTIONS"]
+  # Allow these headers
+  allow_headers = ["authorization", "content-type"]
+  # Cache preflight responses for this many seconds
+  max_age = 86400

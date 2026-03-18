@@ -20,7 +20,8 @@ ChartJS.register(
 
 interface Invoice {
   id: string;
-  amount: number;
+  amount?: number;  // Ancienne propriété, gardée pour la rétrocompatibilité
+  total: number;    // Nouvelle propriété pour le montant total
   status: string;
   date: string;
   dueDate?: string;
@@ -83,7 +84,7 @@ const ReportsSection: React.FC = () => {
           const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
           
           if (diffDays >= 0 && diffDays < 7) {
-            data[6 - diffDays] += invoice.amount;
+            data[6 - diffDays] += invoice.total || 0;
           }
         }
       });
@@ -104,7 +105,7 @@ const ReportsSection: React.FC = () => {
           
           if (diffDays >= 0 && diffDays < 30) {
             const index = Math.min(Math.floor(diffDays / 5), 5);
-            data[index] += invoice.amount;
+            data[index] += invoice.total || 0;
           }
         }
       });
@@ -123,7 +124,7 @@ const ReportsSection: React.FC = () => {
           const diffMonths = (now.getFullYear() - invoiceDate.getFullYear()) * 12 + now.getMonth() - invoiceDate.getMonth();
           
           if (diffMonths >= 0 && diffMonths < 12) {
-            data[11 - diffMonths] += invoice.amount;
+            data[11 - diffMonths] += invoice.total || 0;
           }
         }
       });
@@ -224,7 +225,7 @@ const ReportsSection: React.FC = () => {
   // Calculer les totaux
   const totalRevenue = invoices
     .filter(invoice => invoice.status === 'paid')
-    .reduce((sum, invoice) => sum + invoice.amount, 0);
+    .reduce((sum, invoice) => sum + (invoice.total || 0), 0);
 
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
 
@@ -242,7 +243,7 @@ const ReportsSection: React.FC = () => {
         ...invoices.map(invoice => [
           'Facture',
           invoice.id,
-          invoice.amount.toFixed(2),
+          (invoice.total || 0).toFixed(2),
           getStatusLabel(invoice.status),
           new Date(invoice.date).toLocaleDateString('fr-CH'),
           invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString('fr-CH') : 'N/A'
@@ -491,7 +492,7 @@ const ReportsSection: React.FC = () => {
                 <p className="text-sm font-medium text-gray-500 truncate">Factures impayées</p>
                 <div className="flex items-baseline flex-wrap">
                   <p className="text-lg sm:text-xl font-semibold text-gray-900 mr-1">
-                    {invoices.filter(i => ['sent', 'overdue'].includes(i.status)).length}
+                    {invoices.filter(i => ['sent', 'overdue', 'pending'].includes(i.status)).length}
                   </p>
                   <span className="text-sm text-gray-500 ml-1">
                     sur {invoices.length} factures
@@ -577,7 +578,10 @@ const ReportsSection: React.FC = () => {
               ) : (
                 // Afficher uniquement les factures pour le moment
                 [...invoices]
+                  // Trier par date décroissante
                   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  // Prendre les 5 premières factures (tous statuts confondus sauf brouillon)
+                  .filter(invoice => invoice.status !== 'draft')
                   .slice(0, 5)
                   .map((invoice) => (
                     <tr key={`invoice-${invoice.id}`} className="hover:bg-gray-50">
@@ -605,7 +609,7 @@ const ReportsSection: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                        {(invoice?.amount || 0).toFixed(2)} CHF
+                        {typeof invoice.total === 'number' ? invoice.total.toFixed(2) : '0.00'} CHF
                       </td>
                     </tr>
                   ))

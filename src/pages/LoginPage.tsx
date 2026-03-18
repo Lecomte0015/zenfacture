@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -8,16 +9,18 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     try {
       await login(email, password);
-      navigate('/dashboard');
+      // Ne pas naviguer manuellement - laisse PublicOnlyRoute rediriger automatiquement
+      // La redirection se fera automatiquement quand isAuthenticated deviendra true
     } catch (err) {
-      setError('Échec de la connexion. Veuillez vérifier vos identifiants.');
+      setError(t('auth.loginError'));
       console.error('Login error:', err);
     }
   };
@@ -26,12 +29,12 @@ const LoginPage = () => {
     <div className="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Connexion à votre compte
+          {t('auth.loginTitle')}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Ou{' '}
+          {t('auth.noAccount')}{' '}
           <Link to="/register" className="font-medium text-primary hover:text-primary-700">
-            créez un nouveau compte
+            {t('auth.registerLink')}
           </Link>
         </p>
       </div>
@@ -66,7 +69,7 @@ const LoginPage = () => {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Adresse email
+                {t('auth.email')}
               </label>
               <div className="mt-1">
                 <input
@@ -84,7 +87,7 @@ const LoginPage = () => {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Mot de passe
+                {t('auth.password')}
               </label>
               <div className="mt-1">
                 <input
@@ -114,18 +117,18 @@ const LoginPage = () => {
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
-                  Mot de passe oublié ?
-                </a>
+                <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
+                  {t('auth.forgotPassword')}
+                </Link>
               </div>
             </div>
 
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
-                Se connecter
+                {t('auth.loginButton')}
               </button>
             </div>
           </form>

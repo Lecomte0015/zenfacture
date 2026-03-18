@@ -2,6 +2,16 @@ import { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { FiX, FiPlus, FiMinus } from 'react-icons/fi';
 import { Invoice, InvoiceItem } from '../../types/invoice';
+import { z } from 'zod';
+
+// ─── Schema Zod (champs principaux) ──────────────────────────────────────────
+
+export const newInvoiceSchema = z.object({
+  client: z.string().min(1, 'Nom du client requis'),
+  date: z.string().min(1, 'Date requise'),
+  dueDate: z.string().min(1, "Date d'échéance requise"),
+  clientEmail: z.string().email('Email client invalide').optional().or(z.literal('')),
+});
 
 type FormData = Omit<Invoice, 'id' | 'items' | 'total' | 'createdAt' | 'updatedAt'>;
 
@@ -125,7 +135,19 @@ const NewInvoiceModal = ({ isOpen, onClose, onSave, initialData }: NewInvoiceMod
   // Soumission du formulaire
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Validation Zod des champs principaux
+    const validation = newInvoiceSchema.safeParse({
+      client: formData.client,
+      date: formData.date,
+      dueDate: formData.dueDate,
+      clientEmail: formData.clientEmail,
+    });
+    if (!validation.success) {
+      alert(validation.error.errors[0].message);
+      return;
+    }
+
     // Créer une facture complète avec les données du formulaire
     const invoice: Invoice = {
       ...formData,
