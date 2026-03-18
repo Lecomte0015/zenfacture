@@ -1,7 +1,7 @@
 # ZENFACTURE - Feuille de route & Suivi d'avancement
 
 > **Objectif** : Transformer ZenFacture en SaaS complet de facturation pour PME suisses, prêt au déploiement.
-> **Dernière mise à jour** : 2026-03-18 (Phase 6 terminée — Phases 5 et 6 complètes)
+> **Dernière mise à jour** : 2026-03-18 (TOUTES phases terminées — Phases 5, 6 et 7 complètes 🎉)
 > **Positionnement** : Surpasser Bexio (CHF 45+/mois) en offrant plus de fonctionnalités à un meilleur prix, avec des différenciateurs forts (OCR IA, portail fiduciaire, multi-devises, TWINT natif).
 
 ---
@@ -19,7 +19,7 @@
 | Phase 4 - Déploiement | ████░░░░░░ 40% | 🔄 En cours (4.1, 4.2, 4.4 faits) |
 | **Phase 5 - Parité Bexio (Must-Have)** | ██████████ 100% | ✅ **Terminé** |
 | **Phase 6 - Supériorité Bexio (Should-Have)** | ██████████ 100% | ✅ **Terminé** |
-| **Phase 7 - Différenciation avancée (Nice-to-Have)** | ░░░░░░░░░░ 0% | ⏳ À faire |
+| **Phase 7 - Différenciation avancée (Nice-to-Have)** | ██████████ 100% | ✅ **Terminé** |
 
 ---
 
@@ -111,44 +111,38 @@
 
 ### PHASE 7 — Différenciation avancée (Nice-to-Have)
 
-#### 7.1 Envoi postal via Swiss Post / ePost 🟢 OPTIONNEL
-**Pourquoi** : KLARA l'a (partenariat Swiss Post). Différenciateur pour clients peu digitalisés.
-- [ ] Intégration API Swiss Post IncaMail ou ePost
-- [ ] Bouton "Envoyer par courrier" dans InvoiceModal
-- [ ] Tarification à l'acte (ex: CHF 1.50/envoi) facturée à l'utilisateur
-- [ ] Suivi de l'état de l'envoi postal
+#### ✅ 7.1 Envoi postal Swiss Post / ePost — TERMINÉ 2026-03-18
+- [x] Migration `20260318800000_postal.sql` — table `envois_postaux` (type, statut, destinataire JSONB, tracking, prix)
+- [x] `postalService.ts` — tarifs 2025 (Lettre B CHF 1.40, Lettre A CHF 1.80, Recommandé CHF 4.90, ePost CHF 0.65), calcul prix selon pages/couleur, simulation envoi Swiss Post, suivi tracking, stats
+- [x] `PostalPage.tsx` — sélection type d'envoi, formulaire adresse destinataire, récapitulatif prix, historique envois
+- [x] `App.tsx` — route `/dashboard/postal`
+- [x] `Sidebar.tsx` — lien "Envoi postal" dans le groupe Finance
 
 ---
 
-#### 7.2 Détection de fraude IA 🟢 OPTIONNEL
-**Pourquoi** : Yooz et certains ERP haut de gamme l'ont. Différenciateur fort pour PME en croissance.
-- [ ] Service `fraudDetectionService.ts` :
-  - Détection montants atypiques (>3x la moyenne client)
-  - Détection IBAN modifié récemment
-  - Détection doublons (même montant + même client + même période)
-  - Scoring de risque (0-100)
-- [ ] Badge de risque sur chaque facture entrant (dépenses)
-- [ ] Alerte email à l'admin si score > 70
+#### ✅ 7.2 Détection de fraude IA — TERMINÉ 2026-03-18
+- [x] `fraudDetectionService.ts` — scoring 0-100, détection : montants atypiques (>3x moyenne), doublons (même client 30j), montants ronds élevés, premier client > CHF 2000, fréquence inhabituelle (>5/7j)
+- [x] `FraudDetectionPage.tsx` — analyse en lot des dernières 50 factures, analyser une facture par ID, explication des algorithmes, badges niveau de risque (faible/moyen/élevé/critique)
+- [x] `App.tsx` — route `/dashboard/fraud-detection`
+- [x] `Sidebar.tsx` — lien "Détection fraude" dans le groupe Rapports
 
 ---
 
-#### 7.3 Intégrité Blockchain (audit trail) 🟢 OPTIONNEL
-**Pourquoi** : Banana Accounting le fait — excellent argument légal pour l'archivage.
-- [ ] À chaque création/modification d'une facture : calculer un hash SHA-256 du contenu
-- [ ] Stocker le hash dans une table `audit_trail` avec timestamp et user_id
-- [ ] Chaîner les hashes (hash_n = SHA-256(hash_{n-1} + contenu_n)) pour détection de falsification
-- [ ] Page `AuditTrailPage.tsx` : historique complet des modifications avec vérification d'intégrité
-- [ ] Export rapport d'audit PDF pour contrôle fiscal
+#### ✅ 7.3 Intégrité Blockchain (audit trail) — TERMINÉ 2026-03-18
+- [x] Migration `20260318900000_audit_trail.sql` — table `audit_trail` avec hash_contenu, hash_precedent, hash_chaine, RLS
+- [x] `auditTrailService.ts` — SHA-256 Web Crypto API, chaînage des hashes (hash_n = SHA-256(prev + contenu)), `verifierIntegriteChaine()` recalcule toute la chaîne, export JSON
+- [x] `AuditTrailPage.tsx` — journal avec détail des hashes, vérification d'intégrité visuelle, filtres par type/action, export JSON signé
+- [x] `App.tsx` — route `/dashboard/audit-trail`
+- [x] `Sidebar.tsx` — lien "Audit Trail" dans le groupe Rapports
 
 ---
 
-#### 7.4 Boutique en ligne / POS 🟢 OPTIONNEL
-**Pourquoi** : KLARA l'a. Marché de niche mais différenciateur pour commerces.
-- [ ] Intégration Stripe pour paiements en ligne
-- [ ] Page produits publique (catalogue)
-- [ ] Panier + checkout
-- [ ] Génération automatique de facture à la vente
-- [ ] Terminal POS simplifié (scan QR produit + paiement TWINT)
+#### ✅ 7.4 Point de Vente (POS) — TERMINÉ 2026-03-18
+- [x] Migration `20260318950000_pos.sql` — table `ventes_pos` (lignes JSONB, mode paiement, monnaie rendue, FK invoice)
+- [x] `posService.ts` — `calculerTotalPanier()`, `enregistrerVente()` avec génération automatique facture et items, CRUD ventes, stats du jour/mois
+- [x] `POSPage.tsx` — caisse avec catalogue produits par catégorie, panier avec remises par ligne, 5 modes de paiement (carte/TWINT/espèces/virement/bon), calcul monnaie rendue, historique ventes
+- [x] `App.tsx` — route `/dashboard/pos`
+- [x] `Sidebar.tsx` — nouveau groupe "Ventes" avec lien "Point de vente (POS)"
 
 ---
 

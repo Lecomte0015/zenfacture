@@ -7,6 +7,7 @@ import {
   RefreshCw, CreditCard, Upload, Building2, Calculator,
   BookOpen, Zap, Shield, LogOut, Settings, Archive,
   Timer, Wallet, Send, Boxes, PieChart, Layers,
+  Mail, ShoppingCart, Link2, AlertOctagon,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -71,6 +72,7 @@ const navGroups: NavGroup[] = [
       { name: 'Import', href: '/dashboard/import', icon: Upload },
       { name: 'Archives (nLPD)', href: '/dashboard/archive', icon: Archive },
       { name: 'Estimation fiscale', href: '/dashboard/tax-estimation', icon: PieChart },
+      { name: 'Envoi postal', href: '/dashboard/postal', icon: Mail },
     ],
   },
   {
@@ -79,6 +81,16 @@ const navGroups: NavGroup[] = [
     emoji: '📊',
     items: [
       { name: 'Rapports', href: '/dashboard/reports', icon: BarChart2 },
+      { name: 'Détection fraude', href: '/dashboard/fraud-detection', icon: AlertOctagon },
+      { name: 'Audit Trail', href: '/dashboard/audit-trail', icon: Link2 },
+    ],
+  },
+  {
+    id: 'ventes',
+    label: 'Ventes',
+    emoji: '🛒',
+    items: [
+      { name: 'Point de vente (POS)', href: '/dashboard/pos', icon: ShoppingCart },
     ],
   },
   {
