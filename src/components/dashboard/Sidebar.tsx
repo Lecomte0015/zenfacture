@@ -7,7 +7,7 @@ import {
   RefreshCw, CreditCard, Upload, Building2, Calculator,
   BookOpen, Zap, Shield, LogOut, Settings, Archive,
   Timer, Wallet, Send, Boxes, PieChart, Layers,
-  Mail, ShoppingCart, Link2, AlertOctagon,
+  Mail, ShoppingCart, Link2, AlertOctagon, Globe,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -91,6 +91,7 @@ const navGroups: NavGroup[] = [
     emoji: '🛒',
     items: [
       { name: 'Point de vente (POS)', href: '/dashboard/pos', icon: ShoppingCart },
+      { name: 'Boutiques en ligne', href: '/dashboard/boutique', icon: Globe },
     ],
   },
   {

@@ -64,6 +64,7 @@ const PostalPage = React.lazy(() => import('@/pages/dashboard/PostalPage'));
 const FraudDetectionPage = React.lazy(() => import('@/pages/dashboard/FraudDetectionPage'));
 const AuditTrailPage = React.lazy(() => import('@/pages/dashboard/AuditTrailPage'));
 const POSPage = React.lazy(() => import('@/pages/dashboard/POSPage'));
+const BoutiquePage = React.lazy(() => import('@/pages/dashboard/BoutiquePage'));
 // Phase 3 pages
 const BankingPage = React.lazy(() => import('@/pages/dashboard/BankingPage'));
 const ComptabilitePage = React.lazy(() => import('@/pages/dashboard/ComptabilitePage'));
@@ -205,6 +206,7 @@ function App() {
         <Route path="/dashboard/fraud-detection" element={<LazyLoad><FraudDetectionPage /></LazyLoad>} />
         <Route path="/dashboard/audit-trail" element={<LazyLoad><AuditTrailPage /></LazyLoad>} />
         <Route path="/dashboard/pos" element={<LazyLoad><POSPage /></LazyLoad>} />
+        <Route path="/dashboard/boutique" element={<LazyLoad><BoutiquePage /></LazyLoad>} />
         <Route path="/dashboard/banking" element={<LazyLoad><BankingPage /></LazyLoad>} />
         <Route path="/dashboard/comptabilite" element={<LazyLoad><ComptabilitePage /></LazyLoad>} />
         <Route path="/dashboard/tva" element={<LazyLoad><TvaPage /></LazyLoad>} />

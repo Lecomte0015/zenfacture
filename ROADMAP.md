@@ -1,7 +1,7 @@
 # ZENFACTURE - Feuille de route & Suivi d'avancement
 
 > **Objectif** : Transformer ZenFacture en SaaS complet de facturation pour PME suisses, prêt au déploiement.
-> **Dernière mise à jour** : 2026-03-18 (TOUTES phases terminées — Phases 5, 6 et 7 complètes 🎉)
+> **Dernière mise à jour** : 2026-03-18 (Phase 7.5 ajoutée — Connecteur boutiques en ligne Shopify/WooCommerce/PrestaShop/Magento ✅)
 > **Positionnement** : Surpasser Bexio (CHF 45+/mois) en offrant plus de fonctionnalités à un meilleur prix, avec des différenciateurs forts (OCR IA, portail fiduciaire, multi-devises, TWINT natif).
 
 ---
@@ -143,6 +143,17 @@
 - [x] `POSPage.tsx` — caisse avec catalogue produits par catégorie, panier avec remises par ligne, 5 modes de paiement (carte/TWINT/espèces/virement/bon), calcul monnaie rendue, historique ventes
 - [x] `App.tsx` — route `/dashboard/pos`
 - [x] `Sidebar.tsx` — nouveau groupe "Ventes" avec lien "Point de vente (POS)"
+
+---
+
+#### ✅ 7.5 Connecteur Boutiques en ligne (Shopify / WooCommerce / PrestaShop / Magento) — TERMINÉ 2026-03-18
+- [x] Migration `20260318960000_boutique_enligne.sql` — tables `boutique_connexions` + `boutique_commandes` avec RLS, index, trigger
+- [x] `boutiqueService.ts` — `PLATEFORMES_CONFIG` (5 plateformes avec logo/champs/fonctionnalités), `creerConnexion()`, `testerConnexion()` (validation API), `synchroniserCommandes()` (import commandes + auto-génération factures + items), `getStatsBoutiques()`, `getBoutiqueCommandes()`
+- [x] `BoutiquePage.tsx` — sélecteur plateforme visuel, modal configuration avec champs dynamiques par plateforme, test de connexion, synchronisation manuelle avec résumé, liste commandes synchronisées avec lignes détaillées, stats (boutiques actives, CA synchronisé, factures générées)
+- [x] Plateformes supportées : **Shopify** (access token), **WooCommerce** (consumer key/secret), **PrestaShop** (webservices), **Magento 2** (integration token), **Custom API** (bearer token)
+- [x] Options de sync : génération factures automatique, synchronisation stock bidirectionnelle, filtre par statut commande (any/pending/paid/fulfilled)
+- [x] `App.tsx` — route `/dashboard/boutique`
+- [x] `Sidebar.tsx` — lien "Boutiques en ligne" (icône Globe) dans le groupe Ventes
 
 ---
 
@@ -683,6 +694,13 @@ src/
 - 📋 **Phase 7 planifiée** : envoi postal Swiss Post, fraude IA, blockchain audit, boutique/POS
 - 📋 **Tableau différenciateurs** : mise en évidence des avantages ZenFacture vs Bexio déjà en place
 - ℹ️ Apps mobiles natives et Stripe abonnements : reportés après les phases 5-7
+
+### 2026-03-18 - Phase 7.5 — Connecteur boutiques en ligne ✅
+- ✅ **Migration SQL** : tables `boutique_connexions` + `boutique_commandes` avec RLS, index unique, trigger updated_at
+- ✅ **boutiqueService.ts** : connecteurs Shopify, WooCommerce, PrestaShop, Magento 2, Custom API — test de connexion, synchro commandes → factures auto, stats
+- ✅ **BoutiquePage.tsx** : sélecteur plateformes visuel, modal configuration dynamique par plateforme, test connexion, synchro manuelle + résumé, liste commandes avec lignes détaillées, 4 KPI (boutiques actives / commandes sync / CA / factures)
+- ✅ **Sidebar.tsx** : lien "Boutiques en ligne" (Globe) dans le groupe Ventes
+- ✅ **App.tsx** : route `/dashboard/boutique`
 
 ### 2026-03-18 - Priorité Moyenne & Basse — Complétées ✅
 - ✅ **InvoiceModal.tsx** : Statut facture mis à `sent` après envoi email réussi + rafraîchissement liste parente
