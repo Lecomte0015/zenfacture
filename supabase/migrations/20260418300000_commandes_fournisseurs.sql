@@ -2,7 +2,7 @@
 
 CREATE TABLE IF NOT EXISTS fournisseurs (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id  UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  organisation_id  UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
   numero           TEXT,
   nom              TEXT NOT NULL,
   contact          TEXT,
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS fournisseurs (
 
 CREATE TABLE IF NOT EXISTS commandes_fournisseurs (
   id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id        UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  organisation_id        UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
   fournisseur_id         UUID NOT NULL REFERENCES fournisseurs(id) ON DELETE RESTRICT,
   numero                 TEXT NOT NULL,
   statut                 TEXT NOT NULL DEFAULT 'brouillon'
@@ -81,15 +81,15 @@ ALTER TABLE commandes_fournisseurs        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE commandes_fournisseurs_lignes ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "fournisseurs_org" ON fournisseurs
-  FOR ALL USING (organisation_id IN (SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()));
+  FOR ALL USING (organisation_id IN (SELECT public.get_user_org_ids()));
 
 CREATE POLICY "commandes_fournisseurs_org" ON commandes_fournisseurs
-  FOR ALL USING (organisation_id IN (SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()));
+  FOR ALL USING (organisation_id IN (SELECT public.get_user_org_ids()));
 
 CREATE POLICY "commandes_fournisseurs_lignes_org" ON commandes_fournisseurs_lignes
   FOR ALL USING (
     commande_id IN (
       SELECT id FROM commandes_fournisseurs
-      WHERE organisation_id IN (SELECT organisation_id FROM organization_users WHERE user_id = auth.uid())
+      WHERE organisation_id IN (SELECT public.get_user_org_ids())
     )
   );

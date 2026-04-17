@@ -4,7 +4,7 @@
 -- Table des articles en stock (liés aux produits existants)
 CREATE TABLE IF NOT EXISTS stock_articles (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  organisation_id UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
   produit_id      UUID REFERENCES produits(id) ON DELETE SET NULL,
   nom             TEXT NOT NULL,
   reference       TEXT,
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS stock_articles (
 -- Table des mouvements de stock
 CREATE TABLE IF NOT EXISTS stock_mouvements (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  organisation_id UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
   article_id      UUID NOT NULL REFERENCES stock_articles(id) ON DELETE CASCADE,
   type            TEXT NOT NULL CHECK (type IN ('entree','sortie','ajustement','transfert','retour')),
   quantite        NUMERIC(12,3) NOT NULL,
@@ -50,16 +50,12 @@ ALTER TABLE stock_mouvements ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "stock_articles_org" ON stock_articles
   FOR ALL USING (
-    organisation_id IN (
-      SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()
-    )
+    organisation_id IN (SELECT public.get_user_org_ids())
   );
 
 CREATE POLICY "stock_mouvements_org" ON stock_mouvements
   FOR ALL USING (
-    organisation_id IN (
-      SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()
-    )
+    organisation_id IN (SELECT public.get_user_org_ids())
   );
 
 -- Trigger updated_at

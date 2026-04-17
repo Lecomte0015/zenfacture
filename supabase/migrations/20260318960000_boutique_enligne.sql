@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS boutique_connexions (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id   UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  organisation_id   UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
   nom               TEXT NOT NULL,
   plateforme        TEXT NOT NULL CHECK (plateforme IN ('shopify','woocommerce','prestashop','magento','custom')),
   url_boutique      TEXT NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS boutique_connexions (
 
 CREATE TABLE IF NOT EXISTS boutique_commandes (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id     UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  organisation_id     UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
   connexion_id        UUID NOT NULL REFERENCES boutique_connexions(id) ON DELETE CASCADE,
   commande_externe_id TEXT NOT NULL,
   numero_commande     TEXT NOT NULL,
@@ -65,14 +65,10 @@ ALTER TABLE boutique_commandes ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "boutique_connexions_org" ON boutique_connexions
   FOR ALL USING (
-    organisation_id IN (
-      SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()
-    )
+    organisation_id IN (SELECT public.get_user_org_ids())
   );
 
 CREATE POLICY "boutique_commandes_org" ON boutique_commandes
   FOR ALL USING (
-    organisation_id IN (
-      SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()
-    )
+    organisation_id IN (SELECT public.get_user_org_ids())
   );

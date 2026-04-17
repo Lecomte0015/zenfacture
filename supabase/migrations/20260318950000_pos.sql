@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS ventes_pos (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id   UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  organisation_id   UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
   numero            TEXT NOT NULL,
   lignes            JSONB NOT NULL DEFAULT '[]',
   total_ht          NUMERIC(12,2) NOT NULL DEFAULT 0,
@@ -25,7 +25,5 @@ ALTER TABLE ventes_pos ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "ventes_pos_org" ON ventes_pos
   FOR ALL USING (
-    organisation_id IN (
-      SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()
-    )
+    organisation_id IN (SELECT public.get_user_org_ids())
   );

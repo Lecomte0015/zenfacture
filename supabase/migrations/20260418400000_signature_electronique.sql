@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS signature_demandes (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id       UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  organisation_id       UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
   document_type         TEXT NOT NULL CHECK (document_type IN ('devis','facture','contrat')),
   document_id           UUID NOT NULL,
   document_titre        TEXT NOT NULL,
@@ -35,9 +35,7 @@ ALTER TABLE signature_demandes ENABLE ROW LEVEL SECURITY;
 -- Les membres de l'organisation gèrent leurs demandes
 CREATE POLICY "signature_demandes_org" ON signature_demandes
   FOR ALL USING (
-    organisation_id IN (
-      SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()
-    )
+    organisation_id IN (SELECT public.get_user_org_ids())
   );
 
 -- Accès public en lecture via token (page de signature publique)

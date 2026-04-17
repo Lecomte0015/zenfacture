@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS portail_client_liens (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id  UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  organisation_id  UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
   client_email     TEXT NOT NULL,
   client_nom       TEXT,
   token            TEXT NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex'),
@@ -24,9 +24,7 @@ ALTER TABLE portail_client_liens ENABLE ROW LEVEL SECURITY;
 -- Seuls les membres de l'organisation peuvent gérer les liens
 CREATE POLICY "portail_liens_org" ON portail_client_liens
   FOR ALL USING (
-    organisation_id IN (
-      SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()
-    )
+    organisation_id IN (SELECT public.get_user_org_ids())
   );
 
 -- Accès public en SELECT via token (pour la page publique)

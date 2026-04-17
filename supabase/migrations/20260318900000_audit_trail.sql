@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS audit_trail (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  organisation_id UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
   document_type   TEXT NOT NULL CHECK (document_type IN ('invoice','expense','devis','avoir','client','produit','organisation')),
   document_id     UUID NOT NULL,
   action          TEXT NOT NULL CHECK (action IN ('create','update','delete','view','send','archive')),
@@ -29,15 +29,11 @@ ALTER TABLE audit_trail ENABLE ROW LEVEL SECURITY;
 -- Lecture : membres de l'organisation peuvent lire
 CREATE POLICY "audit_trail_read" ON audit_trail
   FOR SELECT USING (
-    organisation_id IN (
-      SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()
-    )
+    organisation_id IN (SELECT public.get_user_org_ids())
   );
 
 -- Insertion : tout utilisateur authentifié membre de l'org peut insérer
 CREATE POLICY "audit_trail_insert" ON audit_trail
   FOR INSERT WITH CHECK (
-    organisation_id IN (
-      SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()
-    )
+    organisation_id IN (SELECT public.get_user_org_ids())
   );

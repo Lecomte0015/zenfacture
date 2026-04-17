@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS crm_opportunites (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id  UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  organisation_id  UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
   nom              TEXT NOT NULL,
   client_id        UUID,  -- Référence optionnelle à la table clients
   client_nom       TEXT,
@@ -50,17 +50,13 @@ ALTER TABLE crm_activites    ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "crm_opportunites_org" ON crm_opportunites
   FOR ALL USING (
-    organisation_id IN (
-      SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()
-    )
+    organisation_id IN (SELECT public.get_user_org_ids())
   );
 
 CREATE POLICY "crm_activites_org" ON crm_activites
   FOR ALL USING (
     opportunite_id IN (
       SELECT id FROM crm_opportunites
-      WHERE organisation_id IN (
-        SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()
-      )
+      WHERE organisation_id IN (SELECT public.get_user_org_ids())
     )
   );

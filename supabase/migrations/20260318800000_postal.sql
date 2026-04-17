@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS envois_postaux (
   id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id    UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  organisation_id    UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
   invoice_id         UUID REFERENCES invoices(id) ON DELETE SET NULL,
   type               TEXT NOT NULL CHECK (type IN ('lettre_a','lettre_b','recommande','epost')),
   statut             TEXT NOT NULL DEFAULT 'en_preparation' CHECK (statut IN ('en_preparation','envoye','en_transit','distribue','echec')),
@@ -26,9 +26,7 @@ ALTER TABLE envois_postaux ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "envois_postaux_org" ON envois_postaux
   FOR ALL USING (
-    organisation_id IN (
-      SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()
-    )
+    organisation_id IN (SELECT public.get_user_org_ids())
   );
 
 CREATE TRIGGER trg_envois_postaux_updated_at

@@ -53,11 +53,7 @@ CREATE TABLE IF NOT EXISTS public.archives (
 ALTER TABLE public.archives ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "archives_org" ON public.archives
   FOR ALL USING (
-    organisation_id IN (
-      SELECT organisation_id FROM public.organization_users WHERE user_id = auth.uid()
-      UNION
-      SELECT id FROM public.organisations WHERE user_id = auth.uid()
-    )
+    organisation_id IN (SELECT public.get_user_org_ids())
   );
 
 -- Index pour recherche rapide

@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS marques (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  organisation_id UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
   nom             TEXT NOT NULL,
   slug            TEXT NOT NULL,
   description     TEXT,
@@ -40,9 +40,7 @@ ALTER TABLE marques ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "marques_org" ON marques
   FOR ALL USING (
-    organisation_id IN (
-      SELECT organisation_id FROM organization_users WHERE user_id = auth.uid()
-    )
+    organisation_id IN (SELECT public.get_user_org_ids())
   );
 
 -- Trigger updated_at

@@ -31,10 +31,7 @@ CREATE TABLE IF NOT EXISTS public.employes (
 ALTER TABLE public.employes ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "employes_org" ON public.employes FOR ALL USING (
-  organisation_id IN (
-    SELECT organisation_id FROM public.organization_users WHERE user_id = auth.uid()
-    UNION SELECT id FROM public.organisations WHERE user_id = auth.uid()
-  )
+  organisation_id IN (SELECT public.get_user_org_ids())
 );
 
 CREATE TABLE IF NOT EXISTS public.fiches_salaire (
@@ -76,10 +73,7 @@ CREATE TABLE IF NOT EXISTS public.fiches_salaire (
 ALTER TABLE public.fiches_salaire ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "fiches_org" ON public.fiches_salaire FOR ALL USING (
-  organisation_id IN (
-    SELECT organisation_id FROM public.organization_users WHERE user_id = auth.uid()
-    UNION SELECT id FROM public.organisations WHERE user_id = auth.uid()
-  )
+  organisation_id IN (SELECT public.get_user_org_ids())
 );
 
 CREATE INDEX IF NOT EXISTS idx_employes_org ON public.employes(organisation_id);

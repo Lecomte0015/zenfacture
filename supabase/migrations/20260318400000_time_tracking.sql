@@ -18,10 +18,7 @@ CREATE TABLE IF NOT EXISTS public.projets (
 );
 ALTER TABLE public.projets ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "projets_org" ON public.projets FOR ALL USING (
-  organisation_id IN (
-    SELECT organisation_id FROM public.organization_users WHERE user_id = auth.uid()
-    UNION SELECT id FROM public.organisations WHERE user_id = auth.uid()
-  )
+  organisation_id IN (SELECT public.get_user_org_ids())
 );
 
 CREATE TABLE IF NOT EXISTS public.sessions_temps (
@@ -39,10 +36,7 @@ CREATE TABLE IF NOT EXISTS public.sessions_temps (
 );
 ALTER TABLE public.sessions_temps ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "sessions_user" ON public.sessions_temps FOR ALL USING (
-  projet_id IN (SELECT id FROM public.projets WHERE organisation_id IN (
-    SELECT organisation_id FROM public.organization_users WHERE user_id = auth.uid()
-    UNION SELECT id FROM public.organisations WHERE user_id = auth.uid()
-  ))
+  projet_id IN (SELECT id FROM public.projets WHERE organisation_id IN (SELECT public.get_user_org_ids()))
 );
 
 CREATE TABLE IF NOT EXISTS public.taches (
@@ -60,10 +54,7 @@ CREATE TABLE IF NOT EXISTS public.taches (
 );
 ALTER TABLE public.taches ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "taches_projet" ON public.taches FOR ALL USING (
-  projet_id IN (SELECT id FROM public.projets WHERE organisation_id IN (
-    SELECT organisation_id FROM public.organization_users WHERE user_id = auth.uid()
-    UNION SELECT id FROM public.organisations WHERE user_id = auth.uid()
-  ))
+  projet_id IN (SELECT id FROM public.projets WHERE organisation_id IN (SELECT public.get_user_org_ids()))
 );
 
 -- Index
