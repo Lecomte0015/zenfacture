@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS boutique_commandes (
   total_tva           NUMERIC(12,2) NOT NULL DEFAULT 0,
   total_ttc           NUMERIC(12,2) NOT NULL DEFAULT 0,
   devise              TEXT NOT NULL DEFAULT 'CHF',
-  invoice_id          UUID REFERENCES invoices(id) ON DELETE SET NULL,
+  invoice_id          UUID REFERENCES factures(id) ON DELETE SET NULL,
   synchro_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   commande_at         TIMESTAMPTZ,
   created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()

@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS ventes_pos (
   monnaie_rendue    NUMERIC(12,2),
   client_id         UUID REFERENCES clients(id) ON DELETE SET NULL,
   client_nom        TEXT,
-  invoice_id        UUID REFERENCES invoices(id) ON DELETE SET NULL,
+  invoice_id        UUID REFERENCES factures(id) ON DELETE SET NULL,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

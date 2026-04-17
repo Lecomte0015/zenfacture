@@ -26,14 +26,14 @@ CREATE TABLE IF NOT EXISTS marques (
 );
 
 -- Colonne marque_id sur les factures
-ALTER TABLE invoices ADD COLUMN IF NOT EXISTS marque_id UUID REFERENCES marques(id) ON DELETE SET NULL;
+ALTER TABLE factures ADD COLUMN IF NOT EXISTS marque_id UUID REFERENCES marques(id) ON DELETE SET NULL;
 
 -- Colonne marque_id sur les devis
 ALTER TABLE devis ADD COLUMN IF NOT EXISTS marque_id UUID REFERENCES marques(id) ON DELETE SET NULL;
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_marques_org ON marques(organisation_id);
-CREATE INDEX IF NOT EXISTS idx_invoices_marque ON invoices(marque_id);
+CREATE INDEX IF NOT EXISTS idx_factures_marque ON factures(marque_id);
 
 -- RLS
 ALTER TABLE marques ENABLE ROW LEVEL SECURITY;

@@ -1,14 +1,14 @@
 -- Phase 5.2 : Archivage 10 ans conforme nLPD
 -- Ajouter les colonnes d'archivage sur les tables principales
 
--- Sur invoices
-ALTER TABLE public.invoices
+-- Sur factures (anciennement invoices)
+ALTER TABLE public.factures
   ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS archive_expiry_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS archive_hash TEXT;
 
--- Sur expenses
-ALTER TABLE public.expenses
+-- Sur depenses (anciennement expenses)
+ALTER TABLE public.depenses
   ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS archive_expiry_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS archive_hash TEXT;
@@ -80,18 +80,18 @@ BEGIN
   IF p_document_type = 'invoice' THEN
     SELECT invoice_number, date::DATE, total
     INTO v_doc_number, v_doc_date, v_montant
-    FROM public.invoices WHERE id = p_document_id;
+    FROM public.factures WHERE id = p_document_id;
 
-    UPDATE public.invoices
+    UPDATE public.factures
     SET archived_at = NOW(), archive_expiry_at = v_expiry, archive_hash = p_hash
     WHERE id = p_document_id;
 
   ELSIF p_document_type = 'expense' THEN
     SELECT description, date::DATE, amount
     INTO v_doc_number, v_doc_date, v_montant
-    FROM public.expenses WHERE id = p_document_id;
+    FROM public.depenses WHERE id = p_document_id;
 
-    UPDATE public.expenses
+    UPDATE public.depenses
     SET archived_at = NOW(), archive_expiry_at = v_expiry, archive_hash = p_hash
     WHERE id = p_document_id;
   END IF;
