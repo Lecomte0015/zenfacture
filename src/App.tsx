@@ -65,6 +65,14 @@ const FraudDetectionPage = React.lazy(() => import('@/pages/dashboard/FraudDetec
 const AuditTrailPage = React.lazy(() => import('@/pages/dashboard/AuditTrailPage'));
 const POSPage = React.lazy(() => import('@/pages/dashboard/POSPage'));
 const BoutiquePage = React.lazy(() => import('@/pages/dashboard/BoutiquePage'));
+// Phase 8 pages
+const PortailClientAdminPage = React.lazy(() => import('@/pages/dashboard/PortailClientAdminPage'));
+const CRMPage = React.lazy(() => import('@/pages/dashboard/CRMPage'));
+const CommandesFournisseursPage = React.lazy(() => import('@/pages/dashboard/CommandesFournisseursPage'));
+// Pages publiques Phase 8
+const PortailClientPage = React.lazy(() => import('@/pages/PortailClientPage'));
+const SignaturePage = React.lazy(() => import('@/pages/SignaturePage'));
+const SignaturesDashboardPage = React.lazy(() => import('@/pages/dashboard/SignaturesDashboardPage'));
 // Phase 3 pages
 const BankingPage = React.lazy(() => import('@/pages/dashboard/BankingPage'));
 const ComptabilitePage = React.lazy(() => import('@/pages/dashboard/ComptabilitePage'));
@@ -207,6 +215,11 @@ function App() {
         <Route path="/dashboard/audit-trail" element={<LazyLoad><AuditTrailPage /></LazyLoad>} />
         <Route path="/dashboard/pos" element={<LazyLoad><POSPage /></LazyLoad>} />
         <Route path="/dashboard/boutique" element={<LazyLoad><BoutiquePage /></LazyLoad>} />
+        {/* Phase 8 routes */}
+        <Route path="/dashboard/portail-client" element={<LazyLoad><PortailClientAdminPage /></LazyLoad>} />
+        <Route path="/dashboard/crm" element={<LazyLoad><CRMPage /></LazyLoad>} />
+        <Route path="/dashboard/commandes-fournisseurs" element={<LazyLoad><CommandesFournisseursPage /></LazyLoad>} />
+        <Route path="/dashboard/signatures" element={<LazyLoad><SignaturesDashboardPage /></LazyLoad>} />
         <Route path="/dashboard/banking" element={<LazyLoad><BankingPage /></LazyLoad>} />
         <Route path="/dashboard/comptabilite" element={<LazyLoad><ComptabilitePage /></LazyLoad>} />
         <Route path="/dashboard/tva" element={<LazyLoad><TvaPage /></LazyLoad>} />
@@ -275,6 +288,10 @@ function App() {
 
       {/* Fiduciary Portal (public route with token) */}
       <Route path="/fiduciaire/:token" element={<LazyLoad><FiduciairePortal /></LazyLoad>} />
+
+      {/* Phase 8 — Pages publiques sans auth */}
+      <Route path="/portail/:token" element={<LazyLoad><PortailClientPage /></LazyLoad>} />
+      <Route path="/signer/:token" element={<LazyLoad><SignaturePage /></LazyLoad>} />
 
       {/* Redirect old routes to new ones */}
       <Route path="/login" element={<Navigate to="/auth/login" replace />} />

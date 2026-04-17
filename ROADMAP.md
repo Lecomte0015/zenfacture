@@ -1,7 +1,7 @@
 # ZENFACTURE - Feuille de route & Suivi d'avancement
 
 > **Objectif** : Transformer ZenFacture en SaaS complet de facturation pour PME suisses, prêt au déploiement.
-> **Dernière mise à jour** : 2026-03-18 (Phase 7.5 ajoutée — Connecteur boutiques en ligne Shopify/WooCommerce/PrestaShop/Magento ✅)
+> **Dernière mise à jour** : 2026-04-18 (Phase 8 complète — Portail client, CRM Pipeline, Commandes fournisseurs, Signature électronique ✅)
 > **Positionnement** : Surpasser Bexio (CHF 45+/mois) en offrant plus de fonctionnalités à un meilleur prix, avec des différenciateurs forts (OCR IA, portail fiduciaire, multi-devises, TWINT natif).
 
 ---
@@ -20,6 +20,7 @@
 | **Phase 5 - Parité Bexio (Must-Have)** | ██████████ 100% | ✅ **Terminé** |
 | **Phase 6 - Supériorité Bexio (Should-Have)** | ██████████ 100% | ✅ **Terminé** |
 | **Phase 7 - Différenciation avancée (Nice-to-Have)** | ██████████ 100% | ✅ **Terminé** |
+| **Phase 8 - Gaps Bexio (CRM, Portail, Achats, Signature)** | ██████████ 100% | ✅ **Terminé** |
 
 ---
 
@@ -154,6 +155,42 @@
 - [x] Options de sync : génération factures automatique, synchronisation stock bidirectionnelle, filtre par statut commande (any/pending/paid/fulfilled)
 - [x] `App.tsx` — route `/dashboard/boutique`
 - [x] `Sidebar.tsx` — lien "Boutiques en ligne" (icône Globe) dans le groupe Ventes
+
+---
+
+---
+
+### PHASE 8 — Rattrapage gaps Bexio (Portail client, CRM, Achats, Signature)
+
+#### ✅ 8.1 Portail Client — TERMINÉ 2026-04-18
+- [x] Migration `20260418100000_portail_client.sql` — table `portail_client_liens` (token unique, expiration, compteur d'accès, RLS public)
+- [x] `portailClientService.ts` — `creerLienPortail()`, `getPortailParToken()` (accès public), `desactiverLien()`, `regenererToken()`, `buildPortailUrl()`, stats
+- [x] `PortailClientPage.tsx` (publique `/portail/:token`) — branding organisation, stats client, filtres par type, détail document avec bouton "Payer maintenant", contact organisation
+- [x] `PortailClientAdminPage.tsx` (`/dashboard/portail-client`) — génération de liens, copier/régénérer/désactiver, compteur accès, expiration
+- [x] `App.tsx` — routes `/portail/:token` (publique) + `/dashboard/portail-client`
+- [x] `Sidebar.tsx` — lien "Portail client" dans le groupe Ventes & CRM
+
+#### ✅ 8.2 CRM Pipeline — TERMINÉ 2026-04-18
+- [x] Migration `20260418200000_crm_pipeline.sql` — tables `crm_opportunites` + `crm_activites` (6 stades, RLS, trigger updated_at)
+- [x] `crmService.ts` — `STADES_CONFIG` (prospect/contact/devis_envoye/negociation/gagne/perdu), CRUD opportunités, `changerStade()`, `convertirEnDevis()`, `ajouterActivite()`, `getStatsCRM()` (CA potentiel/gagné/perdu, taux conversion, durée moy.)
+- [x] `CRMPage.tsx` — vue Kanban + vue Liste, KPI (CA potentiel, CA gagné, taux conversion, durée moy.), cartes drag-style avec menu stades, modal détail avec journal d'activités, conversion en devis, modal création/édition
+- [x] `App.tsx` — route `/dashboard/crm`
+- [x] `Sidebar.tsx` — lien "CRM Pipeline" (icône Target) dans le groupe Ventes & CRM
+
+#### ✅ 8.3 Commandes Fournisseurs — TERMINÉ 2026-04-18
+- [x] Migration `20260418300000_commandes_fournisseurs.sql` — tables `fournisseurs` + `commandes_fournisseurs` + `commandes_fournisseurs_lignes` (RLS, triggers)
+- [x] `fournisseurService.ts` — CRUD fournisseurs, `creerCommande()` (BC numéroté auto), `envoyerCommande()`, `recevoirMarchandises()` (mise à jour stock auto via stock_mouvements + stock_articles), stats achats
+- [x] `CommandesFournisseursPage.tsx` — onglets Commandes / Fournisseurs, filtres par statut, réception partielle ou totale, calcul totaux HT/TVA/TTC en temps réel, statuts (brouillon/envoyé/partiel/reçu/annulé)
+- [x] `App.tsx` — route `/dashboard/commandes-fournisseurs`
+- [x] `Sidebar.tsx` — nouveau groupe "Achats" avec lien "Commandes fournisseurs" (icône Truck)
+
+#### ✅ 8.4 Signature Électronique — TERMINÉ 2026-04-18
+- [x] Migration `20260418400000_signature_electronique.sql` — table `signature_demandes` (token, statut, signature_data base64, ip_signataire, expires_at, RLS avec accès public lecture)
+- [x] `signatureService.ts` — `creerDemandeSignature()`, `getSignatureParToken()` (public, marque vu auto), `enregistrerSignature()` (met à jour statut devis → accepte), `refuserSignature()`, `buildSignatureUrl()`
+- [x] `SignaturePage.tsx` (publique `/signer/:token`) — signature dessinée (Canvas HTML5 tactile) ou tapée (cursive), acceptation légale (CO art. 14 al. 2bis), refus avec raison, états finaux animés (signé/refusé)
+- [x] `SignaturesDashboardPage.tsx` (`/dashboard/signatures`) — liste toutes demandes, stats par statut, génération nouvelle demande, copier/annuler liens
+- [x] `App.tsx` — routes `/signer/:token` (publique) + `/dashboard/signatures`
+- [x] `Sidebar.tsx` — lien "Signatures électroniques" (icône PenSquare) dans le groupe Facturation
 
 ---
 
@@ -694,6 +731,13 @@ src/
 - 📋 **Phase 7 planifiée** : envoi postal Swiss Post, fraude IA, blockchain audit, boutique/POS
 - 📋 **Tableau différenciateurs** : mise en évidence des avantages ZenFacture vs Bexio déjà en place
 - ℹ️ Apps mobiles natives et Stripe abonnements : reportés après les phases 5-7
+
+### 2026-04-18 - Phase 8 complète — 4 gaps Bexio comblés ✅
+- ✅ **Portail client** : lien sécurisé token 90j, accès factures/devis/avoirs sans compte, paiement en ligne, branding org
+- ✅ **CRM Pipeline** : Kanban 6 stades, KPI CA potentiel/gagné/taux conversion, journal activités, conversion devis 1 clic
+- ✅ **Commandes fournisseurs** : BC numérotés, réception partielle/totale avec mise à jour stock auto, CRUD fournisseurs
+- ✅ **Signature électronique** : canvas HTML5 tactile + signature tapée, legal CO art. 14 al. 2bis, statuts en temps réel
+- ✅ **5 nouvelles migrations SQL**, **4 services**, **7 pages** (3 publiques + 4 dashboard)
 
 ### 2026-03-18 - Phase 7.5 — Connecteur boutiques en ligne ✅
 - ✅ **Migration SQL** : tables `boutique_connexions` + `boutique_commandes` avec RLS, index unique, trigger updated_at

@@ -8,6 +8,7 @@ import {
   BookOpen, Zap, Shield, LogOut, Settings, Archive,
   Timer, Wallet, Send, Boxes, PieChart, Layers,
   Mail, ShoppingCart, Link2, AlertOctagon, Globe,
+  Target, Truck, PenSquare,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -39,6 +40,7 @@ const navGroups: NavGroup[] = [
       { name: 'Avoirs', href: '/dashboard/avoirs', icon: CreditCard },
       { name: 'Récurrences', href: '/dashboard/recurrences', icon: RefreshCw },
       { name: 'Facturation groupée', href: '/dashboard/batch-invoice', icon: Send },
+      { name: 'Signatures électroniques', href: '/dashboard/signatures', icon: PenSquare },
     ],
   },
   {
@@ -87,11 +89,21 @@ const navGroups: NavGroup[] = [
   },
   {
     id: 'ventes',
-    label: 'Ventes',
+    label: 'Ventes & CRM',
     emoji: '🛒',
     items: [
+      { name: 'CRM Pipeline', href: '/dashboard/crm', icon: Target },
       { name: 'Point de vente (POS)', href: '/dashboard/pos', icon: ShoppingCart },
       { name: 'Boutiques en ligne', href: '/dashboard/boutique', icon: Globe },
+      { name: 'Portail client', href: '/dashboard/portail-client', icon: Globe },
+    ],
+  },
+  {
+    id: 'achats',
+    label: 'Achats',
+    emoji: '📦',
+    items: [
+      { name: 'Commandes fournisseurs', href: '/dashboard/commandes-fournisseurs', icon: Truck },
     ],
   },
   {
