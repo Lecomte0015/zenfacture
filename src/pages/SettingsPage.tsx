@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useOrganisation } from '../context/OrganisationContext';
+import { BUSINESS_PROFILES, PROFIL_LIST, type ProfilMetier } from '@/config/businessProfiles';
 import { useTranslation } from 'react-i18next';
 import {
   BellIcon,
@@ -93,11 +94,84 @@ const DEFAULT_ORG: OrgForm = {
   address_spacing: 'normal',
 };
 
+// ─── Sélecteur de profil métier ───────────────────────────────────────────────
+
+const ProfilMetierSection: React.FC<{
+  profilMetier: ProfilMetier | null;
+  onSave: (profil: ProfilMetier) => Promise<void>;
+}> = ({ profilMetier, onSave }) => {
+  const [selected, setSelected] = useState<ProfilMetier | null>(profilMetier);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = async () => {
+    if (!selected || saving) return;
+    setSaving(true);
+    try {
+      await onSave(selected);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch { /* ignore */ }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div>
+      <h3 className="text-lg leading-6 font-medium text-gray-900 mb-1">🏢 Profil métier</h3>
+      <p className="mt-1 text-sm text-gray-500 mb-5">
+        Choisissez votre type d'activité pour adapter le menu et les outils affichés.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+        {PROFIL_LIST.map((id) => {
+          const profile = BUSINESS_PROFILES[id];
+          const isSelected = selected === id;
+          return (
+            <button
+              key={id}
+              onClick={() => setSelected(id)}
+              className={`flex items-center gap-3 p-3.5 rounded-xl border-2 text-left transition-all ${
+                isSelected
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+              }`}
+            >
+              <span className="text-2xl leading-none">{profile.emoji}</span>
+              <div>
+                <p className={`text-sm font-semibold ${isSelected ? 'text-blue-700' : 'text-gray-800'}`}>
+                  {profile.label}
+                </p>
+                <p className="text-xs text-gray-400">{profile.description}</p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      <button
+        onClick={handleSave}
+        disabled={!selected || saving || selected === profilMetier}
+        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+          selected && !saving && selected !== profilMetier
+            ? 'bg-blue-600 hover:bg-blue-700 text-white shadow'
+            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+        }`}
+      >
+        {saving ? (
+          <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Enregistrement…</>
+        ) : saved ? (
+          <><span>✓</span> Profil mis à jour</>
+        ) : (
+          'Enregistrer le profil'
+        )}
+      </button>
+    </div>
+  );
+};
+
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 const SettingsPage: React.FC = () => {
   const { user } = useAuth();
-  const { organisationId } = useOrganisation();
+  const { organisationId, profilMetier, updateProfilMetier } = useOrganisation();
   const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState('organisation');
 
@@ -523,6 +597,14 @@ const SettingsPage: React.FC = () => {
             {/* ── Onglet Personnalisation ── */}
             {activeTab === 'personnalisation' && (
               <div>
+                {/* ── Profil métier ───────────────────────────────────── */}
+                <ProfilMetierSection
+                  profilMetier={profilMetier}
+                  onSave={updateProfilMetier}
+                />
+
+                <div className="border-t border-gray-200 my-8" />
+
                 <h3 className="text-lg leading-6 font-medium text-gray-900 mb-1">🎨 Personnalisation des factures</h3>
                 <p className="mt-1 text-sm text-gray-500 mb-6">
                   Toutes ces options s'appliquent automatiquement sur vos factures (aperçu + PDF).
