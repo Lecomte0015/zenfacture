@@ -41,11 +41,11 @@ const navGroups: NavGroup[] = [
     emoji: '📋',
     items: [
       { name: 'Factures',               href: '/dashboard/invoices',      icon: FileText },
-      { name: 'Devis',                  href: '/dashboard/devis',         icon: ClipboardList },
+      { name: 'Devis',                  href: '/dashboard/devis',         icon: ClipboardList, profileKey: 'devis' },
       { name: 'Avoirs',                 href: '/dashboard/avoirs',        icon: CreditCard },
-      { name: 'Récurrences',            href: '/dashboard/recurrences',   icon: RefreshCw },
-      { name: 'Facturation groupée',    href: '/dashboard/batch-invoice', icon: Send,       profileKey: 'batch' },
-      { name: 'Signatures électroniques', href: '/dashboard/signatures',  icon: PenSquare,  profileKey: 'signatures' },
+      { name: 'Récurrences',            href: '/dashboard/recurrences',   icon: RefreshCw,     profileKey: 'recurrences' },
+      { name: 'Facturation groupée',    href: '/dashboard/batch-invoice', icon: Send,          profileKey: 'batch' },
+      { name: 'Signatures électroniques', href: '/dashboard/signatures',  icon: PenSquare,     profileKey: 'signatures' },
     ],
   },
   {
@@ -54,7 +54,7 @@ const navGroups: NavGroup[] = [
     emoji: '👥',
     items: [
       { name: 'Clients',  href: '/dashboard/clients',  icon: Users },
-      { name: 'Produits', href: '/dashboard/produits', icon: Package },
+      { name: 'Produits', href: '/dashboard/produits', icon: Package, profileKey: 'produits' },
       { name: 'Stock',    href: '/dashboard/stock',    icon: Boxes,   profileKey: 'stock' },
     ],
   },

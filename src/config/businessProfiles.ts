@@ -23,28 +23,39 @@ export interface QuickAction {
 }
 
 export interface ProfileFeatures {
-  /** Point de vente */
-  pos: boolean;
-  /** Gestion de stock */
-  stock: boolean;
-  /** Boutiques en ligne */
-  boutique: boolean;
-  /** Multi-marques */
-  marques: boolean;
-  /** Suivi du temps */
-  timeTracking: boolean;
-  /** CRM Pipeline */
-  crm: boolean;
-  /** Portail client */
-  portailClient: boolean;
-  /** Signatures électroniques */
-  signatures: boolean;
-  /** Commandes fournisseurs */
-  commandes: boolean;
-  /** Gestion salaires / paie */
-  payroll: boolean;
+  // ── Facturation ──────────────────────────────────────────
+  /** Catalogue produits (faux pour les métiers de service) */
+  produits: boolean;
+  /** Devis (faux pour restauration, commerce B2C) */
+  devis: boolean;
+  /** Facturations récurrentes */
+  recurrences: boolean;
   /** Facturation groupée */
   batch: boolean;
+  /** Signatures électroniques */
+  signatures: boolean;
+  // ── Stock & vente ─────────────────────────────────────────
+  /** Gestion de stock */
+  stock: boolean;
+  /** Point de vente */
+  pos: boolean;
+  /** Boutiques en ligne */
+  boutique: boolean;
+  /** Portail client */
+  portailClient: boolean;
+  /** CRM Pipeline */
+  crm: boolean;
+  // ── Achats ────────────────────────────────────────────────
+  /** Commandes fournisseurs */
+  commandes: boolean;
+  // ── Administration ────────────────────────────────────────
+  /** Suivi du temps */
+  timeTracking: boolean;
+  /** Gestion salaires / paie */
+  payroll: boolean;
+  /** Multi-marques */
+  marques: boolean;
+  // ── Finance & rapports ────────────────────────────────────
   /** Détection fraude */
   fraud: boolean;
   /** Audit Trail */
@@ -71,6 +82,7 @@ export interface BusinessProfile {
 export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
 
   // ── Commerce / Boutique ──────────────────────────────────────────────────
+  // Vente B2C : produits + stock + POS. Pas de devis ni CRM (vente directe).
   commerce: {
     id: 'commerce',
     label: 'Commerce / Boutique',
@@ -78,21 +90,23 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Vente au détail, boutique physique ou en ligne',
     accentColor: 'blue',
     features: {
-      pos: true, stock: true, boutique: true, marques: true,
-      timeTracking: false, crm: false, portailClient: false,
-      signatures: false, commandes: true, payroll: true,
-      batch: true, fraud: true, audit: true, postal: true,
-      taxEstimation: true,
+      produits: true,  devis: false,  recurrences: false,
+      batch: true,     signatures: false,
+      stock: true,     pos: true,     boutique: true,  portailClient: false, crm: false,
+      commandes: true,
+      timeTracking: false, payroll: true, marques: true,
+      fraud: true,  audit: true,  postal: true,  taxEstimation: true,
     },
     quickActions: [
-      { label: 'Caisse POS',      href: '/dashboard/pos',                     emoji: '🏪', color: 'bg-blue-600',   textColor: 'text-white' },
-      { label: 'Stock',           href: '/dashboard/stock',                    emoji: '📦', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'Fournisseurs',    href: '/dashboard/commandes-fournisseurs',   emoji: '🚚', color: 'bg-amber-500',  textColor: 'text-white' },
-      { label: 'Nouvelle facture',href: '/dashboard/invoices',                 emoji: '📄', color: 'bg-violet-600', textColor: 'text-white' },
+      { label: 'Caisse POS',       href: '/dashboard/pos',                   emoji: '🏪', color: 'bg-blue-600',    textColor: 'text-white' },
+      { label: 'Stock',            href: '/dashboard/stock',                  emoji: '📦', color: 'bg-emerald-600', textColor: 'text-white' },
+      { label: 'Fournisseurs',     href: '/dashboard/commandes-fournisseurs', emoji: '🚚', color: 'bg-amber-500',   textColor: 'text-white' },
+      { label: 'Nouvelle facture', href: '/dashboard/invoices',               emoji: '📄', color: 'bg-violet-600',  textColor: 'text-white' },
     ],
   },
 
   // ── Services / Artisan ───────────────────────────────────────────────────
+  // Prestation de service : temps + devis + signatures. Pas de produits ni POS.
   services: {
     id: 'services',
     label: 'Services / Artisan',
@@ -100,21 +114,23 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Ménage, jardinage, artisans, services à domicile',
     accentColor: 'emerald',
     features: {
-      pos: false, stock: false, boutique: false, marques: false,
-      timeTracking: true, crm: true, portailClient: true,
-      signatures: true, commandes: false, payroll: true,
-      batch: true, fraud: false, audit: false, postal: true,
-      taxEstimation: true,
+      produits: false, devis: true,   recurrences: true,
+      batch: true,     signatures: true,
+      stock: false,    pos: false,    boutique: false, portailClient: true,  crm: true,
+      commandes: false,
+      timeTracking: true, payroll: true, marques: false,
+      fraud: false, audit: false, postal: true,  taxEstimation: true,
     },
     quickActions: [
-      { label: 'Nouveau devis',   href: '/dashboard/devis',         emoji: '📋', color: 'bg-blue-600',   textColor: 'text-white' },
+      { label: 'Nouveau devis',   href: '/dashboard/devis',         emoji: '📋', color: 'bg-blue-600',    textColor: 'text-white' },
       { label: 'Suivi du temps',  href: '/dashboard/time-tracking', emoji: '⏱️', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'Clients',         href: '/dashboard/clients',       emoji: '👥', color: 'bg-violet-600', textColor: 'text-white' },
-      { label: 'Récurrences',     href: '/dashboard/recurrences',   emoji: '🔄', color: 'bg-amber-500',  textColor: 'text-white' },
+      { label: 'Clients',         href: '/dashboard/clients',       emoji: '👥', color: 'bg-violet-600',  textColor: 'text-white' },
+      { label: 'Signatures',      href: '/dashboard/signatures',    emoji: '✍️', color: 'bg-amber-500',   textColor: 'text-white' },
     ],
   },
 
   // ── Freelance / Consultant ───────────────────────────────────────────────
+  // Solo : factures, devis, temps. Aucune vente physique, aucun stock.
   freelance: {
     id: 'freelance',
     label: 'Freelance / Consultant',
@@ -122,21 +138,23 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Développeur, designer, consultant indépendant',
     accentColor: 'violet',
     features: {
-      pos: false, stock: false, boutique: false, marques: false,
-      timeTracking: true, crm: true, portailClient: true,
-      signatures: true, commandes: false, payroll: false,
-      batch: false, fraud: false, audit: false, postal: false,
-      taxEstimation: true,
+      produits: false, devis: true,   recurrences: true,
+      batch: false,    signatures: true,
+      stock: false,    pos: false,    boutique: false, portailClient: false, crm: false,
+      commandes: false,
+      timeTracking: true, payroll: false, marques: false,
+      fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
-      { label: 'Nouvelle facture', href: '/dashboard/invoices',        emoji: '📄', color: 'bg-blue-600',   textColor: 'text-white' },
-      { label: 'Nouveau devis',    href: '/dashboard/devis',           emoji: '📋', color: 'bg-violet-600', textColor: 'text-white' },
+      { label: 'Nouvelle facture', href: '/dashboard/invoices',        emoji: '📄', color: 'bg-blue-600',    textColor: 'text-white' },
+      { label: 'Nouveau devis',    href: '/dashboard/devis',           emoji: '📋', color: 'bg-violet-600',  textColor: 'text-white' },
       { label: 'Suivi du temps',   href: '/dashboard/time-tracking',   emoji: '⏱️', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'TVA',              href: '/dashboard/tva',             emoji: '🧮', color: 'bg-amber-500',  textColor: 'text-white' },
+      { label: 'TVA',              href: '/dashboard/tva',             emoji: '🧮', color: 'bg-amber-500',   textColor: 'text-white' },
     ],
   },
 
   // ── Restauration / Food ──────────────────────────────────────────────────
+  // Vente directe B2C : POS + stock + fournisseurs. Pas de devis ni CRM.
   restauration: {
     id: 'restauration',
     label: 'Restauration / Food',
@@ -144,21 +162,23 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Restaurant, café, food truck, traiteur',
     accentColor: 'orange',
     features: {
-      pos: true, stock: true, boutique: false, marques: true,
-      timeTracking: true, crm: false, portailClient: false,
-      signatures: false, commandes: true, payroll: true,
-      batch: false, fraud: false, audit: false, postal: false,
-      taxEstimation: true,
+      produits: true,  devis: false,  recurrences: false,
+      batch: false,    signatures: false,
+      stock: true,     pos: true,     boutique: false, portailClient: false, crm: false,
+      commandes: true,
+      timeTracking: true, payroll: true, marques: true,
+      fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
-      { label: 'Caisse POS',   href: '/dashboard/pos',                   emoji: '🍴', color: 'bg-orange-500', textColor: 'text-white' },
+      { label: 'Caisse POS',   href: '/dashboard/pos',                   emoji: '🍴', color: 'bg-orange-500',  textColor: 'text-white' },
       { label: 'Stock',        href: '/dashboard/stock',                  emoji: '📦', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'Fournisseurs', href: '/dashboard/commandes-fournisseurs', emoji: '🚚', color: 'bg-amber-500',  textColor: 'text-white' },
-      { label: 'Salaires',     href: '/dashboard/payroll',                emoji: '💶', color: 'bg-violet-600', textColor: 'text-white' },
+      { label: 'Fournisseurs', href: '/dashboard/commandes-fournisseurs', emoji: '🚚', color: 'bg-amber-500',   textColor: 'text-white' },
+      { label: 'Salaires',     href: '/dashboard/payroll',                emoji: '💶', color: 'bg-violet-600',  textColor: 'text-white' },
     ],
   },
 
   // ── Construction / BTP ──────────────────────────────────────────────────
+  // B2B + chantiers : devis + signatures + temps + fournisseurs. Tout pertinent.
   construction: {
     id: 'construction',
     label: 'Construction / BTP',
@@ -166,21 +186,23 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Maçon, électricien, plombier, menuisier',
     accentColor: 'amber',
     features: {
-      pos: false, stock: true, boutique: false, marques: true,
-      timeTracking: true, crm: true, portailClient: true,
-      signatures: true, commandes: true, payroll: true,
-      batch: true, fraud: true, audit: true, postal: true,
-      taxEstimation: true,
+      produits: true,  devis: true,   recurrences: true,
+      batch: true,     signatures: true,
+      stock: true,     pos: false,    boutique: false, portailClient: true,  crm: true,
+      commandes: true,
+      timeTracking: true, payroll: true, marques: true,
+      fraud: true,  audit: true,  postal: true,  taxEstimation: true,
     },
     quickActions: [
-      { label: 'Nouveau devis',  href: '/dashboard/devis',                   emoji: '📋', color: 'bg-amber-500',  textColor: 'text-white' },
-      { label: 'Suivi du temps', href: '/dashboard/time-tracking',           emoji: '⏱️', color: 'bg-blue-600',   textColor: 'text-white' },
+      { label: 'Nouveau devis',  href: '/dashboard/devis',                   emoji: '📋', color: 'bg-amber-500',   textColor: 'text-white' },
+      { label: 'Suivi du temps', href: '/dashboard/time-tracking',           emoji: '⏱️', color: 'bg-blue-600',    textColor: 'text-white' },
       { label: 'Signatures',     href: '/dashboard/signatures',              emoji: '✍️', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'Fournisseurs',   href: '/dashboard/commandes-fournisseurs',  emoji: '🚚', color: 'bg-violet-600', textColor: 'text-white' },
+      { label: 'Fournisseurs',   href: '/dashboard/commandes-fournisseurs',  emoji: '🚚', color: 'bg-violet-600',  textColor: 'text-white' },
     ],
   },
 
   // ── Santé / Bien-être ────────────────────────────────────────────────────
+  // Soins & consultations : factures + rdv + portail. Pas de produits ni stock.
   sante: {
     id: 'sante',
     label: 'Santé / Bien-être',
@@ -188,17 +210,18 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Médecin, thérapeute, coach, kinésithérapeute',
     accentColor: 'teal',
     features: {
-      pos: false, stock: false, boutique: false, marques: false,
-      timeTracking: true, crm: true, portailClient: true,
-      signatures: true, commandes: false, payroll: false,
-      batch: false, fraud: false, audit: false, postal: true,
-      taxEstimation: true,
+      produits: false, devis: true,   recurrences: true,
+      batch: false,    signatures: true,
+      stock: false,    pos: false,    boutique: false, portailClient: true,  crm: true,
+      commandes: false,
+      timeTracking: true, payroll: false, marques: false,
+      fraud: false, audit: false, postal: true,  taxEstimation: true,
     },
     quickActions: [
-      { label: 'Nouvelle facture', href: '/dashboard/invoices',  emoji: '📄', color: 'bg-blue-600',   textColor: 'text-white' },
-      { label: 'Clients',          href: '/dashboard/clients',   emoji: '👤', color: 'bg-teal-600',   textColor: 'text-white' },
-      { label: 'Signatures',       href: '/dashboard/signatures',emoji: '✍️', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'TVA',              href: '/dashboard/tva',       emoji: '🧮', color: 'bg-amber-500',  textColor: 'text-white' },
+      { label: 'Nouvelle facture', href: '/dashboard/invoices',   emoji: '📄', color: 'bg-blue-600',    textColor: 'text-white' },
+      { label: 'Clients',          href: '/dashboard/clients',    emoji: '👤', color: 'bg-teal-600',    textColor: 'text-white' },
+      { label: 'Signatures',       href: '/dashboard/signatures', emoji: '✍️', color: 'bg-emerald-600', textColor: 'text-white' },
+      { label: 'TVA',              href: '/dashboard/tva',        emoji: '🧮', color: 'bg-amber-500',   textColor: 'text-white' },
     ],
   },
 
@@ -210,17 +233,18 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Petite ou moyenne entreprise, toutes activités',
     accentColor: 'gray',
     features: {
-      pos: true, stock: true, boutique: true, marques: true,
-      timeTracking: true, crm: true, portailClient: true,
-      signatures: true, commandes: true, payroll: true,
-      batch: true, fraud: true, audit: true, postal: true,
-      taxEstimation: true,
+      produits: true,  devis: true,   recurrences: true,
+      batch: true,     signatures: true,
+      stock: true,     pos: true,     boutique: true,  portailClient: true,  crm: true,
+      commandes: true,
+      timeTracking: true, payroll: true, marques: true,
+      fraud: true,  audit: true,  postal: true,  taxEstimation: true,
     },
     quickActions: [
-      { label: 'Nouvelle facture', href: '/dashboard/invoices', emoji: '📄', color: 'bg-blue-600',   textColor: 'text-white' },
-      { label: 'Nouveau devis',    href: '/dashboard/devis',    emoji: '📋', color: 'bg-violet-600', textColor: 'text-white' },
+      { label: 'Nouvelle facture', href: '/dashboard/invoices', emoji: '📄', color: 'bg-blue-600',    textColor: 'text-white' },
+      { label: 'Nouveau devis',    href: '/dashboard/devis',    emoji: '📋', color: 'bg-violet-600',  textColor: 'text-white' },
       { label: 'CRM Pipeline',     href: '/dashboard/crm',      emoji: '🎯', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'Rapports',         href: '/dashboard/reports',  emoji: '📊', color: 'bg-amber-500',  textColor: 'text-white' },
+      { label: 'Rapports',         href: '/dashboard/reports',  emoji: '📊', color: 'bg-amber-500',   textColor: 'text-white' },
     ],
   },
 };
