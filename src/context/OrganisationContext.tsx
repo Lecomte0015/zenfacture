@@ -135,19 +135,30 @@ export const OrganisationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [isAuthenticated, user?.id, fetchOrganisation]);
 
-  /** Met à jour le profil_metier en BDD et dans l'état local */
+  /** Met à jour le profil_metier via RPC SECURITY DEFINER (contourne RLS) */
   const updateProfilMetier = useCallback(async (profil: ProfilMetier) => {
     if (!organisationId) return;
     try {
-      const { error } = await supabase
-        .from('organisations')
-        .update({ profil_metier: profil })
-        .eq('id', organisationId);
+      // Essai 1 : fonction RPC SECURITY DEFINER (bypass RLS)
+      const { error: rpcError } = await supabase.rpc('set_profil_metier', {
+        p_organisation_id: organisationId,
+        p_profil: profil,
+      });
 
-      if (error) {
-        console.error('Erreur mise à jour profil_metier:', error);
-        throw error;
+      if (rpcError) {
+        // Fallback : UPDATE direct (fonctionne si la policy UPDATE existe)
+        const { error: updateError } = await supabase
+          .from('organisations')
+          .update({ profil_metier: profil })
+          .eq('id', organisationId);
+
+        if (updateError) {
+          console.error('Erreur mise à jour profil_metier:', updateError);
+          throw updateError;
+        }
       }
+
+      // Mettre à jour l'état local immédiatement (sans attendre un re-fetch)
       setProfilMetier(profil);
     } catch (err) {
       console.error('Erreur updateProfilMetier:', err);
