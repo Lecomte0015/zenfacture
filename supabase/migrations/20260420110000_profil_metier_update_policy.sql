@@ -4,15 +4,26 @@
 
 -- ── 1. Policy UPDATE sur organisations ──────────────────────────────────────
 -- Permet à un membre de l'organisation de mettre à jour sa propre organisation
-CREATE POLICY "organisations_update_member"
-  ON organisations
-  FOR UPDATE
-  USING (
-    id IN (SELECT public.get_user_org_ids())
-  )
-  WITH CHECK (
-    id IN (SELECT public.get_user_org_ids())
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename  = 'organisations'
+      AND policyname = 'organisations_update_member'
+  ) THEN
+    CREATE POLICY "organisations_update_member"
+      ON organisations
+      FOR UPDATE
+      USING (
+        id IN (SELECT public.get_user_org_ids())
+      )
+      WITH CHECK (
+        id IN (SELECT public.get_user_org_ids())
+      );
+  END IF;
+END;
+$$;
 
 -- ── 2. Fonction SECURITY DEFINER pour update du profil_metier ───────────────
 -- Contourne RLS de façon sécurisée : valide le profil ET vérifie l'appartenance
