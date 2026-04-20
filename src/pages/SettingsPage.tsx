@@ -275,11 +275,11 @@ const SettingsPage: React.FC = () => {
     e.preventDefault();
     if (!organisationId) return;
 
-    // Validation Zod
+    // Validation Zod (Zod v4 : .issues, pas .errors)
     const validation = orgSchema.safeParse(orgForm);
     if (!validation.success) {
-      const firstError = validation.error.errors[0];
-      setOrgFeedback({ type: 'error', message: firstError.message });
+      const firstError = validation.error.issues[0];
+      setOrgFeedback({ type: 'error', message: firstError?.message ?? 'Données invalides' });
       return;
     }
 

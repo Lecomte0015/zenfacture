@@ -144,7 +144,7 @@ const NewInvoiceModal = ({ isOpen, onClose, onSave, initialData }: NewInvoiceMod
       clientEmail: formData.clientEmail,
     });
     if (!validation.success) {
-      alert(validation.error.errors[0].message);
+      alert(validation.error.issues[0]?.message ?? 'Données invalides');
       return;
     }
 
