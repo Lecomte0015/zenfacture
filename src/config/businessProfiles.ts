@@ -82,7 +82,7 @@ export interface BusinessProfile {
 export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
 
   // ── Commerce / Boutique ──────────────────────────────────────────────────
-  // Vente B2C : produits + stock + POS. Pas de devis ni CRM (vente directe).
+  // Vente B2C directe : POS + stock + boutique. Pas de CRM ni devis.
   commerce: {
     id: 'commerce',
     label: 'Commerce / Boutique',
@@ -90,12 +90,11 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Vente au détail, boutique physique ou en ligne',
     accentColor: 'blue',
     features: {
-      produits: true,  devis: false,  recurrences: false,
-      batch: true,     signatures: false,
-      stock: true,     pos: true,     boutique: true,  portailClient: false, crm: false,
+      produits: true,  devis: false,  recurrences: false, batch: false,  signatures: false,
+      stock: true,     pos: true,     boutique: true,     portailClient: false, crm: false,
       commandes: true,
-      timeTracking: false, payroll: true, marques: true,
-      fraud: true,  audit: true,  postal: true,  taxEstimation: true,
+      timeTracking: false, payroll: true,  marques: true,
+      fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
       { label: 'Caisse POS',       href: '/dashboard/pos',                   emoji: '🏪', color: 'bg-blue-600',    textColor: 'text-white' },
@@ -106,7 +105,7 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
   },
 
   // ── Services / Artisan ───────────────────────────────────────────────────
-  // Prestation de service : temps + devis + signatures. Pas de produits ni POS.
+  // Prestation de service : devis + temps + signatures. Pas de vente physique.
   services: {
     id: 'services',
     label: 'Services / Artisan',
@@ -114,23 +113,22 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Ménage, jardinage, artisans, services à domicile',
     accentColor: 'emerald',
     features: {
-      produits: false, devis: true,   recurrences: true,
-      batch: true,     signatures: true,
-      stock: false,    pos: false,    boutique: false, portailClient: true,  crm: true,
+      produits: false, devis: true,   recurrences: true,  batch: true,   signatures: true,
+      stock: false,    pos: false,    boutique: false,    portailClient: false, crm: false,
       commandes: false,
-      timeTracking: true, payroll: true, marques: false,
-      fraud: false, audit: false, postal: true,  taxEstimation: true,
+      timeTracking: true,  payroll: true,  marques: false,
+      fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
-      { label: 'Nouveau devis',   href: '/dashboard/devis',         emoji: '📋', color: 'bg-blue-600',    textColor: 'text-white' },
-      { label: 'Suivi du temps',  href: '/dashboard/time-tracking', emoji: '⏱️', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'Clients',         href: '/dashboard/clients',       emoji: '👥', color: 'bg-violet-600',  textColor: 'text-white' },
-      { label: 'Signatures',      href: '/dashboard/signatures',    emoji: '✍️', color: 'bg-amber-500',   textColor: 'text-white' },
+      { label: 'Nouveau devis',  href: '/dashboard/devis',         emoji: '📋', color: 'bg-blue-600',    textColor: 'text-white' },
+      { label: 'Suivi du temps', href: '/dashboard/time-tracking', emoji: '⏱️', color: 'bg-emerald-600', textColor: 'text-white' },
+      { label: 'Clients',        href: '/dashboard/clients',       emoji: '👥', color: 'bg-violet-600',  textColor: 'text-white' },
+      { label: 'Signatures',     href: '/dashboard/signatures',    emoji: '✍️', color: 'bg-amber-500',   textColor: 'text-white' },
     ],
   },
 
   // ── Freelance / Consultant ───────────────────────────────────────────────
-  // Solo : factures, devis, temps. Aucune vente physique, aucun stock.
+  // Solo : factures + devis + temps. Minimaliste, aucune section vente.
   freelance: {
     id: 'freelance',
     label: 'Freelance / Consultant',
@@ -138,23 +136,22 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Développeur, designer, consultant indépendant',
     accentColor: 'violet',
     features: {
-      produits: false, devis: true,   recurrences: true,
-      batch: false,    signatures: true,
-      stock: false,    pos: false,    boutique: false, portailClient: false, crm: false,
+      produits: false, devis: true,   recurrences: true,  batch: false,  signatures: true,
+      stock: false,    pos: false,    boutique: false,    portailClient: false, crm: false,
       commandes: false,
-      timeTracking: true, payroll: false, marques: false,
+      timeTracking: true,  payroll: false, marques: false,
       fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
-      { label: 'Nouvelle facture', href: '/dashboard/invoices',        emoji: '📄', color: 'bg-blue-600',    textColor: 'text-white' },
-      { label: 'Nouveau devis',    href: '/dashboard/devis',           emoji: '📋', color: 'bg-violet-600',  textColor: 'text-white' },
-      { label: 'Suivi du temps',   href: '/dashboard/time-tracking',   emoji: '⏱️', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'TVA',              href: '/dashboard/tva',             emoji: '🧮', color: 'bg-amber-500',   textColor: 'text-white' },
+      { label: 'Nouvelle facture', href: '/dashboard/invoices',      emoji: '📄', color: 'bg-blue-600',    textColor: 'text-white' },
+      { label: 'Nouveau devis',    href: '/dashboard/devis',         emoji: '📋', color: 'bg-violet-600',  textColor: 'text-white' },
+      { label: 'Suivi du temps',   href: '/dashboard/time-tracking', emoji: '⏱️', color: 'bg-emerald-600', textColor: 'text-white' },
+      { label: 'TVA',              href: '/dashboard/tva',           emoji: '🧮', color: 'bg-amber-500',   textColor: 'text-white' },
     ],
   },
 
   // ── Restauration / Food ──────────────────────────────────────────────────
-  // Vente directe B2C : POS + stock + fournisseurs. Pas de devis ni CRM.
+  // Vente directe : POS + stock + fournisseurs. Pas de devis ni CRM.
   restauration: {
     id: 'restauration',
     label: 'Restauration / Food',
@@ -162,11 +159,10 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Restaurant, café, food truck, traiteur',
     accentColor: 'orange',
     features: {
-      produits: true,  devis: false,  recurrences: false,
-      batch: false,    signatures: false,
-      stock: true,     pos: true,     boutique: false, portailClient: false, crm: false,
+      produits: true,  devis: false,  recurrences: false, batch: false,  signatures: false,
+      stock: true,     pos: true,     boutique: false,    portailClient: false, crm: false,
       commandes: true,
-      timeTracking: true, payroll: true, marques: true,
+      timeTracking: true,  payroll: true,  marques: false,
       fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
@@ -178,7 +174,7 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
   },
 
   // ── Construction / BTP ──────────────────────────────────────────────────
-  // B2B + chantiers : devis + signatures + temps + fournisseurs. Tout pertinent.
+  // Chantiers : devis + signatures + stock + fournisseurs. Pas de vente ni CRM.
   construction: {
     id: 'construction',
     label: 'Construction / BTP',
@@ -186,12 +182,11 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Maçon, électricien, plombier, menuisier',
     accentColor: 'amber',
     features: {
-      produits: true,  devis: true,   recurrences: true,
-      batch: true,     signatures: true,
-      stock: true,     pos: false,    boutique: false, portailClient: true,  crm: true,
+      produits: true,  devis: true,   recurrences: false, batch: false,  signatures: true,
+      stock: true,     pos: false,    boutique: false,    portailClient: false, crm: false,
       commandes: true,
-      timeTracking: true, payroll: true, marques: true,
-      fraud: true,  audit: true,  postal: true,  taxEstimation: true,
+      timeTracking: true,  payroll: true,  marques: false,
+      fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
       { label: 'Nouveau devis',  href: '/dashboard/devis',                   emoji: '📋', color: 'bg-amber-500',   textColor: 'text-white' },
@@ -202,7 +197,7 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
   },
 
   // ── Santé / Bien-être ────────────────────────────────────────────────────
-  // Soins & consultations : factures + rdv + portail. Pas de produits ni stock.
+  // Consultations : factures récurrentes + signatures. Pas de stock ni vente.
   sante: {
     id: 'sante',
     label: 'Santé / Bien-être',
@@ -210,12 +205,11 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Médecin, thérapeute, coach, kinésithérapeute',
     accentColor: 'teal',
     features: {
-      produits: false, devis: true,   recurrences: true,
-      batch: false,    signatures: true,
-      stock: false,    pos: false,    boutique: false, portailClient: true,  crm: true,
+      produits: false, devis: true,   recurrences: true,  batch: false,  signatures: true,
+      stock: false,    pos: false,    boutique: false,    portailClient: false, crm: false,
       commandes: false,
-      timeTracking: true, payroll: false, marques: false,
-      fraud: false, audit: false, postal: true,  taxEstimation: true,
+      timeTracking: true,  payroll: false, marques: false,
+      fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
       { label: 'Nouvelle facture', href: '/dashboard/invoices',   emoji: '📄', color: 'bg-blue-600',    textColor: 'text-white' },
@@ -233,11 +227,10 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
     description: 'Petite ou moyenne entreprise, toutes activités',
     accentColor: 'gray',
     features: {
-      produits: true,  devis: true,   recurrences: true,
-      batch: true,     signatures: true,
-      stock: true,     pos: true,     boutique: true,  portailClient: true,  crm: true,
+      produits: true,  devis: true,   recurrences: true,  batch: true,   signatures: true,
+      stock: true,     pos: true,     boutique: true,     portailClient: true,  crm: true,
       commandes: true,
-      timeTracking: true, payroll: true, marques: true,
+      timeTracking: true,  payroll: true,  marques: true,
       fraud: true,  audit: true,  postal: true,  taxEstimation: true,
     },
     quickActions: [
