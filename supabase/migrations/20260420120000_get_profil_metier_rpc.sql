@@ -4,31 +4,16 @@
 
 CREATE OR REPLACE FUNCTION public.get_my_profil_metier()
 RETURNS TEXT
-LANGUAGE plpgsql
+LANGUAGE sql
+STABLE
 SECURITY DEFINER
 SET search_path = public
 AS $$
-DECLARE
-  v_org_id      UUID;
-  v_profil      TEXT;
-BEGIN
-  -- Récupérer l'organisation de l'utilisateur
-  SELECT organisation_id INTO v_org_id
-  FROM utilisateurs_organisations
-  WHERE utilisateur_id = auth.uid()
+  SELECT o.profil_metier
+  FROM organisations o
+  JOIN utilisateurs_organisations uo ON uo.organisation_id = o.id
+  WHERE uo.utilisateur_id = auth.uid()
   LIMIT 1;
-
-  IF v_org_id IS NULL THEN
-    RETURN NULL;
-  END IF;
-
-  -- Lire le profil_metier
-  SELECT profil_metier INTO v_profil
-  FROM organisations
-  WHERE id = v_org_id;
-
-  RETURN v_profil;
-END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.get_my_profil_metier() TO authenticated;
