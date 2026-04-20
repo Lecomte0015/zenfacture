@@ -29,6 +29,8 @@ function clearCachedProfil(userId: string) {
 
 interface OrganisationContextType {
   organisationId: string | null;
+  /** Alias rétrocompatible : { id: organisationId } — utilisé par les pages Phase 5-8 */
+  organisation: { id: string } | null;
   profilMetier: ProfilMetier | null;
   loading: boolean;
   error: string | null;
@@ -38,6 +40,7 @@ interface OrganisationContextType {
 
 const OrganisationContext = createContext<OrganisationContextType>({
   organisationId: null,
+  organisation: null,
   profilMetier: null,
   loading: true,
   error: null,
@@ -202,6 +205,7 @@ export const OrganisationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   return (
     <OrganisationContext.Provider value={{
       organisationId,
+      organisation: organisationId ? { id: organisationId } : null,
       profilMetier,
       loading,
       error,
