@@ -3,9 +3,9 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { FiFileText, FiMenu, FiX } from 'react-icons/fi';
 
 const navLinks = [
-  { name: 'Fonctionnalités', href: '/features' },
-  { name: 'Tarifs',          href: '/pricing' },
-  { name: 'Aide',            href: '/help' },
+  { name: 'Fonctionnalités', href: '/fonctionnalites' },
+  { name: 'Tarifs',          href: '/tarifs' },
+  { name: 'Aide',            href: '/aide' },
 ];
 
 const Navbar = () => {
@@ -148,17 +148,17 @@ const Footer = () => {
             {
               title: 'Produit',
               links: [
-                { label: 'Fonctionnalités', href: '/features' },
-                { label: 'Tarifs',          href: '/pricing' },
+                { label: 'Fonctionnalités', href: '/fonctionnalites' },
+                { label: 'Tarifs',          href: '/tarifs' },
                 { label: 'Documentation',   href: '/documentation' },
               ],
             },
             {
               title: 'Support',
               links: [
-                { label: "Centre d'aide", href: '/help' },
+                { label: "Centre d'aide", href: '/aide' },
                 { label: 'FAQ',           href: '/faq' },
-                { label: 'Contact',       href: '/help' },
+                { label: 'Contact',       href: '/aide' },
               ],
             },
             {
@@ -201,7 +201,7 @@ const Footer = () => {
 // Compatibilité avec App.tsx qui n'utilise pas Outlet mais children
 export const PublicLayout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
-  const isLanding = ['/', '/features', '/pricing', '/help', '/faq',
+  const isLanding = ['/', '/fonctionnalites', '/tarifs', '/aide', '/faq',
     '/documentation', '/cgu', '/confidentialite'].includes(location.pathname);
 
   return (

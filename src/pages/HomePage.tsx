@@ -182,7 +182,7 @@ const HomePage = () => {
       {/* ══ 1. ANNOUNCEMENT BAR ══════════════════════════════════════════════ */}
       <div className="bg-blue-600 text-white text-center text-sm py-2.5 px-4">
         Nouveau : envoi de factures par email avec PDF + QR-bill intégrés —
-        <Link to="/features" className="underline font-semibold ml-1 hover:no-underline">
+        <Link to="/fonctionnalites" className="underline font-semibold ml-1 hover:no-underline">
           Découvrir les fonctionnalités
         </Link>
       </div>
@@ -213,7 +213,7 @@ const HomePage = () => {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
-              to="/pricing"
+              to="/tarifs"
               className="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-gray-700 border border-gray-300 hover:border-gray-400 hover:bg-gray-100 rounded-lg transition-all bg-white"
             >
               Voir les tarifs
@@ -508,7 +508,7 @@ const HomePage = () => {
                   ))}
                 </ul>
                 <Link
-                  to={plan.name === 'Entreprise' ? '/help' : '/auth/register'}
+                  to={plan.name === 'Entreprise' ? '/aide' : '/auth/register'}
                   className={`block text-center py-3 rounded-xl text-sm font-semibold transition-all ${
                     plan.highlight
                       ? 'bg-white text-blue-600 hover:bg-blue-50'
@@ -557,7 +557,7 @@ const HomePage = () => {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
-              to="/pricing"
+              to="/tarifs"
               className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white border border-white/30 rounded-lg hover:bg-white/10 transition-all"
             >
               Voir les tarifs
