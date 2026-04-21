@@ -148,7 +148,7 @@ const HomePage = () => {
       {/* ══ 1. ANNOUNCEMENT BAR ══════════════════════════════════════════════ */}
       <div className="bg-blue-600 text-white text-center text-sm py-2.5 px-4 font-medium">
         🇨🇭 &nbsp;Nouveau : envoi de factures par email avec PDF + QR-bill intégrés &nbsp;—&nbsp;
-        <Link to="/register" className="underline hover:no-underline font-bold">Essayez gratuitement →</Link>
+        <Link to="/features" className="underline hover:no-underline font-bold">Découvrir les fonctionnalités →</Link>
       </div>
 
       {/* ══ 2. HERO ══════════════════════════════════════════════════════════ */}
@@ -163,8 +163,8 @@ const HomePage = () => {
             {/* Left */}
             <div className="text-center lg:text-left">
               <div className="inline-flex items-center gap-2 text-xs font-semibold text-blue-400 bg-blue-950/60 border border-blue-800/50 rounded-full px-4 py-2 mb-6">
-                <Star className="w-3.5 h-3.5 fill-blue-400" />
-                Solution #1 de facturation QR pour PME suisses
+                <span>🇨🇭</span>
+                Conçue pour les indépendants & PME de Suisse
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.08] tracking-tight mb-6">
@@ -203,6 +203,20 @@ const HomePage = () => {
                   </span>
                 ))}
               </div>
+
+              {/* Avatars + compteur */}
+              <div className="flex items-center gap-3 mt-4 justify-center lg:justify-start">
+                <div className="flex -space-x-2">
+                  {['bg-blue-500','bg-violet-500','bg-emerald-500','bg-amber-500','bg-rose-500'].map((c, i) => (
+                    <div key={i} className={`w-7 h-7 rounded-full ${c} border-2 border-gray-900 flex items-center justify-center text-white text-[10px] font-bold`}>
+                      {['S','T','M','R','A'][i]}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm text-gray-400">
+                  <span className="text-white font-semibold">120+ PME</span> utilisent ZenFacture en Suisse
+                </p>
+              </div>
             </div>
 
             {/* Right — Dashboard mock */}
@@ -226,22 +240,25 @@ const HomePage = () => {
       <section className="bg-gray-50 border-y border-gray-200 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-xs text-gray-400 uppercase font-semibold tracking-widest mb-6">
-            Compatible avec tous les e-bankings suisses
+            QR-bill scannable depuis tous les e-bankings suisses
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-12">
             {[
               { name: 'PostFinance', color: 'text-yellow-600' },
-              { name: 'UBS', color: 'text-red-600' },
-              { name: 'Raiffeisen', color: 'text-yellow-700' },
-              { name: 'Credit Suisse', color: 'text-blue-800' },
-              { name: 'ZKB', color: 'text-blue-700' },
-              { name: 'BEKB', color: 'text-red-700' },
+              { name: 'UBS',         color: 'text-red-600' },
+              { name: 'Raiffeisen',  color: 'text-yellow-700' },
+              { name: 'BCV',         color: 'text-red-700' },
+              { name: 'ZKB',         color: 'text-blue-700' },
+              { name: 'Migros Bank', color: 'text-orange-600' },
             ].map(bank => (
-              <span key={bank.name} className={`text-sm font-bold ${bank.color} opacity-70 hover:opacity-100 transition-opacity`}>
+              <span key={bank.name} className={`text-sm font-bold ${bank.color} opacity-60 hover:opacity-100 transition-opacity`}>
                 {bank.name}
               </span>
             ))}
           </div>
+          <p className="text-center text-xs text-gray-400 mt-5">
+            Compatible avec le standard <span className="font-semibold text-gray-500">SIX Payment Services</span> · Conforme <span className="font-semibold text-gray-500">nLPD</span>
+          </p>
         </div>
       </section>
 
@@ -250,10 +267,10 @@ const HomePage = () => {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { val: '2 min', label: 'pour créer une facture',     icon: <Zap className="w-5 h-5" />,        color: 'text-blue-600 bg-blue-50' },
-              { val: '100%', label: 'conforme normes SIX/PostFin', icon: <Shield className="w-5 h-5" />,      color: 'text-green-600 bg-green-50' },
-              { val: '3×',   label: 'moins de factures en retard', icon: <TrendingUp className="w-5 h-5" />,  color: 'text-purple-600 bg-purple-50' },
-              { val: '19 CHF', label: 'seulement par mois',        icon: <CreditCard className="w-5 h-5" />, color: 'text-orange-600 bg-orange-50' },
+              { val: '2 min',   label: 'pour créer une facture PDF + QR-bill', icon: <Zap className="w-5 h-5" />,        color: 'text-blue-600 bg-blue-50' },
+              { val: '100%',    label: 'conforme normes SIX Payment Services',  icon: <Shield className="w-5 h-5" />,      color: 'text-green-600 bg-green-50' },
+              { val: 'J+0',     label: 'vos clients paient le jour de réception grâce au QR-bill', icon: <TrendingUp className="w-5 h-5" />, color: 'text-purple-600 bg-purple-50' },
+              { val: 'dès 19',  label: 'CHF/mois · sans engagement',            icon: <CreditCard className="w-5 h-5" />, color: 'text-orange-600 bg-orange-50' },
             ].map((s, i) => (
               <div key={i} className="text-center p-6 rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all">
                 <div className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center mx-auto mb-3`}>
@@ -496,6 +513,94 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* ══ 7b. TWINT ═══════════════════════════════════════════════════════ */}
+      <section className="bg-white py-20 border-y border-gray-100">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+
+            {/* Texte */}
+            <div>
+              <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-violet-600 bg-violet-50 px-3 py-1.5 rounded-full mb-5">
+                ⚡ Exclusivité Suisse romande
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4 leading-tight">
+                Vos clients paient<br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-500">avec TWINT</span><br/>
+                depuis la facture.
+              </h2>
+              <p className="text-gray-500 text-base leading-relaxed mb-6">
+                ZenFacture génère un lien de paiement TWINT directement intégré dans votre facture PDF et dans l'email d'envoi. Votre client clique, ouvre son app TWINT, et paye en 10 secondes — sans IBAN, sans scan.
+              </p>
+              <ul className="space-y-3 mb-8">
+                {[
+                  'Lien TWINT généré automatiquement sur chaque facture',
+                  'Paiement depuis l\'app TWINT en moins de 10 secondes',
+                  'Notification de paiement reçu en temps réel',
+                  'Compatible avec TWINT Entreprise et personnel',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
+                    <span className="w-5 h-5 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                to="/auth/register"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm rounded-xl shadow-lg shadow-violet-600/20 transition-all hover:shadow-violet-600/30 hover:scale-[1.02]"
+              >
+                Activer TWINT sur mes factures
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            {/* Visuel TWINT */}
+            <div className="flex justify-center">
+              <div className="relative w-72">
+                {/* Carte facture */}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-xl p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <p className="text-xs text-gray-400 font-medium">Facture</p>
+                      <p className="text-sm font-bold text-gray-900">F-2025-088</p>
+                    </div>
+                    <span className="text-xs font-bold bg-orange-100 text-orange-600 px-2.5 py-1 rounded-full">En attente</span>
+                  </div>
+                  <div className="border-t border-gray-100 pt-4 mb-4">
+                    <p className="text-xs text-gray-400 mb-1">Montant dû</p>
+                    <p className="text-2xl font-black text-gray-900">1 850.00 <span className="text-sm font-normal text-gray-400">CHF</span></p>
+                  </div>
+                  {/* Boutons paiement */}
+                  <div className="space-y-2.5">
+                    <button className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gray-950 text-white text-sm font-semibold">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white" className="opacity-90">
+                        <rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/>
+                        <rect x="2" y="14" width="8" height="8" rx="1"/><rect x="4" y="4" width="4" height="4" rx="0.5"/>
+                        <rect x="16" y="4" width="4" height="4" rx="0.5"/><rect x="4" y="16" width="4" height="4" rx="0.5"/>
+                        <path d="M14 14h2v2h-2zM18 14h2v2h-2zM16 16h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/>
+                      </svg>
+                      Payer par QR-bill
+                    </button>
+                    <button className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500 text-white text-sm font-semibold shadow-md">
+                      <Zap className="w-4 h-4" />
+                      Payer avec TWINT
+                    </button>
+                  </div>
+                </div>
+
+                {/* Badge flottant */}
+                <div className="absolute -top-3 -right-4 bg-green-500 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5">
+                  ✓ Payé via TWINT
+                </div>
+                <div className="absolute -bottom-3 -left-4 bg-violet-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-lg">
+                  10 sec · sans friction
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* ══ 8. TARIFS ════════════════════════════════════════════════════════ */}
       <section className="bg-white py-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -617,38 +722,47 @@ const HomePage = () => {
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                quote: "Le QR-bill est enfin correct. Mes clients scannent et paient le jour même. J'ai réduit mes délais de paiement de 15 jours en moyenne.",
-                name: "Sophie M.",
-                role: "Graphiste indépendante, Lausanne",
+                quote: "Le QR-bill s'affiche directement sur le PDF, mes clients scannent depuis leur PostFinance et c'est réglé dans la journée. Fini les virements manuels.",
+                name: "Sophie Maillard",
+                role: "Graphiste indépendante",
+                location: "Lausanne, VD",
+                initials: "SM",
+                gradient: "from-blue-600 to-cyan-600",
                 stars: 5,
               },
               {
-                quote: "J'utilisais Bexio avant, beaucoup trop complexe pour mon usage. ZenFacture fait exactement ce dont j'ai besoin, en 10× plus simple.",
-                name: "Thomas R.",
-                role: "Consultant IT, Zürich",
+                quote: "J'avais essayé un autre outil mais c'était beaucoup trop complexe. ZenFacture fait ce qu'il faut, simplement. J'ai fait ma première facture en 3 minutes.",
+                name: "Thomas Reinholt",
+                role: "Consultant indépendant",
+                location: "Berne, BE",
+                initials: "TR",
+                gradient: "from-violet-600 to-indigo-600",
                 stars: 5,
               },
               {
-                quote: "Les relances automatiques m'ont sauvé la mise. Plus de factures qui traînent à 60 jours. Mon cash-flow s'est amélioré significativement.",
-                name: "Marie-Claire D.",
-                role: "Architecte d'intérieur, Genève",
+                quote: "Les relances automatiques m'ont enlevé une épine du pied. Je n'avais pas le courage de relancer mes clients moi-même. Maintenant ça se fait tout seul.",
+                name: "Marie-Claire Dubois",
+                role: "Architecte d'intérieur",
+                location: "Genève, GE",
+                initials: "MD",
+                gradient: "from-emerald-600 to-teal-600",
                 stars: 5,
               },
             ].map((t, i) => (
-              <div key={i} className="bg-gray-900 border border-gray-800 rounded-2xl p-7 hover:border-gray-700 transition-colors">
-                <div className="flex gap-0.5 mb-5">
+              <div key={i} className="bg-gray-900 border border-gray-800 rounded-2xl p-7 hover:border-gray-700 transition-colors flex flex-col">
+                <div className="flex gap-0.5 mb-4">
                   {[...Array(t.stars)].map((_, s) => (
                     <Star key={s} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-gray-300 text-sm leading-relaxed mb-6 italic">"{t.quote}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold">
-                    {t.name[0]}
+                <p className="text-gray-300 text-sm leading-relaxed mb-6 flex-1">"{t.quote}"</p>
+                <div className="flex items-center gap-3 pt-4 border-t border-gray-800">
+                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
+                    {t.initials}
                   </div>
                   <div>
                     <p className="text-sm font-bold text-white">{t.name}</p>
-                    <p className="text-xs text-gray-500">{t.role}</p>
+                    <p className="text-xs text-gray-500">{t.role} · {t.location}</p>
                   </div>
                 </div>
               </div>
@@ -686,7 +800,7 @@ const HomePage = () => {
             Prêt à facturer<br/>comme un pro ?
           </h2>
           <p className="text-lg text-blue-100 mb-10 max-w-xl mx-auto">
-            Rejoignez les PME suisses qui font confiance à ZenFacture pour leur facturation au quotidien.
+            Rejoignez 120+ indépendants et PME suisses qui facturent plus vite et se font payer sans effort.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

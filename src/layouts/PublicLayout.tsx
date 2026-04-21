@@ -13,6 +13,10 @@ const Navbar = () => {
   const [open, setOpen]         = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  // Navbar transparente uniquement sur la page d'accueil avant le scroll
+  const isHome      = location.pathname === '/';
+  const transparent = isHome && !scrolled;
+
   useEffect(() => { setOpen(false); }, [location.pathname]);
 
   useEffect(() => {
@@ -25,8 +29,12 @@ const Navbar = () => {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md transition-shadow duration-200 ${
-        scrolled ? 'shadow-md' : 'shadow-sm'
+      className={`sticky top-0 z-50 w-full backdrop-blur-md transition-all duration-300 ${
+        transparent
+          ? 'bg-gray-950/80 border-b border-white/5 shadow-none'
+          : scrolled
+            ? 'bg-white/95 shadow-md'
+            : 'bg-white/95 shadow-sm'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,8 +45,8 @@ const Navbar = () => {
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm">
               <FiFileText className="w-4 h-4 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900 tracking-tight">
-              Zen<span className="text-blue-600">Facture</span>
+            <span className={`text-xl font-bold tracking-tight transition-colors ${transparent ? 'text-white' : 'text-gray-900'}`}>
+              Zen<span className="text-blue-400">Facture</span>
             </span>
           </Link>
 
@@ -50,8 +58,10 @@ const Navbar = () => {
                 to={link.href}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isActive(link.href)
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? transparent ? 'text-blue-300 bg-white/10' : 'text-blue-600 bg-blue-50'
+                    : transparent
+                      ? 'text-gray-300 hover:text-white hover:bg-white/10'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
                 {link.name}
@@ -63,13 +73,15 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-3 shrink-0">
             <Link
               to="/auth/login"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                transparent ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-blue-600'
+              }`}
             >
               Se connecter
             </Link>
             <Link
               to="/auth/register"
-              className="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-all hover:shadow-md"
+              className="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-sm transition-all hover:shadow-md"
             >
               Essai gratuit →
             </Link>
@@ -78,7 +90,9 @@ const Navbar = () => {
           {/* Burger mobile */}
           <button
             onClick={() => setOpen(o => !o)}
-            className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+            className={`md:hidden p-2 rounded-lg transition-colors ${
+              transparent ? 'text-gray-300 hover:bg-white/10' : 'text-gray-600 hover:bg-gray-100'
+            }`}
             aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'}
           >
             {open ? <FiX className="w-5 h-5" /> : <FiMenu className="w-5 h-5" />}
@@ -86,15 +100,19 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Menu mobile — conditionnel, pas toujours visible */}
+      {/* Menu mobile */}
       {open && (
-        <div className="md:hidden border-t border-gray-100 bg-white px-4 py-4 space-y-1 shadow-lg">
+        <div className={`md:hidden border-t px-4 py-4 space-y-1 shadow-lg ${
+          transparent ? 'border-white/10 bg-gray-950' : 'border-gray-100 bg-white'
+        }`}>
           {navLinks.map(link => (
             <Link
               key={link.href}
               to={link.href}
               className={`flex items-center px-3 py-2.5 rounded-lg text-sm font-medium ${
-                isActive(link.href) ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'
+                isActive(link.href)
+                  ? transparent ? 'text-blue-300 bg-white/10' : 'text-blue-600 bg-blue-50'
+                  : transparent ? 'text-gray-300 hover:bg-white/10' : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
               {link.name}
@@ -109,7 +127,7 @@ const Navbar = () => {
             </Link>
             <Link
               to="/auth/register"
-              className="flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+              className="flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-500"
             >
               Essai gratuit 30 jours →
             </Link>
