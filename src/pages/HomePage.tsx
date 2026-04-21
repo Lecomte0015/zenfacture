@@ -2,94 +2,134 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   CheckCircle, ArrowRight, Shield, FileText, Repeat,
-  BarChart3, Mail, ChevronDown, ChevronUp,
-  RefreshCw, Bell, Clock,
+  BarChart3, Mail, ChevronDown, ChevronUp, RefreshCw,
+  Bell, Clock, Lock, Download, Users,
 } from 'lucide-react';
 import SEO from '../components/common/SEO';
 import ChatAssistant from '../components/chat/ChatAssistant';
 
-// ─── Mock Dashboard Preview ───────────────────────────────────────────────────
+// ─── Aperçu d'une vraie facture ZenFacture ───────────────────────────────────
 
-const DashboardPreview = () => (
-  <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200 w-full max-w-lg">
-    {/* Top bar */}
-    <div className="bg-gray-50 border-b border-gray-100 px-4 py-3 flex items-center gap-2">
-      <div className="w-3 h-3 rounded-full bg-red-400" />
-      <div className="w-3 h-3 rounded-full bg-yellow-400" />
-      <div className="w-3 h-3 rounded-full bg-green-400" />
-      <span className="ml-3 text-xs text-gray-400 font-mono">app.zenfacture.ch/dashboard</span>
-    </div>
-
-    {/* Stats row */}
-    <div className="grid grid-cols-3 gap-0 border-b border-gray-100">
-      {[
-        { label: 'Facturé', value: '24 850', color: 'text-blue-600', sub: 'ce mois' },
-        { label: 'Payé', value: '18 200', color: 'text-green-600', sub: '73%' },
-        { label: 'En attente', value: '6 650', color: 'text-orange-500', sub: '3 factures' },
-      ].map((s, i) => (
-        <div key={i} className={`px-4 py-3 ${i < 2 ? 'border-r border-gray-100' : ''}`}>
-          <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wide">{s.label}</p>
-          <p className={`text-base font-bold ${s.color}`}>{s.value} <span className="text-xs font-normal text-gray-400">CHF</span></p>
-          <p className="text-[10px] text-gray-400">{s.sub}</p>
+const InvoicePreview = () => (
+  <div className="w-full max-w-lg mx-auto">
+    {/* Barre d'action de l'app */}
+    <div className="bg-gray-900 rounded-t-xl px-4 py-3 flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <div className="w-5 h-5 rounded bg-blue-600 flex items-center justify-center">
+          <FileText className="w-3 h-3 text-white" />
         </div>
-      ))}
+        <span className="text-white text-xs font-semibold">ZenFacture</span>
+        <span className="text-gray-500 text-xs">/ Facture F-2025-042</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <button className="text-[11px] font-medium text-gray-300 bg-gray-800 px-3 py-1 rounded-md flex items-center gap-1.5">
+          <Download className="w-3 h-3" /> PDF
+        </button>
+        <button className="text-[11px] font-medium text-white bg-blue-600 px-3 py-1 rounded-md flex items-center gap-1.5">
+          <Mail className="w-3 h-3" /> Envoyer
+        </button>
+      </div>
     </div>
 
-    {/* Invoice list */}
-    <div className="px-4 py-3 space-y-2">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold text-gray-700">Dernières factures</span>
-        <span className="text-[10px] text-blue-500 font-medium cursor-pointer hover:underline">Voir tout</span>
-      </div>
-      {[
-        { num: 'F-2024-042', client: 'Müller SA',        amount: '4 800.00', status: 'payé',      date: '15 mars' },
-        { num: 'F-2024-041', client: 'Atelier Vaud',     amount: '1 250.00', status: 'envoyée',   date: '12 mars' },
-        { num: 'F-2024-040', client: 'TechStartup GmbH', amount: '3 600.00', status: 'en retard', date: '1 mars' },
-        { num: 'F-2024-039', client: 'Studio Genève',    amount: '890.00',   status: 'payé',      date: '28 fév' },
-      ].map((inv, i) => (
-        <div key={i} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
-          <div className="flex items-center gap-2.5">
-            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-              inv.status === 'payé' ? 'bg-green-500' :
-              inv.status === 'en retard' ? 'bg-red-500' : 'bg-orange-400'
-            }`} />
-            <div>
-              <p className="text-xs font-semibold text-gray-800 leading-tight">{inv.client}</p>
-              <p className="text-[10px] text-gray-400">{inv.num}</p>
+    {/* Facture simulée */}
+    <div className="bg-white rounded-b-xl shadow-2xl border border-gray-200 border-t-0 overflow-hidden">
+      <div className="px-8 pt-7 pb-4">
+
+        {/* En-tête facture */}
+        <div className="flex justify-between items-start mb-7">
+          <div>
+            <div className="font-black text-base text-gray-900 tracking-tight">Atelier Créatif Sàrl</div>
+            <div className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+              Rue du Lac 12 · 1006 Lausanne<br/>
+              CHE-123.456.789 TVA
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs font-bold text-gray-800">{inv.amount} <span className="font-normal text-gray-400">CHF</span></p>
-            <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${
-              inv.status === 'payé'      ? 'bg-green-100 text-green-700' :
-              inv.status === 'en retard' ? 'bg-red-100 text-red-700' :
-                                           'bg-orange-100 text-orange-700'
-            }`}>{inv.status}</span>
+            <div className="text-xs font-black text-blue-600 uppercase tracking-widest mb-0.5">Facture</div>
+            <div className="text-xs text-gray-500">N° F-2025-042</div>
+            <div className="text-xs text-gray-500">Échéance : 21 mai 2025</div>
           </div>
         </div>
-      ))}
+
+        {/* Destinataire */}
+        <div className="bg-gray-50 rounded-lg p-3 mb-5 text-xs">
+          <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-semibold">Facturé à</div>
+          <div className="font-semibold text-gray-900">Müller & Associés SA</div>
+          <div className="text-gray-500">Bahnhofstrasse 42 · 8001 Zürich</div>
+        </div>
+
+        {/* Lignes */}
+        <table className="w-full text-xs mb-4">
+          <thead>
+            <tr className="border-b border-gray-200 text-[10px] text-gray-400 uppercase tracking-wider">
+              <th className="text-left pb-1.5 font-semibold">Prestation</th>
+              <th className="text-right pb-1.5 font-semibold">CHF</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            <tr>
+              <td className="py-2 text-gray-700">Conception graphique — identité visuelle</td>
+              <td className="text-right text-gray-800 font-medium">2 800.00</td>
+            </tr>
+            <tr>
+              <td className="py-2 text-gray-700">Révisions (3h × 120.–)</td>
+              <td className="text-right text-gray-800 font-medium">360.00</td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* Totaux */}
+        <div className="border-t border-gray-200 pt-2 space-y-1 text-xs mb-5">
+          <div className="flex justify-between text-gray-500"><span>Sous-total HT</span><span>3 160.00</span></div>
+          <div className="flex justify-between text-gray-500"><span>TVA 8.1%</span><span>256.00</span></div>
+          <div className="flex justify-between font-black text-sm text-gray-900 pt-1.5 border-t border-gray-300 mt-1">
+            <span>Total CHF</span><span>3 416.00</span>
+          </div>
+        </div>
+
+        {/* Section QR-bill */}
+        <div className="border-t-2 border-gray-800 pt-4">
+          <div className="flex gap-4 items-start">
+            {/* QR code */}
+            <div className="w-20 h-20 border border-gray-300 rounded-sm p-1 flex-shrink-0 bg-white flex items-center justify-center">
+              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" className="text-gray-900">
+                <rect x="2" y="2" width="8" height="8" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+                <rect x="14" y="2" width="8" height="8" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+                <rect x="2" y="14" width="8" height="8" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+                <rect x="3.5" y="3.5" width="5" height="5" fill="currentColor" rx="0.3"/>
+                <rect x="15.5" y="3.5" width="5" height="5" fill="currentColor" rx="0.3"/>
+                <rect x="3.5" y="15.5" width="5" height="5" fill="currentColor" rx="0.3"/>
+                <path d="M14 14h2v2h-2zM18 14h2v2h-2zM16 16h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z" fill="currentColor"/>
+              </svg>
+            </div>
+            <div className="flex-1 text-[10px]">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <div className="font-bold text-gray-800 mb-0.5">Compte / Payable à</div>
+                  <div className="text-gray-600">Atelier Créatif Sàrl</div>
+                  <div className="text-gray-600 font-mono">CH58 0076 1016 1185 3420 5</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold text-gray-800 mb-0.5">Montant</div>
+                  <div className="text-xl font-black text-gray-900 leading-none">3 416.00</div>
+                  <div className="text-gray-500 font-semibold">CHF</div>
+                </div>
+              </div>
+              <div className="mt-2 pt-2 border-t border-gray-200 text-[9px] text-gray-400 uppercase tracking-wide">
+                Conforme SIX Payment Services · Scannable depuis tous les e-bankings suisses
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    {/* QR bill */}
-    <div className="mx-4 mb-4 rounded-xl bg-blue-50 border border-blue-100 p-3 flex items-center gap-3">
-      <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-blue-600">
-          <rect x="2" y="2" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5"/>
-          <rect x="14" y="2" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5"/>
-          <rect x="2" y="14" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5"/>
-          <rect x="4" y="4" width="4" height="4" fill="currentColor" rx="0.5"/>
-          <rect x="16" y="4" width="4" height="4" fill="currentColor" rx="0.5"/>
-          <rect x="4" y="16" width="4" height="4" fill="currentColor" rx="0.5"/>
-          <path d="M14 14h2v2h-2zM18 14h2v2h-2zM16 16h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z" fill="currentColor"/>
-        </svg>
-      </div>
-      <div>
-        <p className="text-xs font-semibold text-blue-800">QR-Facture suisse générée</p>
-        <p className="text-[10px] text-blue-600">Conforme SIX · Scannez depuis votre e-banking</p>
-      </div>
-      <div className="ml-auto shrink-0">
-        <span className="text-[10px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">Valide</span>
-      </div>
+    {/* Badge flottant */}
+    <div className="mt-3 flex justify-center">
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full">
+        <CheckCircle className="w-3.5 h-3.5" />
+        Généré automatiquement en 2 minutes · PDF prêt à envoyer
+      </span>
     </div>
   </div>
 );
@@ -99,23 +139,23 @@ const DashboardPreview = () => (
 const faqItems = [
   {
     q: "La QR-facture est-elle vraiment conforme aux normes SIX/PostFinance ?",
-    a: "Oui, à 100%. Nous générons les données selon les spécifications officielles SIX Payment Services. Votre QR-code est scannable par tous les e-bankings suisses : PostFinance, UBS, Raiffeisen, BCV, ZKB, etc.",
+    a: "Oui, à 100%. Les données sont générées selon les spécifications officielles SIX Payment Services. Le QR-code est scannable par tous les e-bankings suisses : PostFinance, UBS, Raiffeisen, BCV, ZKB, Migros Bank, etc.",
   },
   {
-    q: "Puis-je migrer depuis Bexio ou Debitoor ?",
-    a: "Absolument. Vous pouvez importer vos clients et produits via CSV, ou contacter notre support pour une migration assistée.",
+    q: "Puis-je migrer depuis Bexio ou un autre outil ?",
+    a: "Oui. Vous pouvez importer vos clients et produits via CSV. Notre support vous accompagne si nécessaire.",
   },
   {
     q: "Mes données sont-elles hébergées en Suisse ?",
-    a: "Oui, toutes vos données sont stockées sur des serveurs en Suisse, conformément à la nouvelle loi sur la protection des données (nLPD).",
+    a: "Oui. Toutes vos données sont stockées sur des serveurs en Suisse, conformément à la nLPD (nouvelle loi sur la protection des données).",
   },
   {
-    q: "Y a-t-il un engagement de durée ?",
-    a: "Aucun. Vous payez mois par mois et résiliez quand vous voulez. Pas de frais cachés, pas de pénalité de résiliation.",
+    q: "Que se passe-t-il à la fin des 30 jours gratuits ?",
+    a: "Vous choisissez un abonnement ou vous arrêtez — sans engagement, sans pénalité. Vous pouvez exporter toutes vos données à tout moment au format PDF et CSV.",
   },
   {
     q: "Est-ce que ZenFacture gère la TVA suisse ?",
-    a: "Oui. Les taux suisses (8.1%, 2.6%, 3.8%) sont pré-configurés. La TVA est calculée automatiquement sur chaque facture et un rapport TVA est disponible pour votre fiduciaire.",
+    a: "Oui. Les taux 8.1%, 2.6% et 3.8% sont pré-configurés. La TVA est calculée automatiquement sur chaque facture et un rapport est disponible pour votre fiduciaire.",
   },
 ];
 
@@ -124,7 +164,7 @@ const FAQ = () => {
   return (
     <div className="space-y-2 max-w-3xl mx-auto">
       {faqItems.map((item, i) => (
-        <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
+        <div key={i} className="border border-gray-200 rounded-xl overflow-hidden bg-white">
           <button
             className="w-full flex items-center justify-between px-6 py-4 text-left text-sm font-semibold text-gray-900 hover:bg-gray-50 transition-colors"
             onClick={() => setOpen(open === i ? null : i)}
@@ -136,7 +176,7 @@ const FAQ = () => {
             }
           </button>
           {open === i && (
-            <div className="px-6 pb-5 text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-3 bg-gray-50">
+            <div className="px-6 pb-5 pt-3 text-sm text-gray-600 leading-relaxed border-t border-gray-100 bg-gray-50">
               {item.a}
             </div>
           )}
@@ -145,32 +185,6 @@ const FAQ = () => {
     </div>
   );
 };
-
-// ─── Témoignages ─────────────────────────────────────────────────────────────
-
-const testimonials = [
-  {
-    quote: "Le QR-bill s'affiche directement sur le PDF. Mes clients scannent depuis leur PostFinance et c'est réglé dans la journée. Fini les virements manuels.",
-    name: "Sophie Maillard",
-    role: "Graphiste indépendante",
-    location: "Lausanne, VD",
-    initials: "SM",
-  },
-  {
-    quote: "J'avais essayé un autre outil mais c'était beaucoup trop complexe. ZenFacture fait ce qu'il faut, simplement. J'ai créé ma première facture en moins de cinq minutes.",
-    name: "Thomas Reinholt",
-    role: "Consultant indépendant",
-    location: "Berne, BE",
-    initials: "TR",
-  },
-  {
-    quote: "Les relances automatiques m'ont enlevé une épine du pied. Je n'avais pas le courage de relancer mes clients moi-même. Maintenant ça se fait tout seul.",
-    name: "Marie-Claire Dubois",
-    role: "Architecte d'intérieur",
-    location: "Genève, GE",
-    initials: "MD",
-  },
-];
 
 // ─── Page principale ──────────────────────────────────────────────────────────
 
@@ -189,46 +203,50 @@ const HomePage = () => {
 
       {/* ══ 2. HERO ══════════════════════════════════════════════════════════ */}
       <section className="bg-slate-50 border-b border-gray-200">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 text-center">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-6 text-center">
 
-          <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-3 py-1.5 mb-8">
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-3 py-1.5 mb-7">
             <Shield className="w-3.5 h-3.5 shrink-0" />
             Certifié SIX Payment Services · Swiss Made · nLPD
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.08] tracking-tight mb-6">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.08] tracking-tight mb-5">
             La facturation suisse,<br /> enfin simple.
           </h1>
 
-          <p className="text-lg sm:text-xl text-gray-500 leading-relaxed mb-10 max-w-xl mx-auto">
-            Créez des factures avec QR-bill conforme, envoyez-les par email et encaissez vos paiements — depuis une interface pensée pour les PME et indépendants suisses.
+          <p className="text-lg sm:text-xl text-gray-500 leading-relaxed mb-9 max-w-xl mx-auto">
+            Créez des factures professionnelles avec QR-bill conforme, envoyez-les par email et encaissez vos paiements — depuis une interface pensée pour les PME et indépendants suisses.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-5">
             <Link
               to="/auth/register"
               className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-all"
             >
-              Commencer gratuitement
+              Commencer gratuitement — 30 jours
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
               to="/tarifs"
-              className="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-gray-700 border border-gray-300 hover:border-gray-400 hover:bg-gray-100 rounded-lg transition-all bg-white"
+              className="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-gray-700 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 rounded-lg transition-all"
             >
               Voir les tarifs
             </Link>
           </div>
 
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500 justify-center">
-            {['30 jours gratuits · sans carte', 'Sans engagement', 'Support en français'].map(t => (
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500 justify-center mb-12">
+            {['Sans carte bancaire', 'Sans engagement', 'Annulation en 1 clic'].map(t => (
               <span key={t} className="flex items-center gap-1.5">
                 <CheckCircle className="w-4 h-4 text-green-500 shrink-0" /> {t}
               </span>
             ))}
           </div>
 
+          {/* Visuel produit — la facture réelle */}
+          <InvoicePreview />
+
         </div>
+        <div className="h-12 bg-gradient-to-b from-slate-50 to-white" />
       </section>
 
       {/* ══ 3. TRUST BAR ═════════════════════════════════════════════════════ */}
@@ -239,7 +257,7 @@ const HomePage = () => {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-14">
             {['PostFinance', 'UBS', 'Raiffeisen', 'BCV', 'ZKB', 'Migros Bank'].map(bank => (
-              <span key={bank} className="text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors tracking-tight">
+              <span key={bank} className="text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors">
                 {bank}
               </span>
             ))}
@@ -247,33 +265,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ══ 4. TÉMOIGNAGES — juste après le hero ════════════════════════════ */}
-      <section className="bg-gray-900 py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">Ils facturent avec ZenFacture</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white">Ce qu'en disent nos clients</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((t, i) => (
-              <div key={i} className="border border-gray-700 rounded-2xl p-7 hover:border-gray-600 transition-all flex flex-col bg-gray-800/50">
-                <p className="text-gray-300 text-sm leading-relaxed mb-6 flex-1">"{t.quote}"</p>
-                <div className="flex items-center gap-3 pt-5 border-t border-gray-700">
-                  <div className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center text-gray-300 text-xs font-bold shrink-0">
-                    {t.initials}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">{t.name}</p>
-                    <p className="text-xs text-gray-500">{t.role} · {t.location}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══ 5. BÉNÉFICES CLÉS ════════════════════════════════════════════════ */}
+      {/* ══ 4. POURQUOI ZENFACTURE ═══════════════════════════════════════════ */}
       <section className="bg-white py-20 border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
@@ -283,27 +275,27 @@ const HomePage = () => {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                icon: <FileText className="w-6 h-6 text-blue-600" />,
+                icon: <FileText className="w-5 h-5 text-blue-600" />,
                 title: "QR-bill conforme en quelques clics",
-                desc: "Chaque facture génère automatiquement un QR-bill conforme aux normes SIX. Vos clients paient depuis leur e-banking sans saisie manuelle.",
+                desc: "Chaque facture génère automatiquement un QR-bill selon les normes SIX. Vos clients paient depuis leur e-banking sans saisie manuelle.",
               },
               {
-                icon: <Bell className="w-6 h-6 text-blue-600" />,
+                icon: <Bell className="w-5 h-5 text-blue-600" />,
                 title: "Moins de factures en retard",
-                desc: "Les relances par email s'envoient automatiquement à J+7, J+14 et J+30. Vous récupérez du temps et vos clients paient plus régulièrement.",
+                desc: "Les relances s'envoient automatiquement à J+7, J+14 et J+30. Vous récupérez du temps et vos clients paient plus régulièrement.",
               },
               {
-                icon: <Clock className="w-6 h-6 text-blue-600" />,
-                title: "Opérationnel en moins de cinq minutes",
-                desc: "Inscription, configuration de votre IBAN, première facture envoyée. Aucune formation requise, aucun comptable nécessaire.",
+                icon: <Clock className="w-5 h-5 text-blue-600" />,
+                title: "Opérationnel en cinq minutes",
+                desc: "Inscription, IBAN, première facture envoyée. Aucune formation requise, aucun comptable nécessaire pour démarrer.",
               },
             ].map((b, i) => (
               <div key={i} className="flex flex-col gap-4">
-                <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
                   {b.icon}
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-gray-900 mb-2">{b.title}</h3>
+                  <h3 className="text-base font-bold text-gray-900 mb-1.5">{b.title}</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">{b.desc}</p>
                 </div>
               </div>
@@ -312,108 +304,32 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ══ 6. COMMENT CA MARCHE ════════════════════════════════════════════ */}
+      {/* ══ 5. FONCTIONNALITÉS — grille scannable ════════════════════════════ */}
       <section className="bg-slate-50 border-y border-gray-200 py-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Prise en main</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Opérationnel en cinq minutes</h2>
-          </div>
-
-          <div className="relative">
-            <div className="hidden md:block absolute top-11 left-[16.67%] right-[16.67%] h-px bg-gray-200" />
-            <div className="grid md:grid-cols-3 gap-8 relative">
-              {[
-                {
-                  step: '1',
-                  title: 'Créez votre compte',
-                  desc: 'Inscription en 30 secondes. Configurez votre entreprise, votre IBAN et votre logo.',
-                },
-                {
-                  step: '2',
-                  title: 'Rédigez votre facture',
-                  desc: 'Ajoutez votre client, vos prestations et la TVA. Le QR-bill et le PDF sont générés instantanément.',
-                },
-                {
-                  step: '3',
-                  title: 'Envoyez et encaissez',
-                  desc: 'Envoyez par email en un clic. Votre client reçoit le PDF avec le QR-bill prêt à scanner.',
-                },
-              ].map((s, i) => (
-                <div key={i} className="text-center">
-                  <div className="w-11 h-11 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center mx-auto mb-5 relative z-10">
-                    {s.step}
-                  </div>
-                  <h3 className="text-base font-bold text-gray-900 mb-2">{s.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{s.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══ 7. FONCTIONNALITÉS — linéaire, pas de bento ═════════════════════ */}
-      <section className="bg-white py-20 border-b border-gray-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Fonctionnalités</p>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Tout ce qu'il vous faut, rien de superflu</h2>
           </div>
 
-          <div className="space-y-14">
+          <div className="grid sm:grid-cols-2 gap-5">
             {[
-              {
-                icon: <FileText className="w-5 h-5 text-blue-600" />,
-                title: "QR-facture conforme SIX — incluse sur chaque PDF",
-                desc: "Le QR-bill est généré automatiquement selon les spécifications officielles SIX Payment Services. Vos clients paient en scannant le code depuis leur e-banking suisse, sans saisie d'IBAN ni de montant. Compatible PostFinance, UBS, Raiffeisen, BCV, ZKB et Migros Bank.",
-                tags: ['SIX certifié', 'Tous e-bankings', 'PDF automatique'],
-              },
-              {
-                icon: <Bell className="w-5 h-5 text-blue-600" />,
-                title: "Relances automatiques — plus de factures oubliées",
-                desc: "Configurez trois niveaux de relance par email (J+7, J+14, J+30). Les emails partent automatiquement sans que vous ayez à intervenir. Vous êtes notifié dès qu'un paiement est reçu.",
-                tags: ['Emails automatiques', '3 niveaux', 'Notifications'],
-              },
-              {
-                icon: <Repeat className="w-5 h-5 text-blue-600" />,
-                title: "Factures récurrentes — gagnez des heures chaque mois",
-                desc: "Pour vos abonnements mensuels, trimestriels ou annuels : configurez une fois, ZenFacture génère et envoie automatiquement. Idéal pour les prestataires de services à tarif fixe.",
-                tags: ['Mensuel · Trimestriel', 'Envoi automatique', 'Gestion abonnements'],
-              },
-              {
-                icon: <BarChart3 className="w-5 h-5 text-blue-600" />,
-                title: "Tableau de bord financier — vue d'ensemble en temps réel",
-                desc: "Montant facturé, encaissé, en retard. TVA collectée par période. Export des données pour votre fiduciaire. Toutes vos finances en un coup d'oeil.",
-                tags: ['Chiffre d\'affaires', 'TVA', 'Export fiduciaire'],
-              },
-              {
-                icon: <Mail className="w-5 h-5 text-blue-600" />,
-                title: "Envoi par email — PDF et QR-bill en pièce jointe",
-                desc: "Envoyez vos factures directement depuis ZenFacture. Le PDF avec QR-bill est joint automatiquement. Votre client reçoit tout ce dont il a besoin pour payer.",
-                tags: ['PDF automatique', 'QR-bill joint', 'Historique envois'],
-              },
-              {
-                icon: <RefreshCw className="w-5 h-5 text-blue-600" />,
-                title: "Import bancaire CAMT.053 — réconciliation sans saisie",
-                desc: "Importez votre relevé bancaire au format CAMT.053 (standard suisse) et réconciliez automatiquement vos paiements. Zéro saisie manuelle.",
-                tags: ['Format suisse natif', 'CAMT.053', 'Rapprochement auto'],
-              },
+              { icon: <FileText className="w-4 h-4 text-blue-600" />, title: "QR-bill automatique sur chaque PDF", desc: "Conforme SIX · Compatible tous e-bankings suisses" },
+              { icon: <Mail className="w-4 h-4 text-blue-600" />, title: "Envoi par email en un clic", desc: "PDF + QR-bill joints automatiquement · Historique d'envoi" },
+              { icon: <Bell className="w-4 h-4 text-blue-600" />, title: "Relances automatiques (J+7, J+14, J+30)", desc: "Emails configurables · Notification de paiement reçu" },
+              { icon: <Repeat className="w-4 h-4 text-blue-600" />, title: "Factures récurrentes", desc: "Génération et envoi automatiques · Idéal pour abonnements" },
+              { icon: <BarChart3 className="w-4 h-4 text-blue-600" />, title: "Tableau de bord financier", desc: "CA, TVA, factures en retard · Export fiduciaire" },
+              { icon: <RefreshCw className="w-4 h-4 text-blue-600" />, title: "Import bancaire CAMT.053", desc: "Format suisse natif · Rapprochement automatique" },
+              { icon: <Users className="w-4 h-4 text-blue-600" />, title: "Gestion des clients et produits", desc: "Catalogue, historique, devis convertibles en factures" },
+              { icon: <Download className="w-4 h-4 text-blue-600" />, title: "Export et archivage nLPD", desc: "PDF, CSV · Hébergement suisse · Conforme nLPD" },
             ].map((f, i) => (
-              <div key={i} className="flex flex-col sm:flex-row gap-6 pb-14 border-b border-gray-200 last:border-0 last:pb-0">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+              <div key={i} className="flex items-start gap-4 bg-white rounded-xl p-5 border border-gray-200 hover:border-blue-200 hover:shadow-sm transition-all">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 mt-0.5">
                   {f.icon}
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-gray-900 mb-2">{f.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed mb-3">{f.desc}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {f.tags.map(tag => (
-                      <span key={tag} className="text-[11px] font-medium text-gray-500 bg-white border border-gray-200 px-2.5 py-1 rounded-full">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-sm font-semibold text-gray-900 mb-0.5">{f.title}</p>
+                  <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
                 </div>
               </div>
             ))}
@@ -421,7 +337,34 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ══ 8. TARIFS ════════════════════════════════════════════════════════ */}
+      {/* ══ 6. COMMENT ÇA MARCHE ════════════════════════════════════════════ */}
+      <section className="bg-white py-20 border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Prise en main</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Opérationnel en cinq minutes</h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 relative">
+            <div className="hidden md:block absolute top-10 left-[22%] right-[22%] h-px bg-gray-200" />
+            {[
+              { step: '1', title: 'Créez votre compte', desc: 'Inscription en 30 secondes. Ajoutez votre IBAN et votre logo. Aucune carte bancaire requise.' },
+              { step: '2', title: 'Rédigez votre facture', desc: 'Sélectionnez votre client, ajoutez vos prestations et la TVA. Le QR-bill et le PDF sont générés instantanément.' },
+              { step: '3', title: 'Envoyez et encaissez', desc: 'Envoyez par email en un clic. Votre client reçoit le PDF avec le QR-bill prêt à scanner.' },
+            ].map((s, i) => (
+              <div key={i} className="text-center relative">
+                <div className="w-11 h-11 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center mx-auto mb-5 relative z-10 shadow-sm shadow-blue-600/30">
+                  {s.step}
+                </div>
+                <h3 className="text-base font-bold text-gray-900 mb-2">{s.title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ 7. TARIFS ════════════════════════════════════════════════════════ */}
       <section className="bg-slate-50 border-b border-gray-200 py-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
@@ -436,13 +379,7 @@ const HomePage = () => {
                 name: 'Essentiel',
                 price: '19',
                 desc: 'Indépendants & micro-entreprises',
-                features: [
-                  '10 factures par mois',
-                  'QR-bill automatique',
-                  'Envoi par email',
-                  '1 utilisateur',
-                  'Export PDF',
-                ],
+                features: ['10 factures par mois', 'QR-bill automatique', 'Envoi par email', '1 utilisateur', 'Export PDF'],
                 cta: 'Commencer',
                 highlight: false,
               },
@@ -450,15 +387,7 @@ const HomePage = () => {
                 name: 'Professionnel',
                 price: '49',
                 desc: 'PME en croissance',
-                features: [
-                  'Factures illimitées',
-                  'Relances automatiques',
-                  'Factures récurrentes',
-                  'Import CAMT.053',
-                  'Multi-devises',
-                  'Devis et avoirs',
-                  'Support prioritaire',
-                ],
+                features: ['Factures illimitées', 'Relances automatiques', 'Factures récurrentes', 'Import CAMT.053', 'Multi-devises', 'Devis et avoirs', 'Support prioritaire'],
                 cta: 'Essai gratuit 30 jours',
                 highlight: true,
               },
@@ -466,14 +395,7 @@ const HomePage = () => {
                 name: 'Entreprise',
                 price: '99',
                 desc: 'Multi-utilisateurs et équipes',
-                features: [
-                  'Tout Professionnel',
-                  '5 utilisateurs inclus',
-                  'API REST',
-                  'Marque blanche',
-                  'Intégration fiduciaire',
-                  'Support dédié',
-                ],
+                features: ['Tout Professionnel', '5 utilisateurs inclus', 'API REST', 'Marque blanche', 'Intégration fiduciaire', 'Support dédié'],
                 cta: 'Nous contacter',
                 highlight: false,
               },
@@ -520,15 +442,40 @@ const HomePage = () => {
               </div>
             ))}
           </div>
-
           <p className="text-center text-sm text-gray-400 mt-8">
             Tous les prix sont en CHF HT · Paiement mensuel ou annuel (2 mois offerts)
           </p>
         </div>
       </section>
 
+      {/* ══ 8. GARANTIES — réduction du risque ══════════════════════════════ */}
+      <section className="bg-gray-900 py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-xl sm:text-2xl font-bold text-white">Essayez sans risque</h2>
+            <p className="text-gray-400 text-sm mt-2">Nous assumons l'entier du risque pour vous.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { icon: <Clock className="w-5 h-5 text-blue-400" />, title: "30 jours gratuits", desc: "Sans carte bancaire. Aucun débit automatique." },
+              { icon: <Lock className="w-5 h-5 text-blue-400" />, title: "Annulation en 1 clic", desc: "Sans frais, sans pénalité, à tout moment." },
+              { icon: <Download className="w-5 h-5 text-blue-400" />, title: "Vos données restent vôtres", desc: "Export PDF et CSV à tout moment, sans restriction." },
+              { icon: <Shield className="w-5 h-5 text-blue-400" />, title: "Données en Suisse", desc: "Hébergement suisse · nLPD conforme · ISO27001." },
+            ].map((g, i) => (
+              <div key={i} className="text-center">
+                <div className="w-10 h-10 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center mx-auto mb-3">
+                  {g.icon}
+                </div>
+                <p className="text-sm font-semibold text-white mb-1">{g.title}</p>
+                <p className="text-xs text-gray-500 leading-relaxed">{g.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ══ 9. FAQ ══════════════════════════════════════════════════════════ */}
-      <section className="bg-white border-b border-gray-200 py-20">
+      <section className="bg-white py-20 border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Questions fréquentes</p>
@@ -540,31 +487,23 @@ const HomePage = () => {
 
       {/* ══ 10. CTA FINAL ════════════════════════════════════════════════════ */}
       <section className="bg-blue-600 py-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-xs font-semibold text-blue-200 uppercase tracking-widest mb-4">Swiss Made Software</p>
           <h2 className="text-3xl sm:text-4xl font-black text-white mb-4 leading-tight">
             Prêt à simplifier votre facturation ?
           </h2>
-          <p className="text-base text-blue-100 mb-8 max-w-xl mx-auto leading-relaxed">
-            Rejoignez les indépendants et PME suisses qui ont gagné du temps sur leur administratif grâce à ZenFacture.
+          <p className="text-base text-blue-100 mb-8 max-w-lg mx-auto leading-relaxed">
+            30 jours gratuits, sans carte bancaire. Votre première facture avec QR-bill en moins de cinq minutes.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              to="/auth/register"
-              className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-blue-700 bg-white hover:bg-blue-50 rounded-lg transition-all"
-            >
-              Commencer gratuitement — 30 jours
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
-            <Link
-              to="/tarifs"
-              className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white border border-white/30 rounded-lg hover:bg-white/10 transition-all"
-            >
-              Voir les tarifs
-            </Link>
-          </div>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-blue-200">
-            {['Sans carte bancaire', 'Sans engagement', 'Données hébergées en Suisse', 'Support en français'].map(t => (
+          <Link
+            to="/auth/register"
+            className="group inline-flex items-center justify-center gap-2 px-10 py-4 text-base font-bold text-blue-700 bg-white hover:bg-blue-50 rounded-lg transition-all shadow-lg"
+          >
+            Commencer gratuitement
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-blue-200">
+            {['Sans carte bancaire', 'Sans engagement', 'Support en français'].map(t => (
               <span key={t} className="flex items-center gap-1.5">
                 <CheckCircle className="w-4 h-4 text-blue-300 shrink-0" /> {t}
               </span>
