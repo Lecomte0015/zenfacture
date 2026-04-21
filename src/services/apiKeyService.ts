@@ -73,7 +73,7 @@ export const apiKeyService = {
   },
 
   // Générer une clé unique
-  private async genererCleUnique(): Promise<string> {
+  async genererCleUnique(): Promise<string> {
     const { data, error } = await supabase.rpc('generer_cle_api');
     if (error) throw error;
     return data;
