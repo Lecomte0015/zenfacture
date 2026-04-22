@@ -202,61 +202,57 @@ const HomePage = () => {
       </div>
 
       {/* ══ 2. HERO — photo de fond ══════════════════════════════════════════ */}
-      {/* Remplace /hero-bg.jpg par ta photo dans le dossier public/ */}
-      <section className="relative min-h-[600px] lg:min-h-[660px] flex items-center overflow-hidden">
-        {/* Photo de fond — dépose ton image dans public/hero-bg.jpg */}
+      <section className="relative min-h-[600px] lg:min-h-[680px] flex items-center overflow-hidden">
+        {/* Photo de fond */}
         <img
-          src="/hero-bg.jpg"
+          src="/image/hi.jpg"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center"
-          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
         />
-        {/* Overlay sombre pour lisibilité du texte */}
-        <div className="absolute inset-0 bg-gray-950/70" />
+        {/* Overlay sombre pour lisibilité */}
+        <div className="absolute inset-0 bg-gray-950/65" />
 
-        {/* Contenu */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
-          <div className="max-w-2xl">
+        {/* Contenu centré */}
+        <div className="relative w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
 
-            <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-300 bg-blue-900/40 border border-blue-700/40 rounded-full px-3 py-1.5 mb-7">
-              <Shield className="w-3.5 h-3.5 shrink-0" />
-              Certifié SIX Payment Services · Swiss Made · nLPD
-            </div>
-
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.08] tracking-tight mb-5">
-              La facturation suisse,<br /> enfin simple.
-            </h1>
-
-            <p className="text-lg text-gray-300 leading-relaxed mb-9 max-w-xl">
-              Créez des factures professionnelles avec QR-bill conforme, envoyez-les par email et encaissez vos paiements — depuis une interface pensée pour les PME et indépendants suisses.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3 mb-7">
-              <Link
-                to="/auth/register"
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-lg transition-all"
-              >
-                Commencer gratuitement — 30 jours
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-              <Link
-                to="/tarifs"
-                className="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-white border border-white/30 hover:border-white/60 hover:bg-white/10 rounded-lg transition-all"
-              >
-                Voir les tarifs
-              </Link>
-            </div>
-
-            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-400">
-              {['Sans carte bancaire', 'Sans engagement', 'Annulation en 1 clic'].map(t => (
-                <span key={t} className="flex items-center gap-1.5">
-                  <CheckCircle className="w-4 h-4 text-green-400 shrink-0" /> {t}
-                </span>
-              ))}
-            </div>
-
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-300 bg-blue-900/40 border border-blue-700/40 rounded-full px-3 py-1.5 mb-7">
+            <Shield className="w-3.5 h-3.5 shrink-0" />
+            Certifié SIX Payment Services · Swiss Made · nLPD
           </div>
+
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.08] tracking-tight mb-6">
+            La facturation suisse,<br /> enfin simple.
+          </h1>
+
+          <p className="text-lg sm:text-xl text-gray-300 leading-relaxed mb-9 max-w-xl mx-auto">
+            Créez des factures professionnelles avec QR-bill conforme, envoyez-les par email et encaissez vos paiements — depuis une interface pensée pour les PME et indépendants suisses.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-7">
+            <Link
+              to="/auth/register"
+              className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-lg transition-all"
+            >
+              Commencer gratuitement — 30 jours
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+            <Link
+              to="/tarifs"
+              className="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-white border border-white/30 hover:border-white/60 hover:bg-white/10 rounded-lg transition-all"
+            >
+              Voir les tarifs
+            </Link>
+          </div>
+
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-400 justify-center">
+            {['Sans carte bancaire', 'Sans engagement', 'Annulation en 1 clic'].map(t => (
+              <span key={t} className="flex items-center gap-1.5">
+                <CheckCircle className="w-4 h-4 text-green-400 shrink-0" /> {t}
+              </span>
+            ))}
+          </div>
+
         </div>
       </section>
 
