@@ -203,50 +203,56 @@ const HomePage = () => {
 
       {/* ══ 2. HERO ══════════════════════════════════════════════════════════ */}
       <section className="bg-slate-50 border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-6 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
-          <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-3 py-1.5 mb-7">
-            <Shield className="w-3.5 h-3.5 shrink-0" />
-            Certifié SIX Payment Services · Swiss Made · nLPD
+            {/* Colonne gauche — texte + CTAs */}
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-3 py-1.5 mb-7">
+                <Shield className="w-3.5 h-3.5 shrink-0" />
+                Certifié SIX Payment Services · Swiss Made · nLPD
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl font-black text-gray-900 leading-[1.08] tracking-tight mb-5">
+                La facturation suisse,<br /> enfin simple.
+              </h1>
+
+              <p className="text-lg text-gray-500 leading-relaxed mb-9 max-w-lg">
+                Créez des factures professionnelles avec QR-bill conforme, envoyez-les par email et encaissez vos paiements — depuis une interface pensée pour les PME et indépendants suisses.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                <Link
+                  to="/auth/register"
+                  className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-all"
+                >
+                  Commencer gratuitement — 30 jours
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+                <Link
+                  to="/tarifs"
+                  className="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-gray-700 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 rounded-lg transition-all"
+                >
+                  Voir les tarifs
+                </Link>
+              </div>
+
+              <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
+                {['Sans carte bancaire', 'Sans engagement', 'Annulation en 1 clic'].map(t => (
+                  <span key={t} className="flex items-center gap-1.5">
+                    <CheckCircle className="w-4 h-4 text-green-500 shrink-0" /> {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Colonne droite — aperçu facture */}
+            <div className="hidden lg:block">
+              <InvoicePreview />
+            </div>
+
           </div>
-
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.08] tracking-tight mb-5">
-            La facturation suisse,<br /> enfin simple.
-          </h1>
-
-          <p className="text-lg sm:text-xl text-gray-500 leading-relaxed mb-9 max-w-xl mx-auto">
-            Créez des factures professionnelles avec QR-bill conforme, envoyez-les par email et encaissez vos paiements — depuis une interface pensée pour les PME et indépendants suisses.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-5">
-            <Link
-              to="/auth/register"
-              className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-all"
-            >
-              Commencer gratuitement — 30 jours
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
-            <Link
-              to="/tarifs"
-              className="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-gray-700 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 rounded-lg transition-all"
-            >
-              Voir les tarifs
-            </Link>
-          </div>
-
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500 justify-center mb-12">
-            {['Sans carte bancaire', 'Sans engagement', 'Annulation en 1 clic'].map(t => (
-              <span key={t} className="flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4 text-green-500 shrink-0" /> {t}
-              </span>
-            ))}
-          </div>
-
-          {/* Visuel produit — la facture réelle */}
-          <InvoicePreview />
-
         </div>
-        <div className="h-12 bg-gradient-to-b from-slate-50 to-white" />
       </section>
 
       {/* ══ 3. TRUST BAR ═════════════════════════════════════════════════════ */}
