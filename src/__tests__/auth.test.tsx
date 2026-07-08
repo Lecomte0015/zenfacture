@@ -450,9 +450,15 @@ describe('AuthContext', () => {
     mockSupabase.from = vi.fn().mockReturnThis();
     mockSupabase.select = vi.fn().mockReturnThis();
     mockSupabase.eq = vi.fn().mockImplementation(() => ({
-      single: vi.fn().mockResolvedValue({ 
-        data: { plan_abonnement: 'pro' }, 
-        error: null 
+      single: vi.fn().mockResolvedValue({
+        data: { plan_abonnement: 'pro' },
+        error: null
+      }),
+      // AuthContext utilise .maybeSingle() (et non .single()) pour charger le
+      // profil — le mock doit fournir les deux pour rester fidèle au code réel.
+      maybeSingle: vi.fn().mockResolvedValue({
+        data: { plan_abonnement: 'pro' },
+        error: null
       })
     }));
 

@@ -1,11 +1,12 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { CheckIcon } from '@heroicons/react/20/solid';
 
 const tiers = [
   {
     name: 'Essentiel',
     id: 'essentiel',
-    href: '#',
+    href: '/auth/register?plan=essentiel',
     price: { monthly: '19 CHF', annually: '15 CHF' },
     description: 'Parfait pour les indépendants et les petites entreprises',
     features: [
@@ -19,7 +20,7 @@ const tiers = [
   {
     name: 'Professionnel',
     id: 'professionnel',
-    href: '#',
+    href: '/auth/register?plan=pro',
     price: { monthly: '49 CHF', annually: '39 CHF' },
     description: 'Idéal pour les entreprises en croissance',
     features: [
@@ -34,7 +35,7 @@ const tiers = [
   {
     name: 'Entreprise',
     id: 'entreprise',
-    href: '#',
+    href: '/auth/register?plan=entreprise',
     price: { monthly: '99 CHF', annually: '79 CHF' },
     description: 'Pour les entreprises avec des besoins avancés',
     features: [
@@ -141,8 +142,8 @@ export const PricingPage = () => {
                 </ul>
               </div>
 
-              <a
-                href={tier.href}
+              <Link
+                to={tier.href}
                 className={classNames(
                   tier.featured
                     ? 'bg-primary-600 text-white hover:bg-primary-700 hover:text-white'
@@ -151,7 +152,7 @@ export const PricingPage = () => {
                 )}
               >
                 {tier.featured ? 'Commencer mon essai gratuit' : 'Essayer 30 jours gratuitement'}
-              </a>
+              </Link>
             </div>
           ))}
         </div>

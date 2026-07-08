@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Check } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft, Send, Check, Lock } from 'lucide-react';
 import { Permission, DEFAULT_ROLE_PERMISSIONS, PERMISSION_LABELS, PERMISSION_DESCRIPTIONS } from '@/types/permissions';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
+import { useAuth } from '@/context/AuthContext';
 
 type Role = 'admin' | 'editor' | 'viewer' | 'custom';
 
@@ -33,10 +34,19 @@ const TeamInvitePage = () => {
   };
 
   const { addTeamMember } = useTeamMembers();
+  const { aLaFonctionnalite } = useAuth();
+  // Comptes multi-utilisateurs — promis exclusivement au plan Entreprise
+  // (voir PricingPage.tsx). Essentiel/Professionnel restent mono-utilisateur.
+  const canInviteTeamMembers = aLaFonctionnalite('multiUtilisateurs');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    if (!canInviteTeamMembers) {
+      setError("Les comptes multi-utilisateurs sont réservés au forfait Entreprise.");
+      return;
+    }
+
     if (!email) {
       setError('Veuillez entrer une adresse email');
       return;
@@ -110,6 +120,22 @@ const TeamInvitePage = () => {
           </div>
           
           <form onSubmit={handleSubmit} className="px-4 py-5 sm:p-6">
+            {!canInviteTeamMembers && (
+              <div className="mb-4 bg-orange-50 border-l-4 border-orange-400 p-4">
+                <div className="flex items-start">
+                  <Lock className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <div className="ml-3">
+                    <p className="text-sm text-orange-800">
+                      Les comptes multi-utilisateurs sont réservés au forfait Entreprise.{' '}
+                      <Link to="/dashboard/billing" className="font-medium underline hover:text-orange-900">
+                        Voir les forfaits
+                      </Link>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {error && (
               <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-4">
                 <div className="flex">
@@ -236,8 +262,8 @@ const TeamInvitePage = () => {
               <div className="pt-4">
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white transition-colors ${isSubmitting ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+                  disabled={isSubmitting || !canInviteTeamMembers}
+                  className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white transition-colors ${isSubmitting || !canInviteTeamMembers ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
                 >
                   <Send className={`mr-2 h-4 w-4 ${isSubmitting ? 'animate-pulse' : ''}`} />
                   {isSubmitting ? 'Envoi en cours...' : 'Envoyer l\'invitation'}

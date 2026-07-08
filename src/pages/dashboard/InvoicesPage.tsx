@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Plus, Eye, Download, Printer, FileText } from 'lucide-react';
+import { Plus, Eye, Download, Printer, FileText, Lock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useOrganisation } from '../../context/OrganisationContext';
+import { useAuth } from '../../context/AuthContext';
+import { useTrial } from '../../hooks/useTrial';
+import { getMonthlyInvoiceCount } from '../../services/invoiceService';
 import InvoiceForm from '../../components/invoices/InvoiceForm';
 import { InvoiceModal } from '../../components/invoices/InvoiceModal';
 
@@ -27,13 +30,35 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ newInvoice = false }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [monthlyInvoiceCount, setMonthlyInvoiceCount] = useState(0);
   const location = useLocation();
   const { organisationId } = useOrganisation();
+  const { user } = useAuth();
+  const { canAccessFeature } = useTrial();
+
+  // Limite "10 factures par mois" du plan Essentiel — voir PricingPage.tsx et
+  // useTrial.ts PLANS.essentiel.invoices. Les plans Professionnel/Entreprise
+  // sont illimités (canAccessFeature renvoie toujours true dans ce cas).
+  const quotaReached = !canAccessFeature('invoices', { currentUsage: monthlyInvoiceCount });
+
+  const refreshMonthlyCount = async () => {
+    if (!user?.id) return;
+    try {
+      const count = await getMonthlyInvoiceCount(user.id);
+      setMonthlyInvoiceCount(count);
+    } catch (error) {
+      console.error('Erreur lors du comptage des factures du mois:', error);
+    }
+  };
 
   // Charger les factures
   useEffect(() => {
     fetchInvoices();
   }, [organisationId]);
+
+  useEffect(() => {
+    refreshMonthlyCount();
+  }, [user?.id]);
 
   const fetchInvoices = async () => {
     if (!organisationId) return;
@@ -79,6 +104,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ newInvoice = false }) => {
   const handleInvoiceAdded = () => {
     setShowNewInvoice(false);
     fetchInvoices();
+    refreshMonthlyCount();
   };
 
   // Gérer l'affichage du formulaire basé sur l'URL ou l'état local
@@ -124,7 +150,38 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ newInvoice = false }) => {
 
   return (
     <div className="p-6">
-      {showNewInvoice && <InvoiceForm onClose={handleCloseForm} onInvoiceAdded={handleInvoiceAdded} />}
+      {showNewInvoice && (
+        quotaReached ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-orange-50 mb-4">
+                <Lock className="h-6 w-6 text-orange-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Limite mensuelle atteinte</h3>
+              <p className="mt-2 text-sm text-gray-500">
+                Le forfait Essentiel est limité à 10 factures par mois civil. Passez au forfait
+                Professionnel pour créer des factures illimitées.
+              </p>
+              <div className="mt-5 flex justify-center gap-3">
+                <button
+                  onClick={handleCloseForm}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50"
+                >
+                  Fermer
+                </button>
+                <Link
+                  to="/dashboard/billing"
+                  className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-lg"
+                >
+                  Voir les forfaits
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <InvoiceForm onClose={handleCloseForm} onInvoiceAdded={handleInvoiceAdded} />
+        )
+      )}
 
       {/* Modal de visualisation de facture */}
       {selectedInvoiceId && (
@@ -137,13 +194,24 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ newInvoice = false }) => {
 
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Factures</h1>
-        <Link
-          to="/invoices/new"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-        >
-          <Plus className="-ml-1 mr-2 h-5 w-5" />
-          Nouvelle facture
-        </Link>
+        {quotaReached ? (
+          <Link
+            to="/dashboard/billing"
+            title="Limite de 10 factures/mois atteinte pour le forfait Essentiel"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-orange-700 bg-orange-50 hover:bg-orange-100"
+          >
+            <Lock className="-ml-1 mr-2 h-4 w-4" />
+            Limite atteinte — Passer Pro
+          </Link>
+        ) : (
+          <Link
+            to="/invoices/new"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+          >
+            <Plus className="-ml-1 mr-2 h-5 w-5" />
+            Nouvelle facture
+          </Link>
+        )}
       </div>
 
       <div className="bg-white shadow overflow-hidden rounded-xl">
@@ -170,13 +238,23 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ newInvoice = false }) => {
               <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
                 Créez votre première facture pour commencer à suivre vos paiements et relancer vos clients sans effort.
               </p>
-              <Link
-                to="/invoices/new"
-                className="mt-5 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700"
-              >
-                <Plus className="-ml-1 mr-2 h-5 w-5" />
-                Créer ma première facture
-              </Link>
+              {quotaReached ? (
+                <Link
+                  to="/dashboard/billing"
+                  className="mt-5 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-orange-700 bg-orange-50 hover:bg-orange-100"
+                >
+                  <Lock className="-ml-1 mr-2 h-4 w-4" />
+                  Limite atteinte — Passer Pro
+                </Link>
+              ) : (
+                <Link
+                  to="/invoices/new"
+                  className="mt-5 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700"
+                >
+                  <Plus className="-ml-1 mr-2 h-5 w-5" />
+                  Créer ma première facture
+                </Link>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">

@@ -90,6 +90,33 @@ export const getInvoices = async ({
   };
 };
 
+/**
+ * Compte le nombre de factures créées par l'utilisateur pour le mois civil en
+ * cours — utilisé pour faire respecter la limite "10 factures par mois" du
+ * plan Essentiel (voir PricingPage.tsx / useTrial.ts PLANS.essentiel.invoices).
+ * Utilise `created_at` (et non `date`, qui peut être antidatée par l'utilisateur)
+ * pour éviter tout contournement de quota.
+ */
+export const getMonthlyInvoiceCount = async (userId: string): Promise<number> => {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+
+  const { count, error } = await supabase
+    .from('factures')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', startOfMonth)
+    .lt('created_at', startOfNextMonth);
+
+  if (error) {
+    console.error('Error counting monthly invoices:', error);
+    throw error;
+  }
+
+  return count || 0;
+};
+
 export const getInvoice = async (id: string): Promise<InvoiceData | null> => {
   const { data, error } = await supabase
     .from('factures')

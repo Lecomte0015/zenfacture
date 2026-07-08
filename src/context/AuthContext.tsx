@@ -10,6 +10,12 @@ type Fonctionnalites = {
   support24_7: boolean;
   facturationAvancee: boolean;
   exportDonnees: boolean;
+  /** Suivi des dépenses — réservé Professionnel/Entreprise (voir PricingPage) */
+  expenses: boolean;
+  /** Rapports avancés — réservé Professionnel/Entreprise */
+  reports: boolean;
+  /** Module comptabilité complet — réservé Professionnel/Entreprise */
+  comptabilite: boolean;
   [key: string]: boolean; // Index signature pour permettre l'accès par clé de type string
 };
 
@@ -63,6 +69,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       support24_7: false,
       facturationAvancee: false,
       exportDonnees: false,
+      expenses: false,
+      reports: false,
+      comptabilite: false,
     };
 
     switch (plan) {
@@ -75,6 +84,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           support24_7: true,
           facturationAvancee: true,
           exportDonnees: true,
+          expenses: true,
+          reports: true,
+          comptabilite: true,
         };
       case 'pro':
         return {
@@ -82,6 +94,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           supportPrioritaire: true,
           facturationAvancee: true,
           exportDonnees: true,
+          expenses: true,
+          reports: true,
+          comptabilite: true,
         };
       case 'essentiel':
       default:

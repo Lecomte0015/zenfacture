@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { FiDownload, FiPrinter, FiMail, FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
 import { toast } from 'react-toastify';
-import { InvoiceData } from '@/services/invoiceService';
+import { InvoiceData, getMonthlyInvoiceCount } from '@/services/invoiceService';
 import 'react-toastify/dist/ReactToastify.css';
 import FeatureGuard from '../FeatureGuard';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,22 @@ const RecentInvoices: React.FC<RecentInvoicesProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'all'>('all');
+  // Hooks appelés sans condition, au top-level (Rules of Hooks — ils étaient
+  // auparavant appelés après les `return` anticipés isLoading/error ci-dessous,
+  // ce qui viole les règles des Hooks ; corrigé lors de l'audit sécurité).
+  const { canAccessFeature, isTrialExpired, hasActiveSubscription } = useTrial();
+  const { user } = useAuth();
+  // Compte réel des factures du mois civil en cours (et non `filteredInvoices.length`,
+  // qui n'est qu'un sous-ensemble local filtré par recherche/statut et ne reflète
+  // pas la vraie limite "10 factures/mois" du forfait Essentiel).
+  const [monthlyInvoiceCount, setMonthlyInvoiceCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    getMonthlyInvoiceCount(user.id)
+      .then(setMonthlyInvoiceCount)
+      .catch((err) => console.error('Erreur lors du comptage des factures du mois:', err));
+  }, [user?.id, invoices.length]);
 
   const filteredInvoices = useMemo(() => {
     if (!invoices) return [];
@@ -199,15 +215,12 @@ const RecentInvoices: React.FC<RecentInvoicesProps> = ({
     );
   }
 
-  const { canAccessFeature, isTrialExpired, hasActiveSubscription } = useTrial();
-  const { user } = useAuth();
-  
   // Fonction pour gérer la création d'une nouvelle facture
   const handleAddNewInvoice = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    
+
     // Vérifier si l'utilisateur peut créer une nouvelle facture
-    if (!canAccessFeature('invoices', { currentUsage: filteredInvoices.length })) {
+    if (!canAccessFeature('invoices', { currentUsage: monthlyInvoiceCount })) {
       toast.error('Vous avez atteint la limite de factures pour votre forfait.');
       return;
     }
@@ -398,7 +411,7 @@ const RecentInvoices: React.FC<RecentInvoicesProps> = ({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (!canAccessFeature('invoices', { currentUsage: filteredInvoices.length })) {
+                          if (!canAccessFeature('invoices', { currentUsage: monthlyInvoiceCount })) {
                             toast.error('Vous avez atteint la limite de factures pour votre forfait.');
                             return;
                           }

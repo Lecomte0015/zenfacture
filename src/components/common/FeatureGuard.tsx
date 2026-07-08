@@ -24,6 +24,10 @@ const FeatureGuard: React.FC<FeatureGuardProps> = ({
   redirectTo = '/billing',
 }) => {
   const { isAuthenticated, loading, aLaFonctionnalite } = useAuth();
+  // Hooks doivent toujours être appelés sans condition (Rules of Hooks) —
+  // on récupère canAccessFeature ici, au top-level, et non dans le bloc
+  // conditionnel ci-dessous (bug corrigé lors de l'audit sécurité 2026-07-09).
+  const { canAccessFeature } = useTrial();
 
   if (loading) {
     return (
@@ -40,13 +44,10 @@ const FeatureGuard: React.FC<FeatureGuardProps> = ({
 
   // Vérification de la fonctionnalité requise
   if (requiredFeature) {
-    // Si l'utilisateur n'a pas la fonctionnalité via son abonnement
-    if (!aLaFonctionnalite(requiredFeature)) {
-      // Vérifier s'il est en période d'essai
-      const { canAccessFeature } = useTrial();
-      if (!canAccessFeature(requiredFeature)) {
-        return <Navigate to={redirectTo} replace />;
-      }
+    // Si l'utilisateur n'a pas la fonctionnalité via son abonnement,
+    // vérifier s'il y accède via une période d'essai active
+    if (!aLaFonctionnalite(requiredFeature) && !canAccessFeature(requiredFeature)) {
+      return <Navigate to={redirectTo} replace />;
     }
   }
 

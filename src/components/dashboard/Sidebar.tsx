@@ -64,7 +64,7 @@ const navGroups: NavGroup[] = [
     label: 'Dépenses',
     emoji: '💸',
     items: [
-      { name: 'Dépenses', href: '/dashboard/expenses', icon: FileText },
+      { name: 'Dépenses', href: '/dashboard/expenses', icon: FileText, feature: 'expenses' },
     ],
   },
   {
@@ -73,7 +73,7 @@ const navGroups: NavGroup[] = [
     emoji: '🏦',
     items: [
       { name: 'E-banking',        href: '/dashboard/banking',       icon: Building2 },
-      { name: 'Comptabilité',     href: '/dashboard/comptabilite',  icon: BookOpen },
+      { name: 'Comptabilité',     href: '/dashboard/comptabilite',  icon: BookOpen, feature: 'comptabilite' },
       { name: 'TVA',              href: '/dashboard/tva',           icon: Calculator },
       { name: 'eBill',            href: '/dashboard/ebill',         icon: Zap },
       { name: 'Fiduciaire',       href: '/dashboard/fiduciaire',    icon: Shield },
@@ -88,7 +88,7 @@ const navGroups: NavGroup[] = [
     label: 'Rapports',
     emoji: '📊',
     items: [
-      { name: 'Rapports',         href: '/dashboard/reports',          icon: BarChart2 },
+      { name: 'Rapports',         href: '/dashboard/reports',          icon: BarChart2, feature: 'reports' },
       { name: 'Détection fraude', href: '/dashboard/fraud-detection',  icon: AlertOctagon, profileKey: 'fraud' },
       { name: 'Audit Trail',      href: '/dashboard/audit-trail',      icon: Link2,        profileKey: 'audit' },
     ],
@@ -156,6 +156,15 @@ export const Sidebar = ({ children }: SidebarProps) => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  /** Libellé du plan réel de l'utilisateur (évite le badge "Essentiel" figé en dur) */
+  const planLabel = (() => {
+    switch (user?.plan) {
+      case 'entreprise': return 'Entreprise';
+      case 'pro': return 'Professionnel';
+      default: return 'Essentiel';
+    }
+  })();
+
   /** Filtre par fonctionnalité plan */
   const hasPlanFeature = (feature?: string) => {
     if (!feature) return true;
@@ -179,7 +188,7 @@ export const Sidebar = ({ children }: SidebarProps) => {
           <span className="text-white font-bold text-lg tracking-tight truncate">ZenFacture</span>
         </Link>
         <span className="ml-auto flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-300 border border-blue-800">
-          Essentiel
+          {planLabel}
         </span>
       </div>
 

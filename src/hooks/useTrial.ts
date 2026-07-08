@@ -3,17 +3,26 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 
 // Types
-type PlanKey = 'FREE' | 'ESSENTIEL' | 'ESSOR';
+// Ces clés correspondent exactement à `plan_abonnement` en base (table `profils`)
+// et aux tarifs affichés sur PricingPage.tsx — essentiel 19 CHF / pro 49 CHF /
+// entreprise 99 CHF. Ne pas renommer sans mettre à jour les deux à la fois.
+type PlanKey = 'essentiel' | 'pro' | 'entreprise';
 
 type Features = {
+  /** Nombre de factures créées par mois civil (voir invoiceService.getMonthlyInvoiceCount) */
   invoices: { limit: number };
   clients: { limit: number };
+  /** Comptes multi-utilisateurs — promis uniquement au plan Entreprise */
   team: boolean;
   api: boolean;
   reminders: boolean;
   export: boolean;
+  /** Suivi des dépenses — promis à partir du plan Professionnel */
   expenses: boolean;
+  /** Rapports avancés — promis à partir du plan Professionnel */
   reports: boolean;
+  /** Module comptabilité complet — promis à partir du plan Professionnel */
+  comptabilite: boolean;
 };
 
 interface PlanDefinition {
@@ -21,41 +30,45 @@ interface PlanDefinition {
   features: Features;
 }
 
-// Plans et fonctionnalités
+// Plans et fonctionnalités — doit rester synchronisé avec les promesses de
+// src/pages/PricingPage.tsx et avec getFonctionnalites() dans AuthContext.tsx.
 export const PLANS: Record<PlanKey, PlanDefinition> = {
-  FREE: {
-    key: 'FREE',
+  essentiel: {
+    key: 'essentiel',
     features: {
-      invoices: { limit: 5 },
-      clients: { limit: 3 },
+      invoices: { limit: 10 },
+      clients: { limit: 20 },
       team: false,
       api: false,
-      reminders: false,
+      reminders: true,
       export: false,
-      expenses: true,
-      reports: true,
+      expenses: false,
+      reports: false,
+      comptabilite: false,
     }
   },
-  ESSENTIEL: {
-    key: 'ESSENTIEL',
+  pro: {
+    key: 'pro',
     features: {
-      invoices: { limit: 50 },
-      clients: { limit: 20 },
-      team: true,
+      invoices: { limit: Infinity },
+      clients: { limit: Infinity },
+      team: false,
       api: false,
       reminders: true,
       export: true,
       expenses: true,
       reports: true,
+      comptabilite: true,
     }
   },
-  ESSOR: {
-    key: 'ESSOR',
+  entreprise: {
+    key: 'entreprise',
     features: {
       invoices: { limit: Infinity },
       clients: { limit: Infinity },
       expenses: true,
       reports: true,
+      comptabilite: true,
       team: true,
       api: true,
       reminders: true,
@@ -100,7 +113,7 @@ const useTrial = (): TrialStatus => {
     hasActiveSubscription: false,
     trialPercentageCompleted: 0,
     formattedTrialEndDate: null,
-    currentPlan: 'FREE',
+    currentPlan: 'essentiel',
     subscriptionEndDate: null,
   });
 
@@ -146,7 +159,7 @@ const useTrial = (): TrialStatus => {
     }
 
     // Pour les utilisateurs gratuits (sans abonnement)
-    const freePlan = PLANS.FREE;
+    const freePlan = PLANS.essentiel;
     const feature = freePlan.features[featureKey as keyof typeof freePlan.features];
     
     if (feature === undefined) return false;
@@ -191,6 +204,9 @@ const useTrial = (): TrialStatus => {
       // on utilise les métadonnées utilisateur et le profil comme fallback
       let subscriptionData: any = null;
       let trialData: any = null;
+      // Plan réel de l'organisation — source de vérité pour canAccessFeature/getFeatureLimit.
+      // Par défaut 'essentiel' (plan gratuit/de base) si rien n'est trouvé.
+      let planAbonnement: PlanKey = 'essentiel';
 
       try {
         const { data } = await supabase
@@ -203,6 +219,9 @@ const useTrial = (): TrialStatus => {
           // Mapper les données du profil vers le format attendu
           if (data.plan_abonnement && data.plan_abonnement !== 'essentiel') {
             subscriptionData = { current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() };
+          }
+          if (data.plan_abonnement === 'pro' || data.plan_abonnement === 'entreprise') {
+            planAbonnement = data.plan_abonnement;
           }
           if (data.trial_start_date && data.trial_end_date) {
             trialData = { started_at: data.trial_start_date, ends_at: data.trial_end_date };
@@ -253,7 +272,7 @@ const useTrial = (): TrialStatus => {
         hasActiveSubscription,
         trialPercentageCompleted,
         formattedTrialEndDate: formatDate(trialEndDate),
-        currentPlan: hasActiveSubscription ? 'ESSENTIEL' : 'FREE',
+        currentPlan: planAbonnement,
         subscriptionEndDate: hasActiveSubscription ? new Date(subscriptionData.current_period_end) : null,
       });
 
@@ -327,7 +346,7 @@ const useTrial = (): TrialStatus => {
             hasActiveSubscription: false,
             trialPercentageCompleted: 0,
             formattedTrialEndDate: null,
-            currentPlan: 'FREE',
+            currentPlan: 'essentiel',
             subscriptionEndDate: null,
           }));
         }

@@ -223,7 +223,11 @@ function App() {
         <Route path="/dashboard/commandes-fournisseurs" element={<LazyLoad><CommandesFournisseursPage /></LazyLoad>} />
         <Route path="/dashboard/signatures" element={<LazyLoad><SignaturesDashboardPage /></LazyLoad>} />
         <Route path="/dashboard/banking" element={<LazyLoad><BankingPage /></LazyLoad>} />
-        <Route path="/dashboard/comptabilite" element={<LazyLoad><ComptabilitePage /></LazyLoad>} />
+        <Route path="/dashboard/comptabilite" element={
+          <FeatureGuard requiredFeature="comptabilite">
+            <LazyLoad><ComptabilitePage /></LazyLoad>
+          </FeatureGuard>
+        } />
         <Route path="/dashboard/tva" element={<LazyLoad><TvaPage /></LazyLoad>} />
         <Route path="/dashboard/ebill" element={<LazyLoad><EbillPage /></LazyLoad>} />
         <Route path="/dashboard/fiduciaire" element={<LazyLoad><FiduciairePage /></LazyLoad>} />
@@ -260,13 +264,12 @@ function App() {
         <Route path="/dashboard/billing" element={<LazyLoad><BillingPage /></LazyLoad>} />
         <Route path="/dashboard/billing/success" element={<LazyLoad><BillingSuccessPage /></LazyLoad>} />
         <Route path="/dashboard/billing/cancel" element={<LazyLoad><BillingCancelPage /></LazyLoad>} />
+        {/* Le support de base est accessible à tous les plans — seul le
+            traitement "prioritaire" est réservé aux plans payants supérieurs
+            (géré à l'intérieur de SupportPage, pas par un blocage de route). */}
         <Route
           path="/dashboard/support"
-          element={
-            <FeatureGuard requiredFeature="supportPrioritaire" redirectTo="/dashboard/billing">
-              <LazyLoad><SupportPage /></LazyLoad>
-            </FeatureGuard>
-          }
+          element={<LazyLoad><SupportPage /></LazyLoad>}
         />
         <Route path="/dashboard/profile" element={<LazyLoad><ProfilePage /></LazyLoad>} />
         <Route path="/dashboard/settings" element={<LazyLoad><SettingsPage /></LazyLoad>} />
