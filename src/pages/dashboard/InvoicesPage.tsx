@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Plus, Eye, Download, Printer } from 'lucide-react';
+import { Plus, Eye, Download, Printer, FileText } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useOrganisation } from '../../context/OrganisationContext';
 import InvoiceForm from '../../components/invoices/InvoiceForm';
@@ -116,7 +116,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ newInvoice = false }) => {
       ));
     } catch (error) {
       console.error('Erreur changement statut:', error);
-      alert('Erreur lors du changement de statut');
+      alert("Le statut n'a pas pu être mis à jour. Vérifiez votre connexion et réessayez.");
     } finally {
       setUpdatingStatus(null);
     }
@@ -139,31 +139,44 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ newInvoice = false }) => {
         <h1 className="text-2xl font-bold text-gray-900">Factures</h1>
         <Link
           to="/invoices/new"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
         >
           <Plus className="-ml-1 mr-2 h-5 w-5" />
           Nouvelle facture
         </Link>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div className="bg-white shadow overflow-hidden rounded-xl">
         <div className="px-4 py-5 sm:px-6">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
             Liste des factures
           </h3>
           <p className="mt-1 max-w-2xl text-sm text-gray-500">
-            Gérer vos factures existantes ou créez-en de nouvelles.
+            Gérez vos factures existantes ou créez-en de nouvelles en quelques clics.
           </p>
         </div>
         <div className="overflow-hidden">
           {isLoading ? (
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
-              <p className="mt-2 text-gray-500">Chargement des factures...</p>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
+              <p className="mt-2 text-gray-500">Chargement de vos factures...</p>
             </div>
           ) : invoices.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              Aucune facture pour le moment
+            <div className="text-center py-16 px-6">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-50">
+                <FileText className="h-8 w-8 text-orange-500" />
+              </div>
+              <p className="mt-4 text-lg font-medium text-gray-900">Pas encore de facture</p>
+              <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+                Créez votre première facture pour commencer à suivre vos paiements et relancer vos clients sans effort.
+              </p>
+              <Link
+                to="/invoices/new"
+                className="mt-5 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700"
+              >
+                <Plus className="-ml-1 mr-2 h-5 w-5" />
+                Créer ma première facture
+              </Link>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -208,7 +221,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ newInvoice = false }) => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString('fr-CH') : '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 font-medium tabular-nums">
                         {(invoice.total || 0).toFixed(2)} CHF
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -216,14 +229,14 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ newInvoice = false }) => {
                           value={invoice.status}
                           onChange={(e) => handleStatusChange(invoice.id, e.target.value)}
                           disabled={updatingStatus === invoice.id}
-                          className={`px-2 py-1 text-xs font-semibold rounded border-0 cursor-pointer ${
+                          className={`px-2 py-1 text-xs font-semibold rounded-full border-0 cursor-pointer ${
                             invoice.status === 'paid'
                               ? 'bg-green-100 text-green-800'
                               : invoice.status === 'overdue'
                                 ? 'bg-red-100 text-red-800'
                                 : invoice.status === 'draft'
                                   ? 'bg-gray-100 text-gray-800'
-                                  : 'bg-blue-100 text-blue-800'
+                                  : 'bg-orange-100 text-orange-800'
                           }`}
                         >
                           <option value="draft">Brouillon</option>
@@ -236,7 +249,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ newInvoice = false }) => {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() => setSelectedInvoiceId(invoice.id)}
-                          className="text-blue-600 hover:text-blue-900 mr-3 inline-flex items-center"
+                          className="text-orange-600 hover:text-orange-800 mr-3 inline-flex items-center"
                           title="Voir la facture"
                         >
                           <Eye className="w-4 h-4 mr-1" />

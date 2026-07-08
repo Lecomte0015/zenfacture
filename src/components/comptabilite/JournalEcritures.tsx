@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Filter, X } from 'lucide-react';
+import { Plus, Filter, X, ScrollText } from 'lucide-react';
 import { EcritureAvecComptes, CompteComptable, ExerciceComptable } from '@/services/comptabiliteService';
 
 interface JournalEcrituresProps {
@@ -367,8 +367,14 @@ export const JournalEcritures: React.FC<JournalEcrituresProps> = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {ecritures.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-8 px-4 text-center text-gray-500">
-                  Aucune écriture comptable
+                <td colSpan={7} className="py-16 px-4 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+                    <ScrollText className="h-7 w-7 text-orange-500" />
+                  </div>
+                  <p className="mt-4 text-base font-medium text-gray-900">Pas encore d'écriture au journal</p>
+                  <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+                    Ajoutez votre première écriture pour commencer à tenir votre comptabilité en partie double.
+                  </p>
                 </td>
               </tr>
             ) : (

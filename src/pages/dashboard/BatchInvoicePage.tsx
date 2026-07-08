@@ -3,7 +3,7 @@ import { useOrganisation } from '@/context/OrganisationContext';
 import {
   Users, FileText, CheckCircle, XCircle, ChevronRight,
   ChevronLeft, Loader2, Plus, Trash2, Send, Search,
-  AlertCircle, RotateCcw,
+  AlertCircle, RotateCcw, UserPlus,
 } from 'lucide-react';
 import {
   getBatchClients,
@@ -220,8 +220,16 @@ export default function BatchInvoicePage() {
 
               <div className="max-h-80 overflow-y-auto divide-y divide-gray-50">
                 {filteredClients.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
-                    Aucun client trouvé
+                  <div className="text-center py-10 px-6">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-orange-50">
+                      <UserPlus className="h-6 w-6 text-orange-500" />
+                    </div>
+                    <p className="mt-3 text-sm font-medium text-gray-700">
+                      {clients.length === 0 ? 'Aucun client enregistré pour le moment' : 'Aucun client ne correspond à cette recherche'}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-400">
+                      {clients.length === 0 ? 'Ajoutez vos clients pour pouvoir les facturer en groupe.' : 'Essayez un autre nom ou une autre adresse email.'}
+                    </p>
                   </div>
                 ) : filteredClients.map(client => (
                   <label
@@ -538,7 +546,16 @@ export default function BatchInvoicePage() {
       {step === 4 && summary && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
           <div className="p-5 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-800">Résultats de la génération</h2>
+            <h2 className="font-semibold text-gray-800">
+              {summary.failed === 0
+                ? 'Vos factures sont prêtes'
+                : 'Résultats de la génération'}
+            </h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              {summary.failed === 0
+                ? `${summary.success} facture${summary.success !== 1 ? 's ont' : ' a'} été créée${summary.success !== 1 ? 's' : ''} en brouillon avec succès.`
+                : `${summary.success} facture${summary.success !== 1 ? 's' : ''} créée${summary.success !== 1 ? 's' : ''}, ${summary.failed} en échec — vérifiez les détails ci-dessous.`}
+            </p>
           </div>
 
           <div className="p-5 space-y-4">

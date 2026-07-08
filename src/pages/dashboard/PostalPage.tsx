@@ -372,9 +372,14 @@ export default function PostalPage() {
               <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
             </div>
           ) : envois.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <Package className="w-10 h-10 mx-auto mb-2 opacity-30" />
-              <p>Aucun envoi postal enregistré</p>
+            <div className="text-center py-16 px-6">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+                <Package className="w-7 h-7 text-orange-500" />
+              </div>
+              <p className="mt-4 text-base font-medium text-gray-900">Aucun envoi postal pour l'instant</p>
+              <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+                Vos courriers envoyés par Swiss Post apparaîtront ici, avec leur statut et leur numéro de suivi.
+              </p>
             </div>
           ) : (
             <div className="divide-y divide-gray-50">

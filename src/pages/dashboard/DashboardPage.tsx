@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import {
   FileText, CheckCircle2, Clock, TrendingUp,
   ArrowUpRight, ArrowDownRight, RefreshCw, Plus, Settings2,
+  ClipboardList, Users, Calculator,
 } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import {
@@ -96,24 +97,24 @@ const ProfileBanner = ({ profilMetier }: { profilMetier: ProfilMetier }) => {
 // ─── QuickActions ────────────────────────────────────────────────────────────
 /** Raccourcis rapides adaptés au profil métier */
 const QuickActions = ({ profilMetier }: { profilMetier: ProfilMetier | null }) => {
-  const actions = profilMetier
-    ? BUSINESS_PROFILES[profilMetier].quickActions
-    : [
-        { label: 'Nouvelle facture', href: '/dashboard/invoices',  emoji: '📄', color: 'bg-blue-600',   textColor: 'text-white' },
-        { label: 'Nouveau devis',    href: '/dashboard/devis',      emoji: '📋', color: 'bg-violet-600', textColor: 'text-white' },
-        { label: 'Clients',          href: '/dashboard/clients',    emoji: '👥', color: 'bg-emerald-600', textColor: 'text-white' },
-        { label: 'TVA',              href: '/dashboard/tva',        emoji: '🧮', color: 'bg-amber-500',  textColor: 'text-white' },
-      ];
+  const usingProfileActions = Boolean(profilMetier);
+  const fallbackActions = [
+    { label: 'Nouvelle facture', href: '/dashboard/invoices', icon: FileText,      color: 'bg-blue-600',    textColor: 'text-white' },
+    { label: 'Nouveau devis',    href: '/dashboard/devis',    icon: ClipboardList, color: 'bg-violet-600',  textColor: 'text-white' },
+    { label: 'Clients',          href: '/dashboard/clients',  icon: Users,         color: 'bg-emerald-600', textColor: 'text-white' },
+    { label: 'TVA',              href: '/dashboard/tva',      icon: Calculator,    color: 'bg-amber-500',   textColor: 'text-white' },
+  ];
+  const actions = profilMetier ? BUSINESS_PROFILES[profilMetier].quickActions : fallbackActions;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: 0.05 }}
-      className="mb-6"
+      className="mb-8"
     >
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-        Actions rapides
+        Vos raccourcis
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {actions.map((action) => (
@@ -122,7 +123,14 @@ const QuickActions = ({ profilMetier }: { profilMetier: ProfilMetier | null }) =
             to={action.href}
             className={`${action.color} ${action.textColor} rounded-2xl p-4 flex flex-col items-start gap-2 shadow-sm hover:opacity-90 hover:shadow-md transition-all duration-150 group`}
           >
-            <span className="text-2xl leading-none">{action.emoji}</span>
+            {usingProfileActions ? (
+              <span className="text-2xl leading-none">{(action as { emoji: string }).emoji}</span>
+            ) : (
+              (() => {
+                const Icon = (action as { icon: React.ComponentType<{ className?: string }> }).icon;
+                return <Icon className="w-6 h-6" />;
+              })()
+            )}
             <span className="text-sm font-semibold leading-tight group-hover:underline">
               {action.label}
             </span>
@@ -178,19 +186,19 @@ const DashboardPage = () => {
     datasets: [
       {
         data: monthlyRevenue.map(m => m.total),
-        borderColor: '#3B82F6',
+        borderColor: '#ea580c',
         backgroundColor: (context: { chart: { ctx: CanvasRenderingContext2D } }) => {
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 180);
-          gradient.addColorStop(0, 'rgba(59,130,246,0.35)');
-          gradient.addColorStop(1, 'rgba(59,130,246,0)');
+          gradient.addColorStop(0, 'rgba(234,88,12,0.30)');
+          gradient.addColorStop(1, 'rgba(234,88,12,0)');
           return gradient;
         },
         fill: true,
         borderWidth: 2.5,
         pointRadius: 4,
         pointHoverRadius: 6,
-        pointBackgroundColor: '#3B82F6',
+        pointBackgroundColor: '#ea580c',
         tension: 0.4,
       },
     ],
@@ -202,9 +210,9 @@ const DashboardPage = () => {
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: '#1F2937',
-        titleColor: '#9CA3AF',
-        bodyColor: '#F9FAFB',
+        backgroundColor: '#292524',
+        titleColor: '#a8a29e',
+        bodyColor: '#fafaf9',
         padding: 10,
         callbacks: {
           label: (ctx: { parsed: { y: number } }) => " " + formatCurrency(ctx.parsed.y),
@@ -214,7 +222,7 @@ const DashboardPage = () => {
     scales: {
       x: {
         grid: { display: false },
-        ticks: { color: '#9CA3AF', font: { size: 12 } },
+        ticks: { color: '#a8a29e', font: { size: 12 } },
         border: { display: false },
       },
       y: { display: false },
@@ -227,6 +235,9 @@ const DashboardPage = () => {
     return name.split(' ')[0] || user?.email?.split('@')[0] || 'vous';
   })();
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+
   const todayLabel = new Date().toLocaleDateString('fr-CH', {
     weekday: 'long', day: 'numeric', month: 'long',
   });
@@ -237,11 +248,11 @@ const DashboardPage = () => {
     <div className="p-6 max-w-7xl mx-auto">
 
       {/* ── Header ───────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
-          <p className="text-gray-500 text-sm mt-0.5 capitalize">
-            Bonjour, {prenom} 👋 — {todayLabel}
+          <h1 className="text-2xl font-bold text-gray-900">{greeting}, {prenom}</h1>
+          <p className="text-gray-500 text-sm mt-1 capitalize">
+            Voici où en est votre activité ce {todayLabel}.
           </p>
         </div>
         <div className="flex gap-2 shrink-0">
@@ -270,7 +281,7 @@ const DashboardPage = () => {
       <QuickActions profilMetier={profilMetier} />
 
       {/* ── Stat cards ───────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title="Total factures"
           value={totalInvoices.toString()}
@@ -318,7 +329,7 @@ const DashboardPage = () => {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.32 }}
-        className="mt-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
+        className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
       >
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -340,7 +351,7 @@ const DashboardPage = () => {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.4 }}
-        className="mt-6 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+        className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
       >
         <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
           <h2 className="text-base font-semibold text-gray-900">Dernières factures</h2>
@@ -358,7 +369,7 @@ const DashboardPage = () => {
           </div>
         ) : error ? (
           <div className="px-6 py-4 text-sm text-red-600 bg-red-50">
-            Erreur lors du chargement des factures. Veuillez réessayer.
+            Un souci est survenu au chargement de vos factures. Réessayez dans un instant.
           </div>
         ) : recentInvoices.length > 0 ? (
           <ul className="divide-y divide-gray-50">
@@ -408,8 +419,8 @@ const DashboardPage = () => {
             <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
               <FileText className="w-7 h-7 text-gray-400" />
             </div>
-            <h3 className="text-sm font-semibold text-gray-900">Aucune facture</h3>
-            <p className="text-sm text-gray-400 mt-1 mb-5">Commencez par créer votre première facture.</p>
+            <h3 className="text-sm font-semibold text-gray-900">Pas encore de facture</h3>
+            <p className="text-sm text-gray-400 mt-1 mb-5">Créez la première en quelques clics, on s'occupe du reste.</p>
             <Link
               to="/dashboard/invoices"
               className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-medium text-white transition-colors"

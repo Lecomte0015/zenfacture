@@ -90,7 +90,7 @@ const ModalProjet: React.FC<ModalProjetProps> = ({ organisationId, onClose, onSu
     budget_heures: '',
     devise: 'CHF',
     statut: 'actif' as Projet['statut'],
-    couleur: '#3B82F6',
+    couleur: '#ea580c',
     date_debut: '',
     date_fin: '',
   });
@@ -695,7 +695,7 @@ const TimeTrackingPage: React.FC = () => {
             <Timer className="text-blue-600" size={28} />
             Suivi du temps
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Gérez vos projets, sessions et tâches</p>
+          <p className="text-gray-500 text-sm mt-1">Suivez votre temps par projet, pour facturer chaque heure travaillée.</p>
         </div>
         <button
           onClick={() => setShowModalProjet(true)}
@@ -850,9 +850,12 @@ const TimeTrackingPage: React.FC = () => {
               <h2 className="font-semibold text-gray-900">Projets</h2>
             </div>
             {projets.length === 0 ? (
-              <div className="p-8 text-center text-gray-400">
-                <FolderOpen size={40} className="mx-auto mb-2 opacity-30" />
-                <p className="text-sm">Aucun projet. Créez votre premier projet pour commencer.</p>
+              <div className="py-16 px-6 text-center">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                  <FolderOpen size={28} className="text-blue-500" />
+                </div>
+                <p className="text-lg font-semibold text-gray-900">Aucun projet pour l'instant</p>
+                <p className="text-sm text-gray-500 mt-1">Créez votre premier projet pour commencer à suivre votre temps.</p>
               </div>
             ) : (
               <div className="divide-y divide-gray-50">
@@ -957,9 +960,12 @@ const TimeTrackingPage: React.FC = () => {
                 <div className="h-6 w-6 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
               </div>
             ) : sessions.length === 0 ? (
-              <div className="p-8 text-center text-gray-400">
-                <Clock size={40} className="mx-auto mb-2 opacity-30" />
-                <p className="text-sm">Aucune session enregistrée pour ce projet.</p>
+              <div className="py-16 px-6 text-center">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                  <Clock size={28} className="text-blue-500" />
+                </div>
+                <p className="text-lg font-semibold text-gray-900">Aucune session pour ce projet</p>
+                <p className="text-sm text-gray-500 mt-1">Lancez le chronomètre ou ajoutez une saisie manuelle pour commencer.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Download, Pencil, Trash2, Eye, X } from 'lucide-react';
+import { Plus, Search, Download, Pencil, Trash2, Eye, X, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useClients } from '../../hooks/useClients';
 import { ClientData, exportClientsCSV } from '../../services/clientService';
@@ -103,17 +103,19 @@ const ClientsPage: React.FC<ClientsPageProps> = ({ newClient = false }) => {
       )}
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{t('client.title')}</h1>
           <p className="mt-1 text-sm text-gray-500">
-            {total} {total > 1 ? 'clients' : 'client'}
+            {total > 0
+              ? `${total} ${total > 1 ? 'clients' : 'client'} dans votre carnet d’adresses`
+              : 'Votre carnet d’adresses clients'}
           </p>
         </div>
         <div className="flex space-x-3">
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-colors"
             disabled={clients.length === 0}
           >
             <Download className="-ml-1 mr-2 h-4 w-4" />
@@ -121,7 +123,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({ newClient = false }) => {
           </button>
           <button
             onClick={() => setShowForm(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors"
           >
             <Plus className="-ml-1 mr-2 h-5 w-5" />
             {t('client.new')}
@@ -135,18 +137,18 @@ const ClientsPage: React.FC<ClientsPageProps> = ({ newClient = false }) => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
-            placeholder={t('common.search') + '...'}
+            placeholder="Rechercher un client par nom, entreprise ou ville..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="pl-10 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
         </div>
       </div>
 
       {/* Erreur */}
       {error && (
-        <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-4">
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-4 rounded-r-xl">
+          <p className="text-sm text-red-700">Une erreur est survenue : {error}</p>
         </div>
       )}
 
@@ -156,24 +158,24 @@ const ClientsPage: React.FC<ClientsPageProps> = ({ newClient = false }) => {
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
         </div>
       ) : clients.length === 0 ? (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          <div className="text-center py-12 text-gray-500">
-            <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-            </svg>
-            <p className="text-lg font-medium">{t('client.noClients')}</p>
-            <p className="mt-1 text-sm">{t('client.manageClients')}</p>
+        <div className="bg-white shadow-sm border border-gray-100 overflow-hidden rounded-2xl">
+          <div className="text-center py-16 px-6 text-gray-500">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+              <Users className="h-8 w-8 text-blue-500" />
+            </div>
+            <p className="text-lg font-semibold text-gray-900">Aucun client pour l’instant</p>
+            <p className="mt-1 text-sm text-gray-500">Ajoutez votre premier client pour commencer à lui envoyer des factures.</p>
             <button
               onClick={() => setShowForm(true)}
-              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200"
+              className="mt-5 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition-colors"
             >
               <Plus className="-ml-1 mr-2 h-5 w-5" />
-              {t('client.new')}
+              Ajouter mon premier client
             </button>
           </div>
         </div>
       ) : (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="bg-white shadow-sm border border-gray-100 overflow-hidden rounded-2xl">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -264,7 +266,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({ client, onClose, onEdit }) 
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
+      <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-900">
             {client.prenom} {client.nom}

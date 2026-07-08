@@ -64,12 +64,12 @@ export const FeaturesPage = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
-              <span className="block">Toutes les fonctionnalités</span>
-              <span className="block text-primary">pour gérer votre entreprise</span>
+              <span className="block">Tout ce qu'il faut</span>
+              <span className="block text-primary-600">pour piloter votre entreprise sereinement</span>
             </h1>
             <p className="mx-auto mt-3 max-w-md text-base text-gray-500 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl">
-              Découvrez comment ZenFacture peut vous aider à simplifier votre gestion administrative
-              et vous faire gagner un temps précieux sur vos tâches quotidiennes.
+              De la première facture à la déclaration de TVA, ZenFacture s'occupe de la paperasse
+              pour que vous puissiez vous concentrer sur votre métier.
             </p>
           </div>
         </div>
@@ -82,12 +82,12 @@ export const FeaturesPage = () => {
             {features.map((feature) => (
               <div
                 key={feature.name}
-                className="group relative rounded-xl bg-white p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1"
+                className="group relative rounded-2xl bg-white p-6 sm:p-7 shadow-card hover:shadow-card-hover transition-all duration-200 hover:-translate-y-1"
               >
-                <div className="absolute inset-0 rounded-xl border-2 border-transparent transition-all duration-200 group-hover:border-primary" aria-hidden="true" />
+                <div className="absolute inset-0 rounded-2xl border-2 border-transparent transition-all duration-200 group-hover:border-primary-300" aria-hidden="true" />
                 <div className="relative h-full flex flex-col">
                   <div className="flex items-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 text-primary">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 text-primary-600">
                       <feature.icon className="h-6 w-6" aria-hidden="true" />
                     </div>
                     <h3 className="ml-4 text-lg font-medium text-gray-900">{feature.name}</h3>
@@ -112,24 +112,23 @@ export const FeaturesPage = () => {
           {/* CTA Section */}
           <div className="mt-16 text-center">
             <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-              Prêt à essayer ZenFacture ?
+              Prêt à voir ça en action ?
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
-              Rejoignez des centaines d'indépendants qui ont simplifié leur gestion administrative.
+              Rejoignez les indépendants et PME suisses qui ont déjà simplifié leur facturation.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
               <Link
-                to="/register"
-                className="inline-flex items-center justify-center rounded-md border border-primary bg-primary px-6 py-3 text-base font-bold text-white shadow-md hover:bg-primary-700 hover:shadow-lg transition-all duration-200"
-                style={{ backgroundColor: 'rgb(0, 87, 255)' }}
+                to="/auth/register"
+                className="inline-flex items-center justify-center rounded-xl border border-primary-600 bg-primary-600 px-6 py-3 text-base font-bold text-white shadow-warm hover:bg-primary-700 transition-all duration-200"
               >
                 Commencer l'essai gratuit
               </Link>
               <Link
-                to="/demo"
-                className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
+                to="/aide"
+                className="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
               >
-                Voir une démo
+                Demander une démo
               </Link>
             </div>
           </div>
@@ -138,3 +137,5 @@ export const FeaturesPage = () => {
     </div>
   );
 };
+
+export default FeaturesPage;

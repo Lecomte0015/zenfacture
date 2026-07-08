@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useOrganisation } from '@/context/OrganisationContext';
 import {
   Link2, Plus, Trash2, Copy, CheckCircle, RefreshCw,
-  Loader2, Globe, Clock, Eye, Users, XCircle,
+  Loader2, Globe, Clock, Eye, Users, XCircle, X,
 } from 'lucide-react';
 import {
   PortailLien, getLiensPortail, creerLienPortail,
@@ -78,7 +78,7 @@ export default function PortailClientAdminPage() {
       </div>
 
       {/* Bannière explicative */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+      <div className="bg-gradient-to-r from-blue-50 to-amber-50 border border-blue-200 rounded-xl p-4">
         <div className="flex items-start gap-3">
           <Globe className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-blue-800">
@@ -148,10 +148,19 @@ export default function PortailClientAdminPage() {
           )}
 
           {liens.length === 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 text-center py-16 shadow-sm">
-              <Globe className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-gray-500 font-medium">Aucun lien portail créé</p>
-              <p className="text-sm text-gray-400 mt-1">Créez votre premier lien pour un client.</p>
+            <div className="bg-white rounded-2xl border border-gray-200 text-center py-16 px-6 shadow-sm">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                <Globe className="w-8 h-8 text-blue-500" />
+              </div>
+              <p className="text-lg font-semibold text-gray-900">Aucun portail client pour l'instant</p>
+              <p className="text-sm text-gray-500 mt-1">Créez un premier lien pour qu'un client accède à ses documents en toute simplicité.</p>
+              <button
+                onClick={() => setShowModal(true)}
+                className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Créer mon premier lien
+              </button>
             </div>
           )}
         </>
@@ -276,7 +285,7 @@ function CreerLienModal({ organisationId, onClose, onSave }: {
         <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Nouveau lien portail client</h2>
-            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">✕</button>
+            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"><X className="w-4 h-4" /></button>
           </div>
 
           <div className="px-6 py-5 space-y-4">

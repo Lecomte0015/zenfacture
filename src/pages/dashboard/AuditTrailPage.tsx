@@ -108,8 +108,8 @@ export default function AuditTrailPage() {
           <div>
             <p className={`font-semibold ${verification.valide ? 'text-green-800' : 'text-red-800'}`}>
               {verification.valide
-                ? `✅ Chaîne intègre — ${verification.total_entrees} entrées vérifiées`
-                : `❌ ${verification.entrees_invalides} rupture(s) détectée(s) sur ${verification.total_entrees} entrées`
+                ? `Chaîne intègre — ${verification.total_entrees} entrées vérifiées`
+                : `${verification.entrees_invalides} rupture(s) détectée(s) sur ${verification.total_entrees} entrées`
               }
             </p>
             {!verification.valide && verification.premiere_rupture && (
@@ -175,10 +175,12 @@ export default function AuditTrailPage() {
             <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <Link2 className="w-10 h-10 mx-auto mb-2 opacity-30" />
-            <p>Aucune entrée dans l'audit trail</p>
-            <p className="text-sm mt-1">Les actions sur vos documents apparaîtront ici automatiquement.</p>
+          <div className="text-center py-16 px-6">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+              <Link2 className="w-8 h-8 text-blue-500" />
+            </div>
+            <p className="text-lg font-semibold text-gray-900">Le journal est encore vide</p>
+            <p className="text-sm text-gray-500 mt-1">Les actions sur vos documents apparaîtront ici automatiquement.</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-50">

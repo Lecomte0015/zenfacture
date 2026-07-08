@@ -34,7 +34,7 @@ const BankingPage: React.FC = () => {
     if (!file) return;
 
     if (!selectedAccountForImport) {
-      alert('Veuillez sélectionner un compte bancaire');
+      alert('Choisissez d\'abord un compte bancaire pour importer ce relevé.');
       return;
     }
 
@@ -85,9 +85,9 @@ const BankingPage: React.FC = () => {
             </div>
 
             {/* Import Bank File Section */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-xl shadow p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Importer un fichier
+                Importer un relevé bancaire
               </h2>
               <div className="space-y-4">
                 {/* Account Selection */}
@@ -99,7 +99,7 @@ const BankingPage: React.FC = () => {
                     id="account-select"
                     value={selectedAccountForImport}
                     onChange={(e) => setSelectedAccountForImport(e.target.value)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
                     disabled={loading || uploadingFile}
                   >
                     <option value="">-- Choisir un compte --</option>
@@ -115,7 +115,7 @@ const BankingPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="file-upload"
-                    className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none"
+                    className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-xl appearance-none cursor-pointer hover:border-orange-400 focus:outline-none"
                   >
                     <div className="flex flex-col items-center space-y-2">
                       <Upload className="w-8 h-8 text-gray-400" />
@@ -166,17 +166,17 @@ const BankingPage: React.FC = () => {
         return (
           <div className="space-y-6">
             {/* Auto Reconciliation Button */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-xl shadow p-6">
               <button
                 onClick={handleAutoReconcile}
                 disabled={loading}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Building2 className="w-4 h-4 mr-2" />
                 Rapprochement automatique
               </button>
               <p className="mt-2 text-sm text-gray-500">
-                Lance le rapprochement automatique des transactions avec les factures
+                Laissez ZenFacture rapprocher automatiquement vos transactions avec vos factures.
               </p>
             </div>
 
@@ -189,9 +189,12 @@ const BankingPage: React.FC = () => {
                 onClose={handleIgnore}
               />
             ) : (
-              <div className="bg-white rounded-lg shadow p-6">
-                <p className="text-gray-500 text-center">
-                  Sélectionnez une transaction dans l'onglet "Transactions" ou lancez le rapprochement automatique
+              <div className="bg-white rounded-xl shadow p-10 text-center">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+                  <Building2 className="h-7 w-7 text-orange-500" />
+                </div>
+                <p className="mt-4 text-gray-500 max-w-sm mx-auto">
+                  Choisissez une transaction dans l'onglet « Transactions », ou lancez le rapprochement automatique ci-dessus.
                 </p>
               </div>
             )}

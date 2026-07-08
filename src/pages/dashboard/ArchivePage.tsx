@@ -116,8 +116,8 @@ const ArchivePage: React.FC = () => {
       {/* En-tête */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-            <Archive className="w-5 h-5 text-indigo-600" />
+          <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+            <Archive className="w-5 h-5 text-orange-600" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">Archives — Conservation 10 ans (nLPD)</h1>
@@ -127,7 +127,7 @@ const ArchivePage: React.FC = () => {
         <button
           onClick={handleExportJson}
           disabled={archives.length === 0}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <Download className="w-4 h-4" />
           Exporter JSON
@@ -169,13 +169,13 @@ const ArchivePage: React.FC = () => {
             placeholder="Rechercher par numéro..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
         </div>
         <select
           value={typeFilter}
           onChange={e => setTypeFilter(e.target.value as DocumentType | 'all')}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         >
           <option value="all">Tous les types</option>
           <option value="invoice">Factures</option>
@@ -194,7 +194,7 @@ const ArchivePage: React.FC = () => {
       {/* Contenu principal */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
         </div>
       ) : error ? (
         <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
@@ -203,10 +203,10 @@ const ArchivePage: React.FC = () => {
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-            <Archive className="w-8 h-8 text-gray-400" />
+          <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center mb-4">
+            <Archive className="w-8 h-8 text-orange-500" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-1">Aucun document archivé</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-1">Aucun document archivé pour l'instant</h3>
           <p className="text-sm text-gray-400 max-w-sm">
             {search || typeFilter !== 'all'
               ? 'Aucun document ne correspond aux filtres sélectionnés.'
@@ -276,11 +276,11 @@ const ArchivePage: React.FC = () => {
                           <button
                             onClick={() => handleVerify(archive)}
                             disabled={isVerifying}
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs text-indigo-600 border border-indigo-200 hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs text-orange-600 border border-orange-200 hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             title="Vérifier l'intégrité"
                           >
                             {isVerifying ? (
-                              <div className="w-3.5 h-3.5 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent" />
+                              <div className="w-3.5 h-3.5 animate-spin rounded-full border-2 border-orange-400 border-t-transparent" />
                             ) : (
                               <Shield className="w-3.5 h-3.5" />
                             )}

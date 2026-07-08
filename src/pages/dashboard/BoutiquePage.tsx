@@ -9,7 +9,7 @@ import {
   Store, Plus, RefreshCw, Trash2, CheckCircle, XCircle,
   Loader2, ShoppingBag, Settings, ArrowRight, Wifi, WifiOff,
   Package, FileText, TrendingUp, ChevronDown, ChevronUp, Eye, EyeOff,
-  Clock, AlertCircle,
+  Clock, AlertCircle, MapPin, X,
 } from 'lucide-react';
 import {
   BoutiqueConnexion, PlateformeBoutique, BoutiqueCommande,
@@ -64,7 +64,7 @@ export default function BoutiquePage() {
       await charger();
     }
     setTesting(null);
-    alert(result.succes ? `✅ ${result.message}` : `❌ ${result.message}`);
+    alert(result.message);
   };
 
   const handleSynchroniser = async (connexion: BoutiqueConnexion) => {
@@ -140,7 +140,7 @@ export default function BoutiquePage() {
       )}
 
       {/* Plateformes supportées */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+      <div className="bg-gradient-to-r from-blue-50 to-amber-50 border border-blue-200 rounded-xl p-4">
         <p className="text-sm font-semibold text-blue-800 mb-3">Plateformes supportées</p>
         <div className="flex flex-wrap gap-3">
           {(Object.entries(PLATEFORMES_CONFIG) as [PlateformeBoutique, typeof PLATEFORMES_CONFIG[PlateformeBoutique]][]).map(([key, cfg]) => (
@@ -233,10 +233,12 @@ function ConnexionsList({
 }) {
   if (connexions.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm text-center py-16">
-        <Store className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-        <p className="text-gray-500 font-medium">Aucune boutique connectée</p>
-        <p className="text-sm text-gray-400 mt-1 mb-4">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm text-center py-16 px-6">
+        <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+          <Store className="w-8 h-8 text-blue-500" />
+        </div>
+        <p className="text-lg font-semibold text-gray-900">Aucune boutique connectée</p>
+        <p className="text-sm text-gray-500 mt-1 mb-4">
           Connectez Shopify, WooCommerce ou une autre plateforme pour synchroniser vos commandes.
         </p>
         <button
@@ -390,11 +392,13 @@ function CommandesList({ commandes, connexions }: {
 
   if (commandes.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm text-center py-16">
-        <ShoppingBag className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-        <p className="text-gray-500 font-medium">Aucune commande synchronisée</p>
-        <p className="text-sm text-gray-400 mt-1">
-          Connectez une boutique et lancez une synchronisation.
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm text-center py-16 px-6">
+        <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+          <ShoppingBag className="w-8 h-8 text-blue-500" />
+        </div>
+        <p className="text-lg font-semibold text-gray-900">Aucune commande synchronisée</p>
+        <p className="text-sm text-gray-500 mt-1">
+          Connectez une boutique et lancez une synchronisation pour voir vos commandes ici.
         </p>
       </div>
     );
@@ -451,8 +455,9 @@ function CommandesList({ commandes, connexions }: {
                   <div className="flex justify-between font-semibold text-gray-700 mt-1"><span>TTC</span><span>{formatCurrency(cmd.total_ttc, cmd.devise)}</span></div>
                 </div>
                 {cmd.client_adresse && (
-                  <p className="text-xs text-gray-400">
-                    📍 {[cmd.client_adresse.adresse1, cmd.client_adresse.code_postal, cmd.client_adresse.ville, cmd.client_adresse.pays].filter(Boolean).join(', ')}
+                  <p className="text-xs text-gray-400 flex items-center gap-1">
+                    <MapPin className="w-3 h-3 flex-shrink-0" />
+                    {[cmd.client_adresse.adresse1, cmd.client_adresse.code_postal, cmd.client_adresse.ville, cmd.client_adresse.pays].filter(Boolean).join(', ')}
                   </p>
                 )}
               </div>
@@ -547,7 +552,7 @@ function ConnexionModal({
               {connexion ? 'Modifier la connexion' : 'Connecter une boutique'}
             </h2>
             <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-              ✕
+              <X className="w-4 h-4" />
             </button>
           </div>
 

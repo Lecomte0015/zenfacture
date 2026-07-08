@@ -115,9 +115,9 @@ const ImportPage: React.FC = () => {
   if (!organisationId) {
     return (
       <div className="p-6">
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-xl">
           <p className="text-sm text-yellow-700">
-            Organisation non trouvée. Veuillez vous reconnecter.
+            Organisation introuvable. Reconnectez-vous pour continuer.
           </p>
         </div>
       </div>
@@ -127,16 +127,16 @@ const ImportPage: React.FC = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Import de données</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Importez vos données depuis Bexio, Crésus ou un fichier CSV générique
+          Reprenez vos données là où elles étaient — Bexio, Crésus ou un simple fichier CSV.
         </p>
       </div>
 
       {/* Description et formats supportés */}
       {!showWizard && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-2xl p-4">
           <div className="flex">
             <FileSpreadsheet className="h-5 w-5 text-blue-400" />
             <div className="ml-3">
@@ -153,7 +153,7 @@ const ImportPage: React.FC = () => {
               <div className="mt-3">
                 <button
                   onClick={() => setShowWizard(true)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors"
                 >
                   <Download className="mr-2 h-4 w-4" />
                   Nouvel import
@@ -186,16 +186,18 @@ const ImportPage: React.FC = () => {
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
             </div>
           ) : history.length === 0 ? (
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-              <div className="text-center py-12 text-gray-500">
-                <FileSpreadsheet className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-lg font-medium">Aucun import</p>
-                <p className="mt-1 text-sm">
-                  Vous n'avez pas encore effectué d'import de données.
+            <div className="bg-white shadow-sm border border-gray-100 overflow-hidden rounded-2xl">
+              <div className="text-center py-16 px-6">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                  <FileSpreadsheet className="h-8 w-8 text-blue-500" />
+                </div>
+                <p className="text-lg font-semibold text-gray-900">Aucun import pour l'instant</p>
+                <p className="mt-1 text-sm text-gray-500">
+                  Importez vos données existantes pour démarrer sans tout ressaisir.
                 </p>
                 <button
                   onClick={() => setShowWizard(true)}
-                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200"
+                  className="mt-5 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition-colors"
                 >
                   <Download className="mr-2 h-4 w-4" />
                   Commencer un import
@@ -203,7 +205,7 @@ const ImportPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div className="bg-white shadow-sm border border-gray-100 overflow-hidden rounded-2xl">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>

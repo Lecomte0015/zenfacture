@@ -65,7 +65,7 @@ const TvaDeclarationForm: React.FC<TvaDeclarationFormProps> = ({
 
   const handleCalculate = async () => {
     if (!periodeDebut || !periodeFin) {
-      alert('Veuillez sélectionner une période');
+      alert('Choisissez une période pour lancer le calcul de votre TVA.');
       return;
     }
     await onCalculate(periodeDebut, periodeFin, methode);
@@ -325,7 +325,7 @@ const TvaDeclarationForm: React.FC<TvaDeclarationFormProps> = ({
             <button
               onClick={onExportXml}
               disabled={loading}
-              className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center space-x-2"
+              className="bg-stone-700 text-white px-6 py-2 rounded-lg hover:bg-stone-800 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center space-x-2"
             >
               <Download className="w-4 h-4" />
               <span>Exporter XML</span>
@@ -335,11 +335,12 @@ const TvaDeclarationForm: React.FC<TvaDeclarationFormProps> = ({
       )}
 
       {!calculation && (
-        <div className="bg-gray-50 rounded-lg border border-gray-200 p-12 text-center">
-          <Calculator className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">
-            Sélectionnez une période et cliquez sur "Calculer" pour générer
-            votre déclaration TVA
+        <div className="bg-white rounded-xl border border-dashed border-gray-200 p-12 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+            <Calculator className="w-7 h-7 text-orange-500" />
+          </div>
+          <p className="mt-4 text-gray-600 max-w-sm mx-auto">
+            Choisissez une période ci-dessus et cliquez sur « Calculer » pour préparer votre déclaration TVA.
           </p>
         </div>
       )}

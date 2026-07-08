@@ -20,9 +20,9 @@ const typeIcons = {
   info: <FiClock className="h-5 w-5 text-blue-500" />,
   error: <FiAlertCircle className="h-5 w-5 text-red-500" />,
   declaration: <FiFileText className="h-5 w-5 text-purple-500" />,
-  contribution: <FiDollarSign className="h-5 w-5 text-indigo-500" />,
+  contribution: <FiDollarSign className="h-5 w-5 text-violet-500" />,
   tax: <FiPercent className="h-5 w-5 text-amber-500" />,
-  insurance: <FiShield className="h-5 w-5 text-cyan-500" />
+  insurance: <FiShield className="h-5 w-5 text-teal-500" />
 };
 
 const typeColors = {
@@ -31,9 +31,9 @@ const typeColors = {
   info: 'bg-blue-50 text-blue-700',
   error: 'bg-red-50 text-red-700',
   declaration: 'bg-purple-50 text-purple-700',
-  contribution: 'bg-indigo-50 text-indigo-700',
+  contribution: 'bg-violet-50 text-violet-700',
   tax: 'bg-amber-50 text-amber-700',
-  insurance: 'bg-cyan-50 text-cyan-700',
+  insurance: 'bg-teal-50 text-teal-700',
 };
 
 interface RemindersSectionProps {
@@ -166,7 +166,7 @@ const RemindersSection = ({
   };
 
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
+    <div className="bg-white shadow-sm border border-gray-100 rounded-2xl overflow-hidden">
       <div className="px-4 py-5 border-b border-gray-200 sm:px-6 flex justify-between items-center">
         <h3 className="text-lg font-medium leading-6 text-gray-900">Rappels et alertes</h3>
         {reminders.length > maxItems && showViewAll && (
@@ -192,8 +192,8 @@ const RemindersSection = ({
             ))}
           </ul>
         ) : (
-          <div className="p-6 text-center">
-            <p className="text-gray-500">Aucun rappel pour le moment</p>
+          <div className="p-8 text-center">
+            <p className="text-gray-500">Tout est calme — aucun rappel pour le moment.</p>
           </div>
         )}
       </div>

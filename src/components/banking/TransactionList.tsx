@@ -172,11 +172,19 @@ export function TransactionList({
 
       {/* Transaction List */}
       {loading ? (
-        <div className="text-center py-8 text-gray-500">Chargement...</div>
-      ) : filteredTransactions.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          <ArrowUpDown className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-          <p>Aucune transaction trouvée</p>
+          <div className="inline-block animate-spin rounded-full h-6 w-6 border-4 border-orange-500 border-t-transparent mr-2 align-middle" />
+          Chargement de vos transactions...
+        </div>
+      ) : filteredTransactions.length === 0 ? (
+        <div className="text-center py-16 px-6 border border-dashed border-gray-200 rounded-xl">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+            <ArrowUpDown className="h-7 w-7 text-orange-500" />
+          </div>
+          <p className="mt-4 text-base font-medium text-gray-900">Aucune transaction à afficher</p>
+          <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+            Importez un relevé bancaire ou ajustez vos filtres pour voir vos mouvements.
+          </p>
         </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">

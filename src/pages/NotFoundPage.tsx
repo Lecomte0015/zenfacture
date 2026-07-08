@@ -9,22 +9,22 @@ export const NotFoundPage = () => {
           <div className="sm:ml-6">
             <div className="sm:border-l sm:border-gray-200 sm:pl-6">
               <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
-                Page non trouvée
+                Oups, cette page s'est égarée
               </h1>
               <p className="mt-1 text-base text-gray-500">
-                Désolé, nous n'avons pas trouvé la page que vous recherchez.
+                L'adresse contient peut-être une coquille, ou la page a changé d'endroit. Repartons de bon pied.
               </p>
             </div>
             <div className="mt-10 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6">
               <Link
                 to="/"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
               >
                 Retour à l'accueil
               </Link>
               <Link
-                to="/contact"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-700 bg-primary-100 hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                to="/aide"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-primary-700 bg-primary-100 hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
               >
                 Contactez le support
               </Link>

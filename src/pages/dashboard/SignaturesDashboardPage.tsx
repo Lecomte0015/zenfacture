@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useOrganisation } from '@/context/OrganisationContext';
 import {
   PenSquare, Plus, Copy, CheckCircle, Loader2,
-  Clock, XCircle, Eye, FileText, AlertCircle,
+  Clock, XCircle, Eye, FileText, AlertCircle, X, Receipt, FileSignature,
 } from 'lucide-react';
 import {
   SignatureDemande, DocumentType, STATUTS_SIGNATURE,
@@ -71,13 +71,16 @@ export default function SignaturesDashboardPage() {
       {/* Stats */}
       <div className="grid grid-cols-4 gap-3">
         {[
-          { label: 'En attente', count: demandes.filter(d => d.statut === 'en_attente').length, color: 'bg-yellow-50', emoji: '⏳' },
-          { label: 'Vus', count: demandes.filter(d => d.statut === 'vu').length, color: 'bg-blue-50', emoji: '👁' },
-          { label: 'Signés', count: demandes.filter(d => d.statut === 'signe').length, color: 'bg-green-50', emoji: '✅' },
-          { label: 'Refusés', count: demandes.filter(d => d.statut === 'refuse').length, color: 'bg-red-50', emoji: '❌' },
+          { label: 'En attente', count: demandes.filter(d => d.statut === 'en_attente').length, color: 'bg-yellow-50', iconColor: 'text-yellow-600', icon: Clock },
+          { label: 'Vus', count: demandes.filter(d => d.statut === 'vu').length, color: 'bg-blue-50', iconColor: 'text-blue-600', icon: Eye },
+          { label: 'Signés', count: demandes.filter(d => d.statut === 'signe').length, color: 'bg-green-50', iconColor: 'text-green-600', icon: CheckCircle },
+          { label: 'Refusés', count: demandes.filter(d => d.statut === 'refuse').length, color: 'bg-red-50', iconColor: 'text-red-600', icon: XCircle },
         ].map(s => (
           <div key={s.label} className={`${s.color} rounded-xl p-3 border border-white/50`}>
-            <p className="text-xs text-gray-500">{s.emoji} {s.label}</p>
+            <p className="text-xs text-gray-500 flex items-center gap-1.5">
+              <s.icon className={`w-3.5 h-3.5 ${s.iconColor}`} />
+              {s.label}
+            </p>
             <p className="text-2xl font-bold text-gray-800">{s.count}</p>
           </div>
         ))}
@@ -116,10 +119,12 @@ export default function SignaturesDashboardPage() {
           )}
 
           {demandes.length === 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 text-center py-16 shadow-sm">
-              <PenSquare className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-gray-500 font-medium">Aucune demande de signature</p>
-              <p className="text-sm text-gray-400 mt-1">Envoyez votre premier document à signer.</p>
+            <div className="bg-white rounded-2xl border border-gray-200 text-center py-16 px-6 shadow-sm">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                <PenSquare className="w-8 h-8 text-blue-500" />
+              </div>
+              <p className="text-lg font-semibold text-gray-900">Aucune demande de signature</p>
+              <p className="text-sm text-gray-500 mt-1">Envoyez votre premier document à signer électroniquement.</p>
             </div>
           )}
         </>
@@ -234,7 +239,7 @@ function NouvelleDemandeModal({ organisationId, onClose, onSave }: {
         <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Nouvelle demande de signature</h2>
-            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">✕</button>
+            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"><X className="w-4 h-4" /></button>
           </div>
 
           <div className="px-6 py-5 space-y-4">
@@ -243,12 +248,17 @@ function NouvelleDemandeModal({ organisationId, onClose, onSave }: {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Type de document</label>
                   <div className="flex gap-2">
-                    {(['devis', 'facture', 'contrat'] as DocumentType[]).map(t => (
-                      <button key={t} onClick={() => setDocType(t)}
-                        className={`flex-1 py-1.5 rounded-lg text-sm font-medium border transition-colors ${docType === t ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}>
-                        {t === 'devis' ? '📄 Devis' : t === 'facture' ? '🧾 Facture' : '📝 Contrat'}
-                      </button>
-                    ))}
+                    {(['devis', 'facture', 'contrat'] as DocumentType[]).map(t => {
+                      const Icon = t === 'devis' ? FileText : t === 'facture' ? Receipt : FileSignature;
+                      const label = t === 'devis' ? 'Devis' : t === 'facture' ? 'Facture' : 'Contrat';
+                      return (
+                        <button key={t} onClick={() => setDocType(t)}
+                          className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-sm font-medium border transition-colors ${docType === t ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}>
+                          <Icon className="w-3.5 h-3.5" />
+                          {label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
                 <div>

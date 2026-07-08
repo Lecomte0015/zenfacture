@@ -224,11 +224,19 @@ export function BankAccountList({
       )}
 
       {loading ? (
-        <div className="text-center py-8 text-gray-500">Chargement...</div>
-      ) : accounts.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          <Building2 className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-          <p>Aucun compte bancaire configuré</p>
+          <div className="inline-block animate-spin rounded-full h-6 w-6 border-4 border-orange-500 border-t-transparent mr-2 align-middle" />
+          Chargement de vos comptes...
+        </div>
+      ) : accounts.length === 0 ? (
+        <div className="text-center py-16 px-6 border border-dashed border-gray-200 rounded-xl">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+            <Building2 className="h-7 w-7 text-orange-500" />
+          </div>
+          <p className="mt-4 text-base font-medium text-gray-900">Aucun compte bancaire pour l'instant</p>
+          <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+            Ajoutez votre premier compte pour importer vos relevés et rapprocher vos transactions.
+          </p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -251,7 +259,7 @@ export function BankAccountList({
                   </button>
                   <button
                     onClick={() => {
-                      if (window.confirm('Êtes-vous sûr de vouloir supprimer ce compte ?')) {
+                      if (window.confirm(`Supprimer le compte « ${account.nom} » ? Cette action est définitive.`)) {
                         onDelete(account.id);
                       }
                     }}

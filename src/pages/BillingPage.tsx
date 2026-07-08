@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CheckIcon, XMarkIcon, ArrowRightIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import useSubscriptionFeatures, { PlanAbonnement } from '../hooks/useSubscriptionFeatures';
+import { getPriceIdForPlan, redirectToCheckout, estPlanPayant } from '../services/stripeService';
 
 const BillingPage: React.FC = () => {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ const BillingPage: React.FC = () => {
   const [isChangingPlan, setIsChangingPlan] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isRedirectingToStripe, setIsRedirectingToStripe] = useState(false);
 
   const plans = [
     {
@@ -77,9 +79,9 @@ const BillingPage: React.FC = () => {
 
   const handlePlanChange = async (newPlan: PlanAbonnement) => {
     if (newPlan === currentPlan) return;
-    
+
     setSelectedPlan(newPlan);
-    
+
     // Si c'est une rétrogradation, demander confirmation
     if (
       (currentPlan === 'entreprise' && (newPlan === 'pro' || newPlan === 'essentiel')) ||
@@ -88,9 +90,50 @@ const BillingPage: React.FC = () => {
       setIsChangingPlan(true);
       return;
     }
-    
-    // Si c'est une mise à niveau, procéder directement
+
+    // Mise à niveau vers un plan payant : passer par Stripe Checkout
+    if (estPlanPayant(newPlan)) {
+      await handleSubscribe(newPlan);
+      return;
+    }
+
+    // Sinon (ex: retour à l'essentiel gratuit), mettre à jour directement
     await updatePlan(newPlan);
+  };
+
+  /**
+   * Lance le paiement Stripe Checkout pour un plan payant (Professionnel/Entreprise).
+   * Nécessite VITE_STRIPE_PRICE_ID_PRO / VITE_STRIPE_PRICE_ID_ENTREPRISE (voir .env.example)
+   * et que les Edge Functions create-checkout-session / stripe-webhook soient déployées.
+   */
+  const handleSubscribe = async (plan: PlanAbonnement) => {
+    if (!user?.id) {
+      setError('Vous devez être connecté pour souscrire à un abonnement.');
+      return;
+    }
+
+    const priceId = getPriceIdForPlan(plan);
+    if (!priceId) {
+      setError(
+        "Le paiement Stripe n'est pas encore configuré pour ce plan. Contactez le support ou configurez VITE_STRIPE_PRICE_ID_PRO / VITE_STRIPE_PRICE_ID_ENTREPRISE."
+      );
+      return;
+    }
+
+    try {
+      setError(null);
+      setIsRedirectingToStripe(true);
+      const { error: checkoutError } = await redirectToCheckout(priceId, user.id, user.email ?? undefined);
+      if (checkoutError) {
+        setError(checkoutError);
+        setIsRedirectingToStripe(false);
+      }
+      // En cas de succès, redirectToCheckout redirige déjà le navigateur vers Stripe.
+    } catch (err) {
+      console.error('Erreur lors de la redirection vers Stripe Checkout:', err);
+      setError('Une erreur est survenue lors de la préparation du paiement. Veuillez réessayer.');
+      setIsRedirectingToStripe(false);
+    }
   };
   
   const confirmPlanChange = async () => {
@@ -353,9 +396,15 @@ const BillingPage: React.FC = () => {
                       : 'bg-indigo-600 hover:bg-indigo-700'
                   } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
                   onClick={() => handlePlanChange(plan.id as PlanAbonnement)}
-                  disabled={plan.id === currentPlan || isChangingPlan}
+                  disabled={plan.id === currentPlan || isChangingPlan || isRedirectingToStripe}
                 >
-                  {plan.id === currentPlan ? 'Plan actuel' : `Choisir ${plan.name}`}
+                  {plan.id === currentPlan
+                    ? 'Plan actuel'
+                    : isRedirectingToStripe && selectedPlan === plan.id
+                      ? 'Redirection vers Stripe...'
+                      : estPlanPayant(plan.id as PlanAbonnement)
+                        ? `S'abonner — ${plan.name}`
+                        : `Choisir ${plan.name}`}
                 </button>
               </div>
             </div>

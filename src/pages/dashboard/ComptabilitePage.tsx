@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, FileBarChart } from 'lucide-react';
 import { useComptabilite } from '@/hooks/useComptabilite';
 import { PlanComptable } from '@/components/comptabilite/PlanComptable';
 import { JournalEcritures } from '@/components/comptabilite/JournalEcritures';
@@ -53,7 +53,7 @@ const ComptabilitePage: React.FC = () => {
 
   const handleLoadGrandLivre = async () => {
     if (!glCompteId || !glDateDebut || !glDateFin) {
-      alert('Veuillez sélectionner un compte et une période');
+      alert('Choisissez un compte et une période pour afficher le grand livre.');
       return;
     }
     setGlLoading(true);
@@ -62,7 +62,7 @@ const ComptabilitePage: React.FC = () => {
       setGrandLivreData(data);
     } catch (err) {
       console.error('Erreur lors du chargement du grand livre:', err);
-      alert('Erreur lors du chargement du grand livre');
+      alert("Le grand livre n'a pas pu être chargé. Réessayez dans quelques instants.");
     } finally {
       setGlLoading(false);
     }
@@ -70,7 +70,7 @@ const ComptabilitePage: React.FC = () => {
 
   const handleLoadBilan = async () => {
     if (!bilanDateFin) {
-      alert('Veuillez sélectionner une date');
+      alert('Choisissez une date de clôture pour générer le bilan.');
       return;
     }
     setBilanLoading(true);
@@ -79,7 +79,7 @@ const ComptabilitePage: React.FC = () => {
       setBilanData(data);
     } catch (err) {
       console.error('Erreur lors du chargement du bilan:', err);
-      alert('Erreur lors du chargement du bilan');
+      alert("Le bilan n'a pas pu être généré. Réessayez dans quelques instants.");
     } finally {
       setBilanLoading(false);
     }
@@ -87,7 +87,7 @@ const ComptabilitePage: React.FC = () => {
 
   const handleLoadCompteResultat = async () => {
     if (!crDateDebut || !crDateFin) {
-      alert('Veuillez sélectionner une période');
+      alert('Choisissez une période pour générer le compte de résultat.');
       return;
     }
     setCrLoading(true);
@@ -96,7 +96,7 @@ const ComptabilitePage: React.FC = () => {
       setCompteResultatData(data);
     } catch (err) {
       console.error('Erreur lors du chargement du compte de résultat:', err);
-      alert('Erreur lors du chargement du compte de résultat');
+      alert("Le compte de résultat n'a pas pu être généré. Réessayez dans quelques instants.");
     } finally {
       setCrLoading(false);
     }
@@ -112,8 +112,9 @@ const ComptabilitePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Chargement...</div>
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
+        <div className="text-gray-500">Chargement de votre comptabilité...</div>
       </div>
     );
   }
@@ -121,7 +122,7 @@ const ComptabilitePage: React.FC = () => {
   if (error) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-red-500">Erreur: {error}</div>
+        <div className="text-red-500">Un problème est survenu : {error}</div>
       </div>
     );
   }
@@ -131,7 +132,7 @@ const ComptabilitePage: React.FC = () => {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3">
-          <BookOpen className="w-8 h-8 text-indigo-600" />
+          <BookOpen className="w-8 h-8 text-orange-600" />
           <h1 className="text-3xl font-bold text-gray-900">Comptabilité</h1>
         </div>
       </div>
@@ -148,7 +149,7 @@ const ComptabilitePage: React.FC = () => {
                   whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
                   ${
                     activeTab === tab.id
-                      ? 'border-indigo-500 text-indigo-600'
+                      ? 'border-orange-500 text-orange-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }
                 `}
@@ -161,7 +162,7 @@ const ComptabilitePage: React.FC = () => {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-xl shadow">
         {activeTab === 'plan' && (
           <div className="p-6">
             <PlanComptable
@@ -197,7 +198,7 @@ const ComptabilitePage: React.FC = () => {
                   <select
                     value={glCompteId}
                     onChange={(e) => setGlCompteId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   >
                     <option value="">Sélectionner un compte</option>
                     {planComptable.map((compte) => (
@@ -215,7 +216,7 @@ const ComptabilitePage: React.FC = () => {
                     type="date"
                     value={glDateDebut}
                     onChange={(e) => setGlDateDebut(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div>
@@ -226,20 +227,32 @@ const ComptabilitePage: React.FC = () => {
                     type="date"
                     value={glDateFin}
                     onChange={(e) => setGlDateFin(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div className="flex items-end">
                   <button
                     onClick={handleLoadGrandLivre}
                     disabled={glLoading}
-                    className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                    className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50"
                   >
                     {glLoading ? 'Chargement...' : 'Charger'}
                   </button>
                 </div>
               </div>
             </div>
+
+            {grandLivreData.length === 0 && !glLoading && (
+              <div className="text-center py-16 px-6 border border-dashed border-gray-200 rounded-xl">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+                  <FileBarChart className="h-7 w-7 text-orange-500" />
+                </div>
+                <p className="mt-4 text-base font-medium text-gray-900">Aucun mouvement affiché pour l'instant</p>
+                <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+                  Choisissez un compte et une période ci-dessus, puis cliquez sur « Charger » pour voir le détail des écritures.
+                </p>
+              </div>
+            )}
 
             {grandLivreData.length > 0 && (
               <div className="overflow-x-auto">
@@ -309,20 +322,32 @@ const ComptabilitePage: React.FC = () => {
                     type="date"
                     value={bilanDateFin}
                     onChange={(e) => setBilanDateFin(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div className="flex items-end">
                   <button
                     onClick={handleLoadBilan}
                     disabled={bilanLoading}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                    className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50"
                   >
                     {bilanLoading ? 'Chargement...' : 'Charger'}
                   </button>
                 </div>
               </div>
             </div>
+
+            {!bilanData && !bilanLoading && (
+              <div className="text-center py-16 px-6 border border-dashed border-gray-200 rounded-xl">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+                  <FileBarChart className="h-7 w-7 text-orange-500" />
+                </div>
+                <p className="mt-4 text-base font-medium text-gray-900">Votre bilan n'a pas encore été généré</p>
+                <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+                  Choisissez une date de clôture ci-dessus pour voir la photo de vos actifs et passifs.
+                </p>
+              </div>
+            )}
 
             {bilanData && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -455,7 +480,7 @@ const ComptabilitePage: React.FC = () => {
                     type="date"
                     value={crDateDebut}
                     onChange={(e) => setCrDateDebut(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div>
@@ -466,20 +491,32 @@ const ComptabilitePage: React.FC = () => {
                     type="date"
                     value={crDateFin}
                     onChange={(e) => setCrDateFin(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div className="flex items-end">
                   <button
                     onClick={handleLoadCompteResultat}
                     disabled={crLoading}
-                    className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                    className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50"
                   >
                     {crLoading ? 'Chargement...' : 'Charger'}
                   </button>
                 </div>
               </div>
             </div>
+
+            {!compteResultatData && !crLoading && (
+              <div className="text-center py-16 px-6 border border-dashed border-gray-200 rounded-xl">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+                  <FileBarChart className="h-7 w-7 text-orange-500" />
+                </div>
+                <p className="mt-4 text-base font-medium text-gray-900">Aucun résultat calculé pour l'instant</p>
+                <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+                  Choisissez une période ci-dessus pour découvrir votre chiffre d'affaires, votre marge et votre résultat net.
+                </p>
+              </div>
+            )}
 
             {compteResultatData && (
               <div className="space-y-6">
@@ -620,7 +657,7 @@ const ComptabilitePage: React.FC = () => {
                 </div>
 
                 {/* Résultat */}
-                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-6">
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold text-gray-900">
                       Résultat de l'exercice

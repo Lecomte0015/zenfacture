@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   Package, Plus, Search, Download, TrendingDown, TrendingUp,
   AlertTriangle, BarChart2, ArrowUp, ArrowDown, SlidersHorizontal,
-  Pencil, Trash2, X, Check, Loader2, History, ChevronDown,
+  Pencil, Trash2, X, Check, Loader2, History, ChevronDown, MapPin,
 } from 'lucide-react';
 import { useStock } from '@/hooks/useStock';
 import { useOrganisation } from '@/context/OrganisationContext';
@@ -140,7 +140,7 @@ export default function StockPage() {
             <Package className="w-6 h-6 text-blue-600" />
             Gestion du stock
           </h1>
-          <p className="text-gray-500 mt-1">Suivi des articles, mouvements et alertes de réapprovisionnement.</p>
+          <p className="text-gray-500 mt-1">Gardez un œil sur vos articles, vos mouvements et les réapprovisionnements à prévoir.</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -237,11 +237,18 @@ export default function StockPage() {
               <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <Package className="w-10 h-10 mx-auto mb-2 opacity-30" />
-              <p>Aucun article en stock</p>
-              <button onClick={() => openForm()} className="mt-2 text-blue-600 text-sm hover:underline">
-                Ajouter le premier article
+            <div className="text-center py-16 px-6">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                <Package className="w-8 h-8 text-blue-500" />
+              </div>
+              <p className="text-lg font-semibold text-gray-900">Votre stock est encore vide</p>
+              <p className="mt-1 text-sm text-gray-500">Ajoutez votre premier article pour commencer à suivre vos quantités.</p>
+              <button
+                onClick={() => openForm()}
+                className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Ajouter mon premier article
               </button>
             </div>
           ) : (
@@ -264,7 +271,11 @@ export default function StockPage() {
                       <td className="px-4 py-3">
                         <div className="font-medium text-gray-800">{article.nom}</div>
                         {article.reference && <div className="text-xs text-gray-400">Réf: {article.reference}</div>}
-                        {article.emplacement && <div className="text-xs text-gray-400">📍 {article.emplacement}</div>}
+                        {article.emplacement && (
+                          <div className="text-xs text-gray-400 flex items-center gap-1">
+                            <MapPin className="w-3 h-3" /> {article.emplacement}
+                          </div>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-gray-500">{article.categorie || '—'}</td>
                       <td className="px-4 py-3 text-right font-medium">
@@ -336,7 +347,13 @@ export default function StockPage() {
             </h3>
           </div>
           {mouvements.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">Aucun mouvement enregistré</div>
+            <div className="text-center py-16 px-6">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                <History className="w-8 h-8 text-blue-500" />
+              </div>
+              <p className="text-lg font-semibold text-gray-900">Aucun mouvement pour l'instant</p>
+              <p className="mt-1 text-sm text-gray-500">Chaque entrée, sortie ou ajustement de stock apparaîtra ici.</p>
+            </div>
           ) : (
             <div className="divide-y divide-gray-50">
               {mouvements.map(m => {
@@ -437,9 +454,12 @@ export default function StockPage() {
           )}
 
           {articlesEnRupture.length === 0 && articlesCritique.length === 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-400">
-              <BarChart2 className="w-10 h-10 mx-auto mb-2 opacity-30" />
-              <p>Aucune alerte — tous les stocks sont suffisants</p>
+            <div className="bg-white rounded-2xl border border-gray-200 p-16 text-center">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center mb-4">
+                <BarChart2 className="w-8 h-8 text-green-600" />
+              </div>
+              <p className="text-lg font-semibold text-gray-900">Tout est sous contrôle</p>
+              <p className="mt-1 text-sm text-gray-500">Aucun article en rupture ni en stock critique pour le moment.</p>
             </div>
           )}
         </div>

@@ -3,6 +3,7 @@ import { useOrganisation } from '@/context/OrganisationContext';
 import {
   Shield, AlertTriangle, CheckCircle, XCircle, Search,
   RefreshCw, Loader2, Info, TrendingUp, Eye, ChevronDown, ChevronUp,
+  Copy, Wallet, User, Zap, BarChart3,
 } from 'lucide-react';
 import {
   RisqueFraude, InvoiceForAnalysis,
@@ -190,15 +191,16 @@ export default function FraudDetectionPage() {
         </h3>
         <div className="grid grid-cols-2 gap-2 text-xs text-blue-700">
           {[
-            '🔍 Montants atypiques (>3x la moyenne client)',
-            '📋 Doublons suspects (même montant, même client, 30j)',
-            '💰 Montants ronds élevés (CHF multiple de 1000)',
-            '👤 Premier document client > CHF 2\'000',
-            '⚡ Fréquence inhabituelle (>5 factures en 7j)',
-            '📊 Scoring de risque 0-100 en temps réel',
+            { icon: Search, label: 'Montants atypiques (>3x la moyenne client)' },
+            { icon: Copy, label: 'Doublons suspects (même montant, même client, 30j)' },
+            { icon: Wallet, label: 'Montants ronds élevés (CHF multiple de 1000)' },
+            { icon: User, label: 'Premier document client > CHF 2\'000' },
+            { icon: Zap, label: 'Fréquence inhabituelle (>5 factures en 7j)' },
+            { icon: BarChart3, label: 'Scoring de risque 0-100 en temps réel' },
           ].map(item => (
-            <div key={item} className="flex items-center gap-1">
-              <span>{item}</span>
+            <div key={item.label} className="flex items-center gap-1.5">
+              <item.icon className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>{item.label}</span>
             </div>
           ))}
         </div>
@@ -257,10 +259,12 @@ export default function FraudDetectionPage() {
             <span className="ml-2 text-gray-500">Analyse en cours...</span>
           </div>
         ) : results.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <CheckCircle className="w-10 h-10 mx-auto mb-2 text-green-400" />
-            <p className="font-medium text-green-700">Aucune anomalie détectée</p>
-            <p className="text-sm mt-1 text-gray-400">Toutes vos factures semblent conformes.</p>
+          <div className="text-center py-16 px-6">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center mb-4">
+              <CheckCircle className="w-8 h-8 text-green-600" />
+            </div>
+            <p className="text-lg font-semibold text-gray-900">Rien à signaler</p>
+            <p className="text-sm text-gray-500 mt-1">Toutes vos factures semblent conformes.</p>
           </div>
         ) : (
           <div className="p-4 space-y-2">

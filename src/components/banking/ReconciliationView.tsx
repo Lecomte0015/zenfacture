@@ -245,9 +245,14 @@ export function ReconciliationView({
 
   if (!transaction) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        <Link className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-        <p>Sélectionnez une transaction pour commencer le rapprochement</p>
+      <div className="text-center py-16 px-6 border border-dashed border-gray-200 rounded-xl">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+          <Link className="h-7 w-7 text-orange-500" />
+        </div>
+        <p className="mt-4 text-base font-medium text-gray-900">Prêt à rapprocher vos transactions</p>
+        <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+          Choisissez une transaction dans la liste pour lui associer une facture ou une dépense.
+        </p>
       </div>
     );
   }
@@ -314,11 +319,11 @@ export function ReconciliationView({
           {/* Results */}
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {loading ? (
-              <div className="text-center py-4 text-gray-500">Chargement...</div>
+              <div className="text-center py-4 text-gray-500">Recherche des correspondances...</div>
             ) : transaction.type === 'credit' ? (
               displayResults.invoices.length === 0 ? (
-                <div className="text-center py-4 text-gray-500">
-                  Aucune facture trouvée
+                <div className="text-center py-6 text-sm text-gray-500">
+                  {searchTerm ? 'Aucune facture ne correspond à cette recherche.' : 'Aucune facture en attente ne correspond à cette transaction.'}
                 </div>
               ) : (
                 displayResults.invoices.map((invoice) => (
@@ -354,8 +359,8 @@ export function ReconciliationView({
                 ))
               )
             ) : displayResults.expenses.length === 0 ? (
-              <div className="text-center py-4 text-gray-500">
-                Aucune dépense trouvée
+              <div className="text-center py-6 text-sm text-gray-500">
+                {searchTerm ? 'Aucune dépense ne correspond à cette recherche.' : 'Aucune dépense récente ne correspond à cette transaction.'}
               </div>
             ) : (
               displayResults.expenses.map((expense) => (

@@ -38,8 +38,17 @@ const Button = ({
 };
 
 const Card = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
-  <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
+  <div className={`bg-white rounded-xl shadow p-6 ${className}`}>
     {children}
+  </div>
+);
+
+const ChartPlaceholder = ({ label, icon: Icon = BarChart2, tall = false }: { label: string; icon?: React.ElementType; tall?: boolean }) => (
+  <div className={`${tall ? 'h-96' : 'h-64'} flex flex-col items-center justify-center gap-3 bg-orange-50/40 border border-dashed border-orange-100 rounded-xl`}>
+    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-50">
+      <Icon className="h-6 w-6 text-orange-400" />
+    </div>
+    <p className="text-sm text-gray-500 text-center max-w-xs px-4">{label}</p>
   </div>
 );
 
@@ -203,23 +212,17 @@ const ReportsPage = () => {
 
             <Card>
               <h3 className="text-lg font-medium mb-4">Évolution du chiffre d'affaires</h3>
-              <div className="h-64 flex items-center justify-center bg-gray-50 rounded-md">
-                <p className="text-gray-500">Graphique d'évolution du CA à venir</p>
-              </div>
+              <ChartPlaceholder icon={LineChart} label="Le graphique d'évolution du chiffre d'affaires arrive bientôt ici." />
             </Card>
 
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <Card>
                 <h3 className="text-lg font-medium mb-4">Répartition des revenus</h3>
-                <div className="h-64 flex items-center justify-center bg-gray-50 rounded-md">
-                  <p className="text-gray-500">Graphique en secteurs à venir</p>
-                </div>
+                <ChartPlaceholder icon={PieChart} label="La répartition de vos revenus par source sera bientôt visible ici." />
               </Card>
               <Card>
                 <h3 className="text-lg font-medium mb-4">Dépenses par catégorie</h3>
-                <div className="h-64 flex items-center justify-center bg-gray-50 rounded-md">
-                  <p className="text-gray-500">Graphique à barres à venir</p>
-                </div>
+                <ChartPlaceholder icon={BarChart2} label="Le détail de vos dépenses par catégorie arrive bientôt." />
               </Card>
             </div>
           </div>
@@ -229,23 +232,17 @@ const ReportsPage = () => {
           <div className="space-y-6">
             <Card>
               <h3 className="text-lg font-medium mb-4">Factures payées vs impayées</h3>
-              <div className="h-96 flex items-center justify-center bg-gray-50 rounded-md">
-                <p className="text-gray-500">Graphique de facturation à venir</p>
-              </div>
+              <ChartPlaceholder tall icon={BarChart2} label="Le suivi de vos factures payées et impayées arrive bientôt ici." />
             </Card>
 
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <Card>
                 <h3 className="text-lg font-medium mb-4">Taux de paiement</h3>
-                <div className="h-64 flex items-center justify-center bg-gray-50 rounded-md">
-                  <p className="text-gray-500">Graphique circulaire à venir</p>
-                </div>
+                <ChartPlaceholder icon={PieChart} label="Votre taux de paiement à temps sera bientôt affiché ici." />
               </Card>
               <Card>
                 <h3 className="text-lg font-medium mb-4">Retards de paiement</h3>
-                <div className="h-64 flex items-center justify-center bg-gray-50 rounded-md">
-                  <p className="text-gray-500">Graphique de retard à venir</p>
-                </div>
+                <ChartPlaceholder icon={LineChart} label="Le suivi de vos retards de paiement arrive bientôt." />
               </Card>
             </div>
           </div>
@@ -275,23 +272,17 @@ const ReportsPage = () => {
 
             <Card>
               <h3 className="text-lg font-medium mb-4">Dépenses par catégorie</h3>
-              <div className="h-96 flex items-center justify-center bg-gray-50 rounded-md">
-                <p className="text-gray-500">Graphique de répartition des dépenses à venir</p>
-              </div>
+              <ChartPlaceholder tall icon={PieChart} label="La répartition de vos dépenses par catégorie arrive bientôt ici." />
             </Card>
 
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <Card>
                 <h3 className="text-lg font-medium mb-4">Tendance des dépenses</h3>
-                <div className="h-64 flex items-center justify-center bg-gray-50 rounded-md">
-                  <p className="text-gray-500">Graphique d'évolution à venir</p>
-                </div>
+                <ChartPlaceholder icon={LineChart} label="L'évolution de vos dépenses dans le temps sera bientôt visible ici." />
               </Card>
               <Card>
                 <h3 className="text-lg font-medium mb-4">Dépenses par fournisseur</h3>
-                <div className="h-64 flex items-center justify-center bg-gray-50 rounded-md">
-                  <p className="text-gray-500">Graphique des fournisseurs à venir</p>
-                </div>
+                <ChartPlaceholder icon={BarChart2} label="Le détail de vos dépenses par fournisseur arrive bientôt." />
               </Card>
             </div>
           </div>

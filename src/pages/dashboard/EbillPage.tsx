@@ -56,7 +56,7 @@ const EbillPage: React.FC = () => {
 
         {/* Assistant de configuration (si pas configuré) */}
         {showSetupWizard ? (
-          <div className="bg-white shadow rounded-lg p-8">
+          <div className="bg-white shadow rounded-xl p-8">
             <div className="text-center mb-8">
               <div className="mx-auto h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center mb-4">
                 <Zap className="h-10 w-10 text-primary-600" />
@@ -139,7 +139,7 @@ const EbillPage: React.FC = () => {
 
         {/* Informations de statut eBill */}
         {isConfigured && (
-          <div className="mt-8 bg-white shadow rounded-lg p-6">
+          <div className="mt-8 bg-white shadow rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-medium text-gray-900">Statut du service</h3>

@@ -3,12 +3,13 @@
  * URL : /dashboard/crm
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ComponentType } from 'react';
 import { useOrganisation } from '@/context/OrganisationContext';
 import {
   TrendingUp, Plus, Target, Trophy, X, Loader2,
   ChevronRight, Phone, Mail, FileText, Calendar,
   ArrowRight, Pencil, Trash2, Clock,
+  LayoutGrid, List as ListIcon, Wallet, PieChart, Timer, XCircle,
 } from 'lucide-react';
 import {
   CRMOpportunite, CRMActivite, CRMStats, StadeCRM,
@@ -61,14 +62,15 @@ export default function CRMPage() {
               <Target className="w-6 h-6 text-blue-600" />
               CRM — Pipeline commercial
             </h1>
-            <p className="text-gray-500 text-sm mt-0.5">Gérez vos opportunités de vente de prospect à client.</p>
+            <p className="text-gray-500 text-sm mt-0.5">Suivez chaque opportunité, du premier contact à la vente conclue.</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex bg-gray-100 rounded-lg p-0.5">
               {(['kanban', 'liste'] as const).map(v => (
                 <button key={v} onClick={() => setVueMode(v)}
-                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${vueMode === v ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}>
-                  {v === 'kanban' ? '🗂 Kanban' : '📋 Liste'}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-sm font-medium transition-colors ${vueMode === v ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}>
+                  {v === 'kanban' ? <LayoutGrid className="w-3.5 h-3.5" /> : <ListIcon className="w-3.5 h-3.5" />}
+                  {v === 'kanban' ? 'Kanban' : 'Liste'}
                 </button>
               ))}
             </div>
@@ -82,10 +84,10 @@ export default function CRMPage() {
         {/* Stats */}
         {stats && (
           <div className="grid grid-cols-4 gap-3 mt-4">
-            <KpiCard label="CA potentiel" value={formatCurrency(stats.ca_total_potentiel, 'CHF')} color="blue" emoji="💰" />
-            <KpiCard label="CA gagné" value={formatCurrency(stats.ca_gagne, 'CHF')} color="green" emoji="🏆" />
-            <KpiCard label="Taux conversion" value={`${stats.taux_conversion}%`} color="purple" emoji="📊" />
-            <KpiCard label="Durée moy. closing" value={`${stats.duree_moyenne_jours}j`} color="orange" emoji="⏱" />
+            <KpiCard label="CA potentiel" value={formatCurrency(stats.ca_total_potentiel, 'CHF')} color="blue" icon={Wallet} />
+            <KpiCard label="CA gagné" value={formatCurrency(stats.ca_gagne, 'CHF')} color="green" icon={Trophy} />
+            <KpiCard label="Taux conversion" value={`${stats.taux_conversion}%`} color="purple" icon={PieChart} />
+            <KpiCard label="Durée moy. closing" value={`${stats.duree_moyenne_jours}j`} color="orange" icon={Timer} />
           </div>
         )}
       </div>
@@ -140,7 +142,7 @@ export default function CRMPage() {
                     ))}
                     {opps.length === 0 && (
                       <div className={`rounded-xl border border-dashed ${cfg.border} p-4 text-center`}>
-                        <p className="text-xs text-gray-400">Aucune opportunité</p>
+                        <p className="text-xs text-gray-400">Rien ici pour l'instant</p>
                       </div>
                     )}
                   </div>
@@ -154,9 +156,12 @@ export default function CRMPage() {
         <div className="flex-1 overflow-y-auto px-6 py-4">
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm divide-y divide-gray-50">
             {opportunites.length === 0 ? (
-              <div className="text-center py-12">
-                <Target className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">Aucune opportunité</p>
+              <div className="text-center py-16 px-6">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                  <Target className="w-8 h-8 text-blue-500" />
+                </div>
+                <p className="text-lg font-semibold text-gray-900">Votre pipeline est encore vide</p>
+                <p className="mt-1 text-sm text-gray-500">Créez votre première opportunité pour commencer à suivre vos prospects.</p>
               </div>
             ) : opportunites.map(opp => {
               const cfg = STADES_CONFIG[opp.stade];
@@ -203,14 +208,21 @@ export default function CRMPage() {
 
 // ─── KPI CARD ─────────────────────────────────────────────────────────────────
 
-function KpiCard({ label, value, color, emoji }: { label: string; value: string; color: string; emoji: string }) {
+function KpiCard({ label, value, color, icon: Icon }: { label: string; value: string; color: string; icon: ComponentType<{ className?: string }> }) {
   const colors: Record<string, string> = {
     blue: 'bg-blue-50 border-blue-100', green: 'bg-green-50 border-green-100',
     purple: 'bg-purple-50 border-purple-100', orange: 'bg-orange-50 border-orange-100',
   };
+  const iconColors: Record<string, string> = {
+    blue: 'text-blue-500', green: 'text-green-600',
+    purple: 'text-purple-500', orange: 'text-orange-500',
+  };
   return (
     <div className={`rounded-xl border p-3 ${colors[color]}`}>
-      <p className="text-xs text-gray-500">{emoji} {label}</p>
+      <p className="text-xs text-gray-500 flex items-center gap-1.5">
+        <Icon className={`w-3.5 h-3.5 ${iconColors[color]}`} />
+        {label}
+      </p>
       <p className="text-lg font-bold text-gray-800 mt-0.5">{value}</p>
     </div>
   );
@@ -250,9 +262,15 @@ function OpportuniteCard({ opp, onDetail, onChanger, onSupprimer }: {
                   → {STADES_CONFIG[nextStade].label}
                 </button>
               )}
-              <button onClick={() => { onChanger('gagne'); setShowMenu(false); }} className="w-full text-left px-3 py-1.5 hover:bg-gray-50 text-green-600">🏆 Marquer gagné</button>
-              <button onClick={() => { onChanger('perdu'); setShowMenu(false); }} className="w-full text-left px-3 py-1.5 hover:bg-gray-50 text-red-600">❌ Marquer perdu</button>
-              <button onClick={() => { onSupprimer(); setShowMenu(false); }} className="w-full text-left px-3 py-1.5 hover:bg-gray-50 text-red-600">Supprimer</button>
+              <button onClick={() => { onChanger('gagne'); setShowMenu(false); }} className="w-full flex items-center gap-1.5 text-left px-3 py-1.5 hover:bg-gray-50 text-green-600">
+                <Trophy className="w-3.5 h-3.5" /> Marquer gagné
+              </button>
+              <button onClick={() => { onChanger('perdu'); setShowMenu(false); }} className="w-full flex items-center gap-1.5 text-left px-3 py-1.5 hover:bg-gray-50 text-red-600">
+                <XCircle className="w-3.5 h-3.5" /> Marquer perdu
+              </button>
+              <button onClick={() => { onSupprimer(); setShowMenu(false); }} className="w-full flex items-center gap-1.5 text-left px-3 py-1.5 hover:bg-gray-50 text-red-600">
+                <Trash2 className="w-3.5 h-3.5" /> Supprimer
+              </button>
             </div>
           )}
         </div>
@@ -336,7 +354,7 @@ function DetailModal({ opp, organisationId, onClose, onRefresh, onEdit }: {
                 <h2 className="text-lg font-bold text-gray-900 mt-0.5">{opp.nom}</h2>
                 {opp.client_nom && <p className="text-sm text-gray-500">{opp.client_nom}</p>}
               </div>
-              <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-white/60">✕</button>
+              <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-white/60"><X className="w-4 h-4" /></button>
             </div>
           </div>
 
@@ -419,7 +437,7 @@ function DetailModal({ opp, organisationId, onClose, onRefresh, onEdit }: {
             </button>
             {!opp.devis_id && opp.stade !== 'perdu' && (
               <button onClick={handleConvertir} disabled={converting}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 disabled:opacity-50">
+                className="flex items-center gap-1.5 px-3 py-2 text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 disabled:opacity-50">
                 {converting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
                 Créer un devis
               </button>
@@ -490,7 +508,7 @@ function OpportuniteModal({ opp, organisationId, onClose, onSave }: {
             <h2 className="text-lg font-semibold text-gray-900">
               {opp?.id ? 'Modifier l\'opportunité' : 'Nouvelle opportunité'}
             </h2>
-            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">✕</button>
+            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"><X className="w-4 h-4" /></button>
           </div>
 
           <div className="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">

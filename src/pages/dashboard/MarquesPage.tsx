@@ -167,7 +167,7 @@ export default function MarquesPage() {
             Multi-marques
           </h1>
           <p className="text-gray-500 mt-1">
-            Gérez plusieurs marques/entités et associez-les à vos factures et devis.
+            Facturez sous plusieurs identités visuelles — filiales, enseignes ou activités distinctes.
           </p>
         </div>
         <button
@@ -194,15 +194,18 @@ export default function MarquesPage() {
           <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
         </div>
       ) : marques.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-400">
-          <Layers className="w-12 h-12 mx-auto mb-3 opacity-20" />
-          <p className="font-medium">Aucune marque configurée</p>
-          <p className="text-sm mt-1">Créez votre première marque pour personnaliser vos documents</p>
+        <div className="bg-white rounded-2xl border border-gray-200 p-16 px-6 text-center">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+            <Layers className="w-8 h-8 text-blue-500" />
+          </div>
+          <p className="text-lg font-semibold text-gray-900">Aucune marque configurée</p>
+          <p className="text-sm text-gray-500 mt-1">Créez votre première marque pour personnaliser vos factures et devis.</p>
           <button
             onClick={openNew}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
           >
-            Créer une marque
+            <Plus className="w-4 h-4" />
+            Créer ma première marque
           </button>
         </div>
       ) : (

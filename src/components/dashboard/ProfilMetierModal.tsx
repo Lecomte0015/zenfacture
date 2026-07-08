@@ -52,7 +52,7 @@ const ProfilMetierModal: React.FC = () => {
             </span>
           </div>
           <h2 className="text-2xl font-bold text-gray-900">
-            {prenom ? `Bienvenue, ${prenom} ! 👋` : 'Bienvenue sur ZenFacture ! 👋'}
+            {prenom ? `Bienvenue, ${prenom} !` : 'Bienvenue sur ZenFacture !'}
           </h2>
           <p className="text-gray-500 mt-1.5 text-sm leading-relaxed">
             Dites-nous quel type d'activité vous exercez. Nous adapterons votre dashboard,

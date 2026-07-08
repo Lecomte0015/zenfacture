@@ -90,10 +90,10 @@ const ExpensesSection: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette dépense ?')) {
+    if (window.confirm('Supprimer cette dépense ? Cette action est définitive.')) {
       const updatedExpenses = expenses.filter(exp => exp.id !== id);
       saveExpenses(updatedExpenses);
-      toast.success('Dépense supprimée avec succès');
+      toast.success('Dépense supprimée');
     }
   };
 
@@ -232,20 +232,22 @@ const ExpensesSection: React.FC = () => {
       {/* Liste des dépenses */}
       <div className="bg-white shadow overflow-hidden sm:rounded-lg">
         {expenses.length === 0 ? (
-          <div className="text-center p-8">
-            <FiDollarSign className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Aucune dépense</h3>
+          <div className="text-center py-16 px-6">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+              <FiDollarSign className="h-8 w-8 text-blue-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Aucune dépense pour l'instant</h3>
             <p className="mt-1 text-sm text-gray-500">
-              Commencez par ajouter votre première dépense.
+              Ajoutez votre première dépense pour garder un œil sur vos coûts.
             </p>
             <div className="mt-6">
               <button
                 type="button"
                 onClick={() => setIsFormOpen(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 <FiPlus className="-ml-1 mr-2 h-5 w-5" />
-                Nouvelle dépense
+                Ajouter ma première dépense
               </button>
             </div>
           </div>

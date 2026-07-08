@@ -124,7 +124,7 @@ export default function POSPage() {
             <ShoppingCart className="w-6 h-6 text-blue-600" />
             Point de vente (POS)
           </h1>
-          <p className="text-gray-500 mt-1">Caisse enregistreuse avec génération automatique de factures.</p>
+          <p className="text-gray-500 mt-1">Encaissez vos ventes, la facture se génère automatiquement.</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -194,10 +194,13 @@ export default function POSPage() {
 
             {/* Grille produits */}
             {produitsFiltres.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
-                <Package className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                <p>Aucun produit trouvé</p>
-                <a href="/dashboard/produits" className="text-blue-600 text-sm hover:underline mt-1 block">
+              <div className="text-center py-16 px-6">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                  <Package className="w-8 h-8 text-blue-500" />
+                </div>
+                <p className="text-lg font-semibold text-gray-900">Aucun produit trouvé</p>
+                <p className="text-sm text-gray-500 mt-1">Ajoutez des produits à votre catalogue pour commencer à encaisser.</p>
+                <a href="/dashboard/produits" className="text-blue-600 text-sm font-medium hover:underline mt-3 inline-block">
                   Configurer le catalogue →
                 </a>
               </div>
@@ -403,9 +406,12 @@ export default function POSPage() {
             <h3 className="font-medium text-gray-800">Dernières ventes</h3>
           </div>
           {ventes.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <TrendingUp className="w-10 h-10 mx-auto mb-2 opacity-30" />
-              <p>Aucune vente enregistrée</p>
+            <div className="text-center py-16 px-6">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                <TrendingUp className="w-8 h-8 text-blue-500" />
+              </div>
+              <p className="text-lg font-semibold text-gray-900">Aucune vente pour l'instant</p>
+              <p className="text-sm text-gray-500 mt-1">Vos ventes en caisse apparaîtront ici.</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-50">

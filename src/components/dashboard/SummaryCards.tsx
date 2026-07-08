@@ -23,11 +23,11 @@ type SummaryCardProps = {
 };
 
 const SummaryCard = ({ title, value, change, icon, trend }: SummaryCardProps) => (
-  <div className="bg-white overflow-hidden shadow rounded-lg">
+  <div className="bg-white overflow-hidden shadow-sm border border-gray-100 rounded-2xl">
     <div className="p-5">
       <div className="flex items-center">
         <div className="flex-shrink-0">
-          <div className="h-12 w-12 rounded-md bg-primary-100 flex items-center justify-center">
+          <div className="h-12 w-12 rounded-xl bg-primary-100 flex items-center justify-center">
             {icon}
           </div>
         </div>
@@ -141,7 +141,7 @@ const SummaryCards: React.FC = () => {
     return (
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="animate-pulse bg-gray-200 rounded-lg h-32"></div>
+          <div key={i} className="animate-pulse bg-gray-200 rounded-2xl h-32"></div>
         ))}
       </div>
     );

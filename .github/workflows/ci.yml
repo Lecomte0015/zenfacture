@@ -1,0 +1,51 @@
+name: CI
+
+# Pipeline d'intégration continue ZenFacture.
+# Se déclenche sur push et pull request vers main.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Typecheck, tests & build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installation de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Installation des dépendances
+        run: npm ci
+
+      - name: Vérification des types (TypeScript)
+        # IMPORTANT : continue-on-error car le projet a une dette technique
+        # historique de erreurs TypeScript préexistantes (voir ROADMAP.md,
+        # Phase 4.6 / Chantier "types Supabase"). `npm run typecheck` s'exécute
+        # ici uniquement pour visibilité (le résultat apparaît dans les logs et
+        # dans l'onglet Checks), sans bloquer le pipeline tant que la dette
+        # n'est pas résorbée à zéro. Retirez `continue-on-error` dès que
+        # `npm run typecheck` passe à 0 erreur pour en faire une porte bloquante.
+        run: npm run typecheck
+        continue-on-error: true
+
+      - name: Tests unitaires (Vitest)
+        run: npm run test
+
+      - name: Build de production (Vite)
+        run: npm run build
+
+      - name: Upload de l'artefact de build
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7

@@ -44,7 +44,7 @@ const STATUT_COLORS: Record<string, string> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  cdi: 'bg-indigo-100 text-indigo-700',
+  cdi: 'bg-blue-100 text-blue-700',
   cdd: 'bg-orange-100 text-orange-700',
   stage: 'bg-purple-100 text-purple-700',
   apprenti: 'bg-teal-100 text-teal-700',
@@ -585,12 +585,12 @@ export default function PayrollPage() {
       <div className="bg-white border-b border-gray-200 px-6 py-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-              <Wallet className="text-indigo-600" size={20} />
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Wallet className="text-blue-600" size={20} />
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">Salaires</h1>
-              <p className="text-sm text-gray-500">Gestion de la paie — conforme Swissdec</p>
+              <p className="text-sm text-gray-500">Préparez la paie de votre équipe, conforme Swissdec.</p>
             </div>
           </div>
           <button onClick={refreshAll}
@@ -606,7 +606,7 @@ export default function PayrollPage() {
             onClick={() => setOnglet('employes')}
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
               onglet === 'employes'
-                ? 'border-indigo-600 text-indigo-600'
+                ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -622,7 +622,7 @@ export default function PayrollPage() {
             onClick={() => setOnglet('fiches')}
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
               onglet === 'fiches'
-                ? 'border-indigo-600 text-indigo-600'
+                ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -655,7 +655,7 @@ export default function PayrollPage() {
               </h2>
               <button
                 onClick={() => setModalEmploye({ ouvert: true })}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
               >
                 <Plus size={16} />
                 Ajouter un employé
@@ -664,17 +664,21 @@ export default function PayrollPage() {
 
             {loading ? (
               <div className="flex items-center justify-center py-16">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div>
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
               </div>
             ) : employes.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
-                <Users size={40} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-gray-500 text-sm">Aucun employé enregistré.</p>
+              <div className="text-center py-16 px-6 bg-white rounded-2xl border border-gray-200">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                  <Users size={28} className="text-blue-500" />
+                </div>
+                <p className="text-lg font-semibold text-gray-900">Aucun employé pour l'instant</p>
+                <p className="text-sm text-gray-500 mt-1">Ajoutez votre première employée ou premier employé pour préparer ses fiches de salaire.</p>
                 <button
                   onClick={() => setModalEmploye({ ouvert: true })}
-                  className="mt-3 text-indigo-600 text-sm hover:underline"
+                  className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
                 >
-                  Ajouter le premier employé
+                  <Plus size={16} />
+                  Ajouter mon premier employé
                 </button>
               </div>
             ) : (
@@ -721,7 +725,7 @@ export default function PayrollPage() {
                             <div className="flex items-center justify-end gap-2">
                               <button
                                 onClick={() => setModalEmploye({ ouvert: true, employe: emp })}
-                                className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded"
+                                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
                                 title="Modifier"
                               >
                                 <Pencil size={14} />
@@ -756,13 +760,13 @@ export default function PayrollPage() {
                   type="month"
                   value={periodeSelectionnee}
                   onChange={e => setPeriodeSelectionnee(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <button
                 onClick={handleGenererFiches}
                 disabled={generation || employes.filter(e => e.actif).length === 0}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
               >
                 <Plus size={16} />
                 {generation ? 'Génération...' : `Générer les fiches — ${nomPeriode(periodeSelectionnee)}`}
@@ -779,7 +783,7 @@ export default function PayrollPage() {
                   </button>
                   <button
                     onClick={handleExportXML}
-                    className="flex items-center gap-2 px-3 py-2 border border-indigo-300 rounded-lg text-sm text-indigo-600 hover:bg-indigo-50"
+                    className="flex items-center gap-2 px-3 py-2 border border-blue-300 rounded-lg text-sm text-blue-600 hover:bg-blue-50"
                   >
                     <Download size={14} />
                     Export Swissdec XML
@@ -790,20 +794,27 @@ export default function PayrollPage() {
 
             {loading ? (
               <div className="flex items-center justify-center py-16">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div>
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
               </div>
             ) : fiches.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
-                <FileText size={40} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-gray-500 text-sm">Aucune fiche pour cette période.</p>
+              <div className="text-center py-16 px-6 bg-white rounded-2xl border border-gray-200">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                  <FileText size={28} className="text-blue-500" />
+                </div>
+                <p className="text-lg font-semibold text-gray-900">Aucune fiche pour cette période</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {employes.filter(e => e.actif).length > 0
+                    ? 'Générez les fiches de salaire pour vos employés actifs.'
+                    : "Ajoutez d'abord un employé pour pouvoir générer ses fiches."}
+                </p>
                 {employes.filter(e => e.actif).length > 0 ? (
                   <button onClick={handleGenererFiches} disabled={generation}
-                    className="mt-3 text-indigo-600 text-sm hover:underline">
+                    className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50">
                     Générer les fiches de salaire
                   </button>
                 ) : (
                   <button onClick={() => setOnglet('employes')}
-                    className="mt-3 text-indigo-600 text-sm hover:underline">
+                    className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors">
                     Ajouter des employés d'abord
                   </button>
                 )}
@@ -846,7 +857,7 @@ export default function PayrollPage() {
                               <div className="flex items-center justify-end gap-1">
                                 <button
                                   onClick={() => setModalFiche(fiche)}
-                                  className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded"
+                                  className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
                                   title="Voir le détail"
                                 >
                                   <ChevronRight size={14} />

@@ -62,13 +62,13 @@ export default function CommandesFournisseursPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <ShoppingCart className="w-6 h-6 text-indigo-600" />
+            <ShoppingCart className="w-6 h-6 text-blue-600" />
             Commandes fournisseurs
           </h1>
-          <p className="text-gray-500 mt-1">Gérez vos achats et réceptions de marchandises.</p>
+          <p className="text-gray-500 mt-1">Suivez vos commandes fournisseurs, de l'envoi à la réception.</p>
         </div>
         <button onClick={() => setShowCommandeModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
           <Plus className="w-4 h-4" />Nouvelle commande
         </button>
       </div>
@@ -78,7 +78,7 @@ export default function CommandesFournisseursPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Fournisseurs', value: stats.nb_fournisseurs, icon: <Building className="w-5 h-5 text-blue-600" />, bg: 'bg-blue-50' },
-            { label: 'Commandes', value: stats.nb_commandes, icon: <Package className="w-5 h-5 text-indigo-600" />, bg: 'bg-indigo-50' },
+            { label: 'Commandes', value: stats.nb_commandes, icon: <Package className="w-5 h-5 text-blue-600" />, bg: 'bg-blue-50' },
             { label: 'Achats ce mois', value: formatCurrency(stats.ca_achats_mois, 'CHF'), icon: <ArrowDown className="w-5 h-5 text-orange-600" />, bg: 'bg-orange-50' },
             { label: 'En attente', value: stats.commandes_en_attente, icon: <Truck className="w-5 h-5 text-yellow-600" />, bg: 'bg-yellow-50' },
           ].map(s => (
@@ -101,7 +101,7 @@ export default function CommandesFournisseursPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-indigo-500" /></div>
+        <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>
       ) : activeTab === 'commandes' ? (
         <div className="space-y-4">
           {/* Filtre statut */}
@@ -110,7 +110,7 @@ export default function CommandesFournisseursPage() {
               <button key={s} onClick={() => setFiltreStatut(s)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
                   filtreStatut === s
-                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    ? 'bg-blue-600 text-white border-blue-600'
                     : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
                 }`}>
                 {s === 'tous' ? 'Toutes' : STATUTS_COMMANDE[s as CommandeFournisseur['statut']].label}
@@ -120,10 +120,12 @@ export default function CommandesFournisseursPage() {
           </div>
 
           {commandesFiltrees.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-200 text-center py-16 shadow-sm">
-              <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-gray-500 font-medium">Aucune commande</p>
-              <p className="text-sm text-gray-400 mt-1">Créez votre première commande fournisseur.</p>
+            <div className="bg-white rounded-2xl border border-gray-200 text-center py-16 px-6 shadow-sm">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                <ShoppingCart className="w-8 h-8 text-blue-500" />
+              </div>
+              <p className="text-lg font-semibold text-gray-900">Aucune commande pour l'instant</p>
+              <p className="text-sm text-gray-500 mt-1">Créez votre première commande fournisseur pour organiser vos achats.</p>
             </div>
           ) : (
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm divide-y divide-gray-50">
@@ -145,21 +147,24 @@ export default function CommandesFournisseursPage() {
         /* ONGLET FOURNISSEURS */
         <div className="space-y-3">
           <button onClick={() => { setEditFournisseur(null); setShowFournisseurModal(true); }}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100">
+            className="flex items-center gap-2 px-3 py-2 text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100">
             <Plus className="w-4 h-4" />Ajouter un fournisseur
           </button>
 
           {fournisseurs.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-200 text-center py-16 shadow-sm">
-              <Building className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-gray-500">Aucun fournisseur</p>
+            <div className="bg-white rounded-2xl border border-gray-200 text-center py-16 px-6 shadow-sm">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                <Building className="w-8 h-8 text-blue-500" />
+              </div>
+              <p className="text-lg font-semibold text-gray-900">Aucun fournisseur pour l'instant</p>
+              <p className="text-sm text-gray-500 mt-1">Ajoutez votre premier fournisseur pour lui passer commande.</p>
             </div>
           ) : (
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm divide-y divide-gray-50">
               {fournisseurs.map(f => (
                 <div key={f.id} className="flex items-center gap-3 px-4 py-3">
-                  <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
-                    <Building className="w-4 h-4 text-indigo-600" />
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
+                    <Building className="w-4 h-4 text-blue-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-800 truncate">{f.nom}</p>
@@ -364,7 +369,7 @@ function CommandeModal({ fournisseurs, organisationId, onClose, onSave }: {
         <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Nouvelle commande fournisseur</h2>
-            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">✕</button>
+            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"><X className="w-4 h-4" /></button>
           </div>
 
           <div className="px-6 py-5 space-y-4 max-h-[65vh] overflow-y-auto">
@@ -372,14 +377,14 @@ function CommandeModal({ fournisseurs, organisationId, onClose, onSave }: {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Fournisseur *</label>
                 <select value={fournisseurId} onChange={e => setFournisseurId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                   {fournisseurs.map(f => <option key={f.id} value={f.id}>{f.nom}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date livraison prévue</label>
                 <input type="date" value={dateLivraison} onChange={e => setDateLivraison(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
             </div>
 
@@ -392,23 +397,23 @@ function CommandeModal({ fournisseurs, organisationId, onClose, onSave }: {
                     <div className="col-span-4">
                       {i === 0 && <label className="block text-xs text-gray-400 mb-0.5">Description</label>}
                       <input type="text" value={l.description || ''} onChange={e => updateLigne(i, 'description', e.target.value)}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                         placeholder="Article..." />
                     </div>
                     <div className="col-span-2">
                       {i === 0 && <label className="block text-xs text-gray-400 mb-0.5">Qté</label>}
                       <input type="number" min={0} step={0.001} value={l.quantite_commandee || ''} onChange={e => updateLigne(i, 'quantite_commandee', parseFloat(e.target.value))}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
                     </div>
                     <div className="col-span-2">
                       {i === 0 && <label className="block text-xs text-gray-400 mb-0.5">Prix unit.</label>}
                       <input type="number" min={0} step={0.01} value={l.prix_unitaire || ''} onChange={e => updateLigne(i, 'prix_unitaire', parseFloat(e.target.value))}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
                     </div>
                     <div className="col-span-2">
                       {i === 0 && <label className="block text-xs text-gray-400 mb-0.5">TVA %</label>}
                       <select value={l.taux_tva || 7.7} onChange={e => updateLigne(i, 'taux_tva', parseFloat(e.target.value))}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                         <option value={7.7}>7.7%</option><option value={2.6}>2.6%</option><option value={3.8}>3.8%</option><option value={0}>0%</option>
                       </select>
                     </div>
@@ -418,12 +423,12 @@ function CommandeModal({ fournisseurs, organisationId, onClose, onSave }: {
                     </div>
                     <div className="col-span-1 flex justify-end">
                       <button onClick={() => setLignes(prev => prev.filter((_, j) => j !== i))}
-                        className="p-1 text-red-400 hover:text-red-600 rounded">✕</button>
+                        className="p-1 text-red-400 hover:text-red-600 rounded"><X className="w-4 h-4" /></button>
                     </div>
                   </div>
                 ))}
                 <button onClick={() => setLignes(prev => [...prev, { description: '', quantite_commandee: 1, prix_unitaire: 0, taux_tva: 7.7, remise_pct: 0, unite: 'pcs', total_ht: 0, ordre: prev.length }])}
-                  className="text-xs text-indigo-600 hover:underline flex items-center gap-1">
+                  className="text-xs text-blue-600 hover:underline flex items-center gap-1">
                   <Plus className="w-3 h-3" />Ajouter une ligne
                 </button>
               </div>
@@ -439,14 +444,14 @@ function CommandeModal({ fournisseurs, organisationId, onClose, onSave }: {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Notes internes</label>
               <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" />
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
             </div>
           </div>
 
           <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
             <button onClick={onClose} className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Annuler</button>
             <button onClick={handleSave} disabled={saving || !fournisseurId}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50">
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />}
               Créer la commande
             </button>
@@ -484,7 +489,7 @@ function ReceptionModal({ commande, onClose, onSave }: {
             <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <Truck className="w-5 h-5 text-green-600" />Réception marchandises
             </h2>
-            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">✕</button>
+            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"><X className="w-4 h-4" /></button>
           </div>
           <div className="px-6 py-5 space-y-3">
             <p className="text-sm text-gray-500">Commande {commande.numero}</p>
@@ -554,7 +559,7 @@ function FournisseurModal({ fournisseur, organisationId, onClose, onSave }: {
         <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">{fournisseur ? 'Modifier le fournisseur' : 'Nouveau fournisseur'}</h2>
-            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">✕</button>
+            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"><X className="w-4 h-4" /></button>
           </div>
           <div className="px-6 py-5 space-y-3 max-h-[65vh] overflow-y-auto">
             {[
@@ -570,19 +575,19 @@ function FournisseurModal({ fournisseur, organisationId, onClose, onSave }: {
               <div key={f.label}>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
                 <input type={f.type} value={f.val} onChange={e => f.set(e.target.value)} placeholder={f.ph}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
             ))}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
               <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" />
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
             </div>
           </div>
           <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
             <button onClick={onClose} className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Annuler</button>
             <button onClick={handleSave} disabled={saving || !nom.trim()}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50">
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Building className="w-4 h-4" />}
               {fournisseur ? 'Mettre à jour' : 'Créer'}
             </button>

@@ -12,7 +12,7 @@ const vitestConfig: { test: InlineConfig } = {
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
-    exclude: [...configDefaults.exclude, '**/e2e/**'],
+    exclude: [...configDefaults.exclude, '**/e2e/**', '**/.claude/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

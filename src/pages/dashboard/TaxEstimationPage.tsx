@@ -361,10 +361,12 @@ export default function TaxEstimationPage() {
               </button>
             </>
           ) : (
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center text-gray-400">
-              <Calculator className="w-12 h-12 mx-auto mb-3 opacity-20" />
-              <p className="font-medium">Remplissez les paramètres et cliquez sur "Calculer"</p>
-              <p className="text-sm mt-1">L'estimation apparaîtra ici</p>
+            <div className="bg-white rounded-xl border border-dashed border-gray-200 shadow-sm p-12 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+                <Calculator className="w-7 h-7 text-orange-500" />
+              </div>
+              <p className="mt-4 font-medium text-gray-700">Renseignez vos paramètres et cliquez sur « Calculer »</p>
+              <p className="text-sm text-gray-400 mt-1">Votre estimation fiscale apparaîtra ici, détaillée poste par poste.</p>
             </div>
           )}
         </div>

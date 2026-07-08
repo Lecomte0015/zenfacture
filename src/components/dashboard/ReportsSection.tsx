@@ -136,8 +136,8 @@ const ReportsSection: React.FC = () => {
         {
           label: 'Revenus (CHF)',
           data,
-          borderColor: 'rgb(79, 70, 229)',
-          backgroundColor: 'rgba(79, 70, 229, 0.2)',
+          borderColor: 'rgb(234, 88, 12)',
+          backgroundColor: 'rgba(234, 88, 12, 0.2)',
           tension: 0.3,
           fill: true,
         },
@@ -383,7 +383,7 @@ const ReportsSection: React.FC = () => {
         <div className="flex-1">
           <h2 className="text-2xl font-bold text-gray-900">Rapports et analyses</h2>
           <p className="mt-1 text-sm text-gray-500">
-            Visualisez les performances de votre entreprise
+            Un coup d'œil sur la santé financière de votre entreprise.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
@@ -522,8 +522,8 @@ const ReportsSection: React.FC = () => {
               <Pie data={getExpensesByCategoryData()} options={chartOptions} />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                <FiPieChart className="h-12 w-12 mb-2" />
-                <p>Aucune donnée de dépenses disponible</p>
+                <FiPieChart className="h-12 w-12 mb-2 opacity-30" />
+                <p>Pas encore de dépenses enregistrées pour cette période.</p>
               </div>
             )}
           </div>
@@ -537,8 +537,8 @@ const ReportsSection: React.FC = () => {
               <Bar data={getInvoicesStatusData()} options={chartOptions} />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                <FiFileText className="h-12 w-12 mb-2" />
-                <p>Aucune facture disponible</p>
+                <FiFileText className="h-12 w-12 mb-2 opacity-30" />
+                <p>Pas encore de facture pour cette période.</p>
               </div>
             )}
           </div>
@@ -572,7 +572,7 @@ const ReportsSection: React.FC = () => {
               {invoices.length === 0 && expenses.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
-                    Aucune transaction à afficher
+                    Aucune transaction à afficher pour l'instant.
                   </td>
                 </tr>
               ) : (

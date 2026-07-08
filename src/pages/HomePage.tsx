@@ -273,7 +273,7 @@ const HomePage = () => {
       </section>
 
       {/* ══ 3b. APERÇU PRODUIT — facture réelle ═════════════════════════════ */}
-      <section className="bg-slate-50 border-b border-gray-200 py-20">
+      <section className="bg-gray-50 border-b border-gray-200 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-14 lg:gap-20 items-center">
 
@@ -356,7 +356,7 @@ const HomePage = () => {
       </section>
 
       {/* ══ 5. FONCTIONNALITÉS — grille scannable ════════════════════════════ */}
-      <section className="bg-slate-50 border-y border-gray-200 py-20">
+      <section className="bg-gray-50 border-y border-gray-200 py-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Fonctionnalités</p>
@@ -416,7 +416,7 @@ const HomePage = () => {
       </section>
 
       {/* ══ 7. TARIFS ════════════════════════════════════════════════════════ */}
-      <section className="bg-slate-50 border-b border-gray-200 py-20">
+      <section className="bg-gray-50 border-b border-gray-200 py-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Tarifs</p>

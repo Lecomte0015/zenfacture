@@ -117,11 +117,11 @@ export default function ProfilePage() {
           Mon profil
         </h2>
         <p className="mt-1 text-sm text-gray-500">
-          Gérez vos informations personnelles et vos préférences
+          Vos informations et vos préférences, à jour en un coup d'œil.
         </p>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div className="bg-white shadow-sm border border-gray-100 overflow-hidden rounded-2xl">
         <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
             Informations personnelles
@@ -298,13 +298,13 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   <CheckIcon className="-ml-1 mr-2 h-5 w-5" />
                   Enregistrer les modifications
@@ -314,7 +314,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={handleEditClick}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Modifier le profil
               </button>
@@ -323,7 +323,7 @@ export default function ProfilePage() {
         </form>
       </div>
       
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div className="bg-white shadow-sm border border-gray-100 overflow-hidden rounded-2xl">
         <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
             Paramètres de sécurité
@@ -350,7 +350,7 @@ export default function ProfilePage() {
                   onClick={() => {
                     // Envoyer un email de réinitialisation de mot de passe
                     // Par exemple: sendPasswordResetEmail(user.email);
-                    alert('Un email de réinitialisation de mot de passe a été envoyé à votre adresse email.');
+                    alert('C\'est fait — un e-mail pour réinitialiser votre mot de passe vient de partir.');
                   }}
                 >
                   Réinitialiser le mot de passe

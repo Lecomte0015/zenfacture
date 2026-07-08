@@ -104,7 +104,7 @@ const TeamInvitePage = () => {
           </p>
         </div>
 
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="bg-white shadow-sm border border-gray-100 overflow-hidden rounded-2xl">
           <div className="px-4 py-5 sm:px-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900">Détails de l'invitation</h3>
           </div>
@@ -134,7 +134,7 @@ const TeamInvitePage = () => {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm text-green-700">Invitation envoyée avec succès !</p>
+                    <p className="text-sm text-green-700">Invitation envoyée ! {name || email} recevra un e-mail pour rejoindre l'équipe.</p>
                   </div>
                 </div>
               </div>
@@ -237,7 +237,7 @@ const TeamInvitePage = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${isSubmitting ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+                  className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white transition-colors ${isSubmitting ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
                 >
                   <Send className={`mr-2 h-4 w-4 ${isSubmitting ? 'animate-pulse' : ''}`} />
                   {isSubmitting ? 'Envoi en cours...' : 'Envoyer l\'invitation'}

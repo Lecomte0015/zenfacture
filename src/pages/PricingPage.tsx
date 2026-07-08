@@ -60,10 +60,10 @@ export const PricingPage = () => {
       <div className="mx-auto max-w-7xl py-24 px-4 sm:px-6 lg:px-8">
         <div className="sm:flex sm:flex-col sm:items-center">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-            Des tarifs adaptés à vos besoins
+            Un tarif simple, sans mauvaise surprise
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-gray-600">
-            Choisissez le forfait qui correspond le mieux à votre entreprise. Tous nos forfaits incluent une période d'essai gratuite de 14 jours.
+            Choisissez la formule qui correspond à la taille de votre activité aujourd'hui — vous pourrez toujours en changer demain. Les 30 premiers jours sont gratuits, sans carte bancaire.
           </p>
           
           {/* Billing toggle */}
@@ -95,6 +95,7 @@ export const PricingPage = () => {
               Annuel <span className="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-800">Économisez 20%</span>
             </span>
           </div>
+          <p className="mt-4 text-sm text-gray-500">Sans engagement · Annulation en un clic, à tout moment</p>
         </div>
 
         {/* Tiers */}
@@ -105,8 +106,8 @@ export const PricingPage = () => {
               className={classNames(
                 tier.featured
                   ? 'bg-primary-50 border-primary-200 shadow-2xl shadow-primary-200/50'
-                  : 'border-gray-200',
-                'relative flex flex-col rounded-2xl border p-8'
+                  : 'border-gray-200 hover:shadow-card-hover transition-shadow',
+                'relative flex flex-col rounded-2xl border p-8 sm:p-9'
               )}
             >
               <div className="flex-1">
@@ -149,7 +150,7 @@ export const PricingPage = () => {
                   'mt-8 block w-full rounded-md border border-gray-200 px-6 py-3 text-center font-medium transition-colors duration-200'
                 )}
               >
-                {tier.featured ? 'Commencer l\'essai gratuit' : 'Essai gratuit'}
+                {tier.featured ? 'Commencer mon essai gratuit' : 'Essayer 30 jours gratuitement'}
               </a>
             </div>
           ))}
@@ -158,7 +159,7 @@ export const PricingPage = () => {
         {/* FAQ */}
         <div className="mt-24">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Questions fréquentes
+            Encore des questions ?
           </h2>
           <div className="mt-12">
             <dl className="space-y-10 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-12 md:space-y-0">

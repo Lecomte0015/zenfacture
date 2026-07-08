@@ -234,7 +234,7 @@ const RecentInvoices: React.FC<RecentInvoicesProps> = ({
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
+    <div className="bg-white shadow-sm border border-gray-100 rounded-2xl p-6">
       {/* Bannière d'essai terminé */}
       {isTrialExpired && !hasActiveSubscription && (
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
@@ -246,7 +246,7 @@ const RecentInvoices: React.FC<RecentInvoicesProps> = ({
             </div>
             <div className="ml-3">
               <p className="text-sm text-yellow-700">
-                Votre période d'essai est terminée. <a href="/pricing" className="font-medium text-yellow-700 underline hover:text-yellow-600">Mettez à niveau votre forêt</a> pour continuer à profiter de toutes les fonctionnalités.
+                Votre période d'essai est terminée. <a href="/pricing" className="font-medium text-yellow-700 underline hover:text-yellow-600">Choisissez un forfait</a> pour continuer à profiter de toutes les fonctionnalités.
               </p>
             </div>
           </div>
@@ -283,8 +283,8 @@ const RecentInvoices: React.FC<RecentInvoicesProps> = ({
 
       <div className="overflow-x-auto">
         {filteredInvoices.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            Aucune facture trouvée
+          <div className="text-center py-12 text-gray-500">
+            {invoices.length === 0 ? 'Aucune facture pour l\'instant.' : 'Aucune facture ne correspond à votre recherche.'}
           </div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200">
@@ -352,7 +352,7 @@ const RecentInvoices: React.FC<RecentInvoicesProps> = ({
                         <button
                           onClick={(e) => {
                             if (!canAccessFeature('export_pdf')) {
-                              toast.error('Cette fonctionnalité n\'est pas incluse dans votre forêt actuel.');
+                              toast.error('Cette fonctionnalité n\'est pas incluse dans votre forfait actuel.');
                               return;
                             }
                             handleDownload(invoice, e);
@@ -380,7 +380,7 @@ const RecentInvoices: React.FC<RecentInvoicesProps> = ({
                         <button
                           onClick={(e) => {
                             if (!canAccessFeature('email_invoice')) {
-                              toast.error('L\'envoi d\'emails n\'est pas inclus dans votre forêt actuel.');
+                              toast.error('L\'envoi d\'emails n\'est pas inclus dans votre forfait actuel.');
                               return;
                             }
                             handleSendEmail(invoice, e);
@@ -399,7 +399,7 @@ const RecentInvoices: React.FC<RecentInvoicesProps> = ({
                         onClick={(e) => {
                           e.stopPropagation();
                           if (!canAccessFeature('invoices', { currentUsage: filteredInvoices.length })) {
-                            toast.error('Vous avez atteint la limite de factures pour votre forêt.');
+                            toast.error('Vous avez atteint la limite de factures pour votre forfait.');
                             return;
                           }
                           onEdit(invoice);

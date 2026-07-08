@@ -9,7 +9,7 @@ import { sendInvoiceEmail } from '../../services/emailService';
 
 const STATUT_COLORS: Record<string, string> = {
   brouillon: 'bg-gray-100 text-gray-800',
-  emis: 'bg-blue-100 text-blue-800',
+  emis: 'bg-orange-100 text-orange-800',
   applique: 'bg-green-100 text-green-800',
   annule: 'bg-red-100 text-red-800',
 };
@@ -84,7 +84,7 @@ const AvoirsPage: React.FC = () => {
     setIsSendingEmail(false);
 
     if (result.success) {
-      setSendFeedback({ type: 'success', message: `Avoir envoyé à ${sendEmailTo}` });
+      setSendFeedback({ type: 'success', message: `C'est fait, l'avoir a bien été envoyé à ${sendEmailTo}.` });
       // Mettre le statut à "emis"
       try {
         await editAvoir(sendingAvoir.id, { statut: 'emis' });
@@ -106,7 +106,7 @@ const AvoirsPage: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75" onClick={handleCloseSendModal} />
-            <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+            <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Envoyer l'avoir par email</h3>
                 <button onClick={handleCloseSendModal} className="text-gray-400 hover:text-gray-600">
@@ -127,7 +127,7 @@ const AvoirsPage: React.FC = () => {
                   type="email"
                   value={sendEmailTo}
                   onChange={(e) => setSendEmailTo(e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
                   placeholder="client@exemple.com"
                   disabled={isSendingEmail}
                 />
@@ -154,7 +154,7 @@ const AvoirsPage: React.FC = () => {
                 <button
                   onClick={handleSendAvoirEmail}
                   disabled={isSendingEmail || !sendEmailTo.trim()}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSendingEmail ? (
                     <>
@@ -189,7 +189,7 @@ const AvoirsPage: React.FC = () => {
             placeholder={t('common.search') + '...'}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
           />
         </div>
       </div>
@@ -202,18 +202,20 @@ const AvoirsPage: React.FC = () => {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-500 border-t-transparent"></div>
         </div>
       ) : avoirs.length === 0 ? (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          <div className="text-center py-12 text-gray-500">
-            <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-lg font-medium">{t('avoir.noCredits')}</p>
-            <p className="mt-1 text-sm">{t('avoir.manageCredits')}</p>
+        <div className="bg-white shadow overflow-hidden rounded-xl">
+          <div className="text-center py-16 px-6">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-50">
+              <FileText className="h-8 w-8 text-orange-500" />
+            </div>
+            <p className="mt-4 text-lg font-medium text-gray-900">{t('avoir.noCredits')}</p>
+            <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">{t('avoir.manageCredits')}</p>
           </div>
         </div>
       ) : (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="bg-white shadow overflow-hidden rounded-xl">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -233,7 +235,7 @@ const AvoirsPage: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{avoir.date_avoir}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{avoir.facture_id ? 'Oui' : '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">{avoir.motif || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right font-medium tabular-nums">
                     -{formatCurrency(avoir.total, avoir.devise)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -245,7 +247,7 @@ const AvoirsPage: React.FC = () => {
                     <div className="flex justify-end space-x-2">
                       <button
                         onClick={() => handleOpenSendModal(avoir)}
-                        className="text-gray-400 hover:text-blue-600"
+                        className="text-gray-400 hover:text-orange-600"
                         title="Envoyer par email"
                       >
                         <Mail className="h-4 w-4" />

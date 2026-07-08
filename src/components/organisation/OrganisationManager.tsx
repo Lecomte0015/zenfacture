@@ -151,7 +151,7 @@ const OrganisationManager: React.FC = () => {
 
   // Supprimer un membre
   const handleRemoveMember = async (membreId: string) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) {
+    if (!window.confirm('Retirer ce membre de l\'organisation ?')) {
       return;
     }
 
@@ -203,7 +203,7 @@ const OrganisationManager: React.FC = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Gestion des organisations</h1>
         <p className="mt-2 text-sm text-gray-600">
-          Gérez vos organisations et les membres de votre équipe
+          Retrouvez vos organisations et les personnes qui y travaillent avec vous.
         </p>
       </div>
 
@@ -294,8 +294,8 @@ const OrganisationManager: React.FC = () => {
 
             <div className="divide-y divide-gray-200">
               {organisations.length === 0 ? (
-                <div className="p-4 text-center text-sm text-gray-500">
-                  Aucune organisation trouvée. Créez votre première organisation pour commencer.
+                <div className="p-6 text-center text-sm text-gray-500">
+                  Aucune organisation pour l'instant. Créez la première pour commencer.
                 </div>
               ) : (
                 organisations.map((org) => (
@@ -394,8 +394,8 @@ const OrganisationManager: React.FC = () => {
                 <h4 className="text-sm font-medium text-gray-900 mb-4">Membres de l'équipe</h4>
                 
                 {membres.length === 0 ? (
-                  <div className="text-center py-4 text-sm text-gray-500">
-                    Aucun membre dans cette organisation. Utilisez le bouton ci-dessus pour inviter des membres.
+                  <div className="text-center py-8 text-sm text-gray-500">
+                    Pas encore de membre dans cette organisation. Invitez la première personne avec le bouton ci-dessus.
                   </div>
                 ) : (
                   <div className="overflow-hidden border border-gray-200 rounded-lg">
@@ -527,7 +527,7 @@ const OrganisationManager: React.FC = () => {
               </svg>
               <h3 className="mt-2 text-sm font-medium text-gray-900">Aucune organisation sélectionnée</h3>
               <p className="mt-1 text-sm text-gray-500">
-                Sélectionnez une organisation dans la liste ou créez-en une nouvelle pour commencer.
+                Choisissez une organisation dans la liste, ou créez-en une nouvelle pour commencer.
               </p>
             </div>
           )}

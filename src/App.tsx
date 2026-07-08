@@ -29,6 +29,8 @@ const NotFoundPage = React.lazy(() => import('@/pages/NotFoundPage'));
 // Lazy loaded dashboard pages
 const DashboardPage = React.lazy(() => import('@/pages/dashboard/DashboardPage'));
 const BillingPage = React.lazy(() => import('@/pages/BillingPage'));
+const BillingSuccessPage = React.lazy(() => import('@/pages/BillingSuccessPage'));
+const BillingCancelPage = React.lazy(() => import('@/pages/BillingCancelPage'));
 const ProfilePage = React.lazy(() => import('@/pages/ProfilePage'));
 const SettingsPage = React.lazy(() => import('@/pages/SettingsPage'));
 const SupportPage = React.lazy(() => import('@/pages/SupportPage'));
@@ -256,6 +258,8 @@ function App() {
           } 
         />
         <Route path="/dashboard/billing" element={<LazyLoad><BillingPage /></LazyLoad>} />
+        <Route path="/dashboard/billing/success" element={<LazyLoad><BillingSuccessPage /></LazyLoad>} />
+        <Route path="/dashboard/billing/cancel" element={<LazyLoad><BillingCancelPage /></LazyLoad>} />
         <Route
           path="/dashboard/support"
           element={

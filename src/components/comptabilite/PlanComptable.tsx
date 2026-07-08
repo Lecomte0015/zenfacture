@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, ChevronDown, ChevronRight, Edit2, Trash2 } from 'lucide-react';
+import { Plus, ChevronDown, ChevronRight, Edit2, Trash2, ListTree } from 'lucide-react';
 import { CompteComptable } from '@/services/comptabiliteService';
 
 interface PlanComptableProps {
@@ -95,7 +95,7 @@ export const PlanComptable: React.FC<PlanComptableProps> = ({
 
   const handleDelete = async (compte: CompteComptable) => {
     if (compte.est_systeme) return;
-    if (confirm(`Êtes-vous sûr de vouloir supprimer le compte ${compte.numero} - ${compte.nom} ?`)) {
+    if (confirm(`Supprimer le compte ${compte.numero} - ${compte.nom} ? Cette action est définitive.`)) {
       await onDeleteCompte(compte.id);
     }
   };
@@ -245,6 +245,17 @@ export const PlanComptable: React.FC<PlanComptableProps> = ({
       )}
 
       <div className="p-6">
+        {comptes.length === 0 && (
+          <div className="text-center py-16 px-6">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+              <ListTree className="h-7 w-7 text-orange-500" />
+            </div>
+            <p className="mt-4 text-base font-medium text-gray-900">Votre plan comptable est vide</p>
+            <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+              Ajoutez vos premiers comptes pour organiser vos actifs, passifs, charges et produits.
+            </p>
+          </div>
+        )}
         {(['actif', 'passif', 'charge', 'produit'] as const).map((type) => {
           const categories = groupedComptes[type];
           const isExpanded = expandedGroups.has(type);

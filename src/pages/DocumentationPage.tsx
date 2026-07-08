@@ -30,22 +30,22 @@ export const DocumentationPage = () => {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-12">
+    <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-14">
         <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
           Documentation
         </h1>
         <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-          Guides complets et ressources pour vous aider à tirer le meilleur parti de ZenFacture
+          Tout ce qu'il faut pour prendre ZenFacture en main, sans jargon technique.
         </p>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         {resources.map((resource, index) => (
           <a
             key={index}
             href={resource.link}
-            className="flex flex-col p-6 bg-white rounded-lg border border-gray-200 shadow-sm hover:border-blue-500 hover:shadow-md transition-all duration-200"
+            className="flex flex-col p-6 bg-white rounded-2xl border border-gray-200 shadow-card hover:border-primary-300 hover:shadow-card-hover transition-all duration-200"
           >
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -56,21 +56,21 @@ export const DocumentationPage = () => {
                 <p className="mt-1 text-gray-500">{resource.description}</p>
               </div>
             </div>
-            <div className="mt-4 text-sm font-medium text-blue-600">
+            <div className="mt-4 text-sm font-medium text-primary-600">
               En savoir plus →
             </div>
           </a>
         ))}
       </div>
 
-      <div className="mt-12 bg-blue-50 rounded-lg p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Vous ne trouvez pas ce que vous cherchez ?</h2>
-        <p className="text-gray-600 mb-4">
-          Notre équipe est là pour vous aider. Contactez-nous pour toute question supplémentaire.
+      <div className="mt-14 bg-primary-50 border border-primary-100 rounded-2xl p-8">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Vous ne trouvez pas ce qu'il vous faut ?</h2>
+        <p className="text-gray-600 mb-5">
+          Écrivez-nous simplement — notre équipe répond vite et sans jargon.
         </p>
         <a
-          href="/help"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          href="/aide"
+          className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
         >
           Contacter le support
         </a>

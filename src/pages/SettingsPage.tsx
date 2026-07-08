@@ -87,8 +87,8 @@ const DEFAULT_ORG: OrgForm = {
   email: '',
   telephone: '',
   logo_url: '',
-  primary_color: '#2563EB',
-  header_bg_color: '#F3F4F6',
+  primary_color: '#ea580c',
+  header_bg_color: '#f5f5f4',
   font_family: 'helvetica',
   qr_position: 'center',
   address_spacing: 'normal',
@@ -117,7 +117,7 @@ const ProfilMetierSection: React.FC<{
 
   return (
     <div>
-      <h3 className="text-lg leading-6 font-medium text-gray-900 mb-1">🏢 Profil métier</h3>
+      <h3 className="text-lg leading-6 font-medium text-gray-900 mb-1">Profil métier</h3>
       <p className="mt-1 text-sm text-gray-500 mb-5">
         Choisissez votre type d'activité pour adapter le menu et les outils affichés.
       </p>
@@ -158,7 +158,7 @@ const ProfilMetierSection: React.FC<{
         {saving ? (
           <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Enregistrement…</>
         ) : saved ? (
-          <><span>✓</span> Profil mis à jour</>
+          <><FiCheck className="w-4 h-4" /> Profil mis à jour</>
         ) : (
           'Enregistrer le profil'
         )}
@@ -186,7 +186,7 @@ const SettingsPage: React.FC = () => {
 
   const tabs = [
     { id: 'organisation', name: 'Organisation', icon: BuildingOfficeIcon },
-    { id: 'personnalisation', name: '🎨 Personnalisation', icon: BuildingOfficeIcon },
+    { id: 'personnalisation', name: 'Personnalisation', icon: BuildingOfficeIcon },
     { id: 'account', name: 'Compte', icon: UserCircleIcon },
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
     { id: 'billing', name: 'Facturation', icon: CreditCardIcon },
@@ -222,8 +222,8 @@ const SettingsPage: React.FC = () => {
             email: org.email || '',
             telephone: org.telephone || '',
             logo_url: org.logo_url || '',
-            primary_color: org.primary_color || '#2563EB',
-            header_bg_color: org.header_bg_color || '#F3F4F6',
+            primary_color: org.primary_color || '#ea580c',
+            header_bg_color: org.header_bg_color || '#f5f5f4',
             font_family: org.font_family || 'helvetica',
             qr_position: org.qr_position || 'center',
             address_spacing: org.address_spacing || 'normal',
@@ -300,8 +300,8 @@ const SettingsPage: React.FC = () => {
           email: orgForm.email || null,
           telephone: orgForm.telephone || null,
           logo_url: orgForm.logo_url || null,
-          primary_color: orgForm.primary_color || '#2563EB',
-          header_bg_color: orgForm.header_bg_color || '#F3F4F6',
+          primary_color: orgForm.primary_color || '#ea580c',
+          header_bg_color: orgForm.header_bg_color || '#f5f5f4',
           font_family: orgForm.font_family || 'helvetica',
           qr_position: orgForm.qr_position || 'center',
           address_spacing: orgForm.address_spacing || 'normal',
@@ -605,7 +605,7 @@ const SettingsPage: React.FC = () => {
 
                 <div className="border-t border-gray-200 my-8" />
 
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-1">🎨 Personnalisation des factures</h3>
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-1">Personnalisation des factures</h3>
                 <p className="mt-1 text-sm text-gray-500 mb-6">
                   Toutes ces options s'appliquent automatiquement sur vos factures (aperçu + PDF).
                 </p>
@@ -638,7 +638,7 @@ const SettingsPage: React.FC = () => {
                             {logoUploading ? (
                               <><div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />Upload…</>
                             ) : (
-                              <>📁 Choisir un fichier</>
+                              'Choisir un fichier'
                             )}
                             <input
                               type="file"
@@ -665,7 +665,7 @@ const SettingsPage: React.FC = () => {
 
                     {/* ── Couleurs ── */}
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-4">🎨 Couleurs</h4>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-4">Couleurs</h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -679,7 +679,7 @@ const SettingsPage: React.FC = () => {
                             <input type="text" value={orgForm.primary_color}
                               onChange={e => setOrgForm(f => ({ ...f, primary_color: e.target.value }))}
                               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
-                              placeholder="#2563EB" maxLength={7} />
+                              placeholder="#ea580c" maxLength={7} />
                           </div>
                         </div>
                         <div>
@@ -694,7 +694,7 @@ const SettingsPage: React.FC = () => {
                             <input type="text" value={orgForm.header_bg_color}
                               onChange={e => setOrgForm(f => ({ ...f, header_bg_color: e.target.value }))}
                               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
-                              placeholder="#F3F4F6" maxLength={7} />
+                              placeholder="#f5f5f4" maxLength={7} />
                           </div>
                         </div>
                       </div>
@@ -702,7 +702,7 @@ const SettingsPage: React.FC = () => {
 
                     {/* ── Police d'écriture ── */}
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-1">🔤 Police d'écriture</h4>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-1">Police d'écriture</h4>
                       <p className="text-xs text-gray-500 mb-4">Appliquée à tout le texte de la facture PDF.</p>
                       <div className="grid grid-cols-3 gap-3">
                         {([
@@ -731,7 +731,7 @@ const SettingsPage: React.FC = () => {
                               <p className="text-xs text-gray-500">{font.desc}</p>
                             </div>
                             {orgForm.font_family === font.value && (
-                              <span className="text-xs font-medium text-blue-600">✓ Sélectionnée</span>
+                              <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600"><FiCheck className="w-3 h-3" /> Sélectionnée</span>
                             )}
                           </button>
                         ))}
@@ -740,7 +740,7 @@ const SettingsPage: React.FC = () => {
 
                     {/* ── Position du QR code ── */}
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-1">📱 Position du QR code</h4>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-1">Position du QR code</h4>
                       <p className="text-xs text-gray-500 mb-4">Placement du QR code dans le bulletin de paiement en bas de facture.</p>
                       <div className="grid grid-cols-3 gap-3">
                         {([
@@ -810,7 +810,7 @@ const SettingsPage: React.FC = () => {
                             <div className="w-full">{pos.icon}</div>
                             <p className="text-xs font-semibold text-gray-800">{pos.label}</p>
                             {orgForm.qr_position === pos.value && (
-                              <span className="text-xs font-medium text-blue-600">✓</span>
+                              <FiCheck className="w-3.5 h-3.5 text-blue-600" />
                             )}
                           </button>
                         ))}
@@ -819,7 +819,7 @@ const SettingsPage: React.FC = () => {
 
                     {/* ── Espacement adresses ── */}
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-1">📐 Espacement des adresses</h4>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-1">Espacement des adresses</h4>
                       <p className="text-xs text-gray-500 mb-4">Contrôle l'interligne dans les blocs adresse émetteur et destinataire.</p>
                       <div className="grid grid-cols-3 gap-3">
                         {([
@@ -865,7 +865,7 @@ const SettingsPage: React.FC = () => {
                               <p className="text-xs text-gray-500">{sp.desc}</p>
                             </div>
                             {orgForm.address_spacing === sp.value && (
-                              <span className="text-xs font-medium text-blue-600">✓ Sélectionné</span>
+                              <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600"><FiCheck className="w-3 h-3" /> Sélectionné</span>
                             )}
                           </button>
                         ))}
@@ -874,7 +874,7 @@ const SettingsPage: React.FC = () => {
 
                     {/* ── Aperçu live ── */}
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-3">👁 Aperçu</h4>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-3">Aperçu</h4>
                       <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                         <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: orgForm.primary_color }}>
                           {orgForm.logo_url && <img src={orgForm.logo_url} alt="Logo" className="h-8 object-contain" />}

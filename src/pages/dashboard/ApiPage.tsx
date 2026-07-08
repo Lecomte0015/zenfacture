@@ -4,20 +4,20 @@ import { Key } from 'lucide-react';
 const ApiPage = () => {
   return (
     <div className="p-6">
-      <div className="mb-6">
+      <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">API</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Gérez vos clés API et consultez la documentation.
+          Connectez ZenFacture à vos autres outils.
         </p>
       </div>
-      
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+
+      <div className="bg-white shadow-sm border border-gray-100 overflow-hidden rounded-2xl">
         <div className="px-4 py-5 sm:px-6">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
             Clés API
           </h3>
           <p className="mt-1 max-w-2xl text-sm text-gray-500">
-            Gérez vos clés d'API pour accéder à nos services.
+            Utilisez votre clé pour accéder à vos données depuis une application externe.
           </p>
         </div>
         
@@ -45,7 +45,7 @@ const ApiPage = () => {
         </div>
       </div>
       
-      <div className="mt-6 bg-yellow-50 border-l-4 border-yellow-400 p-4">
+      <div className="mt-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-xl">
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -54,7 +54,7 @@ const ApiPage = () => {
           </div>
           <div className="ml-3">
             <p className="text-sm text-yellow-700">
-              Cette fonctionnalité n'est disponible que pour les abonnements Entreprise.
+              L'accès API est réservé aux abonnements Entreprise. Passez à ce plan pour l'activer.
             </p>
           </div>
         </div>

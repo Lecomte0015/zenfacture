@@ -71,24 +71,27 @@ const TeamPage = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Équipe</h1>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Équipe</h1>
+          <p className="mt-1 text-sm text-gray-500">Les personnes qui vous accompagnent au quotidien.</p>
+        </div>
         <Link
           to="/dashboard/team/invite"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           <UserPlus className="-ml-1 mr-2 h-5 w-5" />
           Inviter un membre
         </Link>
       </div>
-      
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+
+      <div className="bg-white shadow-sm border border-gray-100 overflow-hidden rounded-2xl">
         <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
             Membres de l'équipe
           </h3>
           <p className="mt-1 max-w-2xl text-sm text-gray-500">
-            Gérez les membres de votre équipe et leurs permissions.
+            Gérez qui a accès à quoi dans ZenFacture.
           </p>
         </div>
         

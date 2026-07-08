@@ -61,8 +61,8 @@ const ProduitForm: React.FC<ProduitFormProps> = ({ produit, onClose, onSubmit })
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
+        <div className="flex justify-between items-center mb-1">
           <h2 className="text-xl font-semibold text-gray-900">
             {isEditing ? t('produit.edit') : t('produit.new')}
           </h2>
@@ -70,6 +70,9 @@ const ProduitForm: React.FC<ProduitFormProps> = ({ produit, onClose, onSubmit })
             <X className="h-6 w-6" />
           </button>
         </div>
+        <p className="text-sm text-gray-500 mb-4">
+          {isEditing ? 'Modifiez les détails de ce produit ou service.' : 'Décrivez votre produit ou service, il sera prêt à ajouter à vos factures.'}
+        </p>
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           {/* Nom */}
@@ -173,14 +176,14 @@ const ProduitForm: React.FC<ProduitFormProps> = ({ produit, onClose, onSubmit })
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${
+              className={`px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white transition-colors ${
                 isSubmitting ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
               }`}
             >

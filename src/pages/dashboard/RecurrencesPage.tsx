@@ -48,7 +48,7 @@ const RecurrencesPage: React.FC = () => {
   };
 
   const handleDelete = async (rec: RecurrenceData) => {
-    if (window.confirm(t('recurrence.confirmDelete', 'Supprimer cette récurrence ?'))) {
+    if (window.confirm(t('recurrence.confirmDelete', `Supprimer la récurrence « ${rec.nom} » ? Elle ne générera plus de factures.`))) {
       await removeRecurrence(rec.id);
     }
   };
@@ -68,13 +68,16 @@ const RecurrencesPage: React.FC = () => {
       if (fnError) throw fnError;
       const result = data as { success: boolean; generated: number; errors: string[] };
       if (result.success) {
-        showToast('success', `${result.generated} facture(s) générée(s) avec succès.`);
+        showToast('success', result.generated > 0
+          ? `${result.generated} facture${result.generated > 1 ? 's' : ''} généré${result.generated > 1 ? 'es' : 'e'} avec succès.`
+          : 'Aucune facture à générer pour le moment, tout est déjà à jour.');
         await refreshRecurrences();
       } else {
-        showToast('error', 'Erreur lors de la génération des factures.');
+        showToast('error', "La génération n'a pas pu aboutir. Réessayez dans quelques instants.");
       }
     } catch (err) {
-      showToast('error', `Erreur : ${String(err)}`);
+      console.error('Erreur génération factures récurrentes:', err);
+      showToast('error', "Un problème est survenu pendant la génération. Réessayez dans quelques instants.");
     } finally {
       setGenerating(false);
     }
@@ -141,19 +144,21 @@ const RecurrencesPage: React.FC = () => {
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
         </div>
       ) : recurrences.length === 0 ? (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          <div className="text-center py-12 text-gray-500">
-            <RefreshCw className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-lg font-medium">
-              {t('recurrence.noRecurrences', 'Aucune récurrence configurée')}
+        <div className="bg-white shadow overflow-hidden rounded-xl">
+          <div className="text-center py-16 px-6">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-50">
+              <RefreshCw className="h-8 w-8 text-orange-500" />
+            </div>
+            <p className="mt-4 text-lg font-medium text-gray-900">
+              {t('recurrence.noRecurrences', 'Pas encore de facture récurrente')}
             </p>
-            <p className="mt-1 text-sm">
-              {t('recurrence.manageRecurrences', 'Créez une récurrence pour automatiser vos factures.')}
+            <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+              {t('recurrence.manageRecurrences', 'Automatisez vos factures régulières : créez une récurrence et laissez ZenFacture s\'en occuper pour vous.')}
             </p>
           </div>
         </div>
       ) : (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="bg-white shadow overflow-hidden rounded-xl">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">

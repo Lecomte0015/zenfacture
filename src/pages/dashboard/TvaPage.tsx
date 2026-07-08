@@ -82,7 +82,7 @@ const TvaPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette déclaration ?')) {
+    if (window.confirm('Supprimer cette déclaration TVA ? Cette action est définitive.')) {
       await remove(id);
     }
   };
@@ -240,7 +240,8 @@ const TvaPage: React.FC = () => {
                 {loading ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                      Chargement...
+                      <div className="inline-block animate-spin rounded-full h-5 w-5 border-4 border-orange-500 border-t-transparent mr-2 align-middle"></div>
+                      Chargement de vos déclarations...
                     </td>
                   </tr>
                 ) : declarations && declarations.length > 0 ? (
@@ -282,8 +283,14 @@ const TvaPage: React.FC = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                      Aucune déclaration trouvée
+                    <td colSpan={5} className="px-6 py-16 text-center">
+                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+                        <Calculator className="h-7 w-7 text-orange-500" />
+                      </div>
+                      <p className="mt-4 text-base font-medium text-gray-900">Aucune déclaration pour l'instant</p>
+                      <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+                        Lancez votre première déclaration TVA depuis l'onglet « Nouvelle déclaration ».
+                      </p>
                     </td>
                   </tr>
                 )}

@@ -25,7 +25,7 @@ export const ImportBankFile: React.FC<ImportBankFileProps> = ({
     if (!file) return;
 
     if (!file.name.endsWith('.xml')) {
-      setError('Seuls les fichiers XML sont acceptés (ISO 20022)');
+      setError('Ce format n\'est pas pris en charge : seuls les fichiers XML (ISO 20022) sont acceptés.');
       return;
     }
 
@@ -36,11 +36,11 @@ export const ImportBankFile: React.FC<ImportBankFileProps> = ({
 
   const handleImport = async () => {
     if (!selectedAccountId) {
-      setError('Veuillez sélectionner un compte bancaire');
+      setError('Choisissez d\'abord le compte bancaire concerné.');
       return;
     }
     if (!selectedFile) {
-      setError('Veuillez sélectionner un fichier');
+      setError('Choisissez un fichier à importer.');
       return;
     }
 
@@ -50,14 +50,14 @@ export const ImportBankFile: React.FC<ImportBankFileProps> = ({
 
     try {
       await onImport(selectedAccountId, selectedFile);
-      setSuccess(`Fichier "${selectedFile.name}" importé avec succès`);
+      setSuccess(`C'est fait : "${selectedFile.name}" a bien été importé.`);
       setSelectedFile(null);
       setSelectedAccountId('');
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de l'import du fichier");
+      setError(err instanceof Error ? err.message : "L'import n'a pas pu aboutir. Vérifiez le format du fichier et réessayez.");
     } finally {
       setUploading(false);
     }
@@ -66,23 +66,23 @@ export const ImportBankFile: React.FC<ImportBankFileProps> = ({
   const isDisabled = loading || uploading;
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-xl shadow p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">
-        Importer un fichier bancaire
+        Importer un relevé bancaire
       </h2>
       <p className="text-sm text-gray-500 mb-4">
         Importez vos relevés bancaires au format ISO 20022 (camt.053 / camt.054)
       </p>
 
       {error && (
-        <div className="mb-4 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
+        <div className="mb-4 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
           <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="mb-4 flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded-md">
+        <div className="mb-4 flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
           <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-green-700">{success}</p>
         </div>
@@ -98,7 +98,7 @@ export const ImportBankFile: React.FC<ImportBankFileProps> = ({
             value={selectedAccountId}
             onChange={(e) => setSelectedAccountId(e.target.value)}
             disabled={isDisabled}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
           >
             <option value="">-- Sélectionner un compte --</option>
             {accounts.map((account) => (

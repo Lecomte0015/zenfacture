@@ -28,32 +28,32 @@ const FiduciairePage: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">Portail Fiduciaire</h1>
           </div>
           <p className="text-gray-600">
-            Gérez les accès de vos fiduciaires et générez des exports comptables
+            Donnez à votre fiduciaire un accès simple et sécurisé à vos données comptables.
           </p>
         </div>
 
         {/* Info Box */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex gap-3">
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6 flex gap-3">
           <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-blue-900">
-            <p className="font-medium mb-1">À propos du portail fiduciaire</p>
+            <p className="font-medium mb-1">Comment ça fonctionne</p>
             <p>
-              Le portail fiduciaire permet à vos experts-comptables d'accéder en lecture seule à vos données comptables.
-              Vous pouvez créer des accès personnalisés avec des permissions spécifiques et générer des exports
-              dans différents formats (CSV, JSON) pour faciliter le travail de votre fiduciaire.
+              Votre fiduciaire accède en lecture seule à vos données comptables, sans jamais pouvoir les modifier.
+              Créez un accès avec les permissions qui lui conviennent, et générez des exports
+              (CSV, JSON) pour lui faciliter le travail.
             </p>
           </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
+            <p className="text-sm text-red-800">Une erreur est survenue : {error}</p>
           </div>
         )}
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="border-b border-gray-200">
             <nav className="flex -mb-px">
               <button

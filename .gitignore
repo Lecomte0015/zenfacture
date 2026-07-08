@@ -32,3 +32,6 @@ test-results/
 
 # TypeScript
 *.tsbuildinfo
+
+# Vite temp config files
+vite.config.*.timestamp-*

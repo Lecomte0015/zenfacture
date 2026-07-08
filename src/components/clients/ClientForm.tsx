@@ -80,8 +80,8 @@ const ClientForm: React.FC<ClientFormProps> = ({ client, onClose, onSubmit }) =>
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+        <div className="flex justify-between items-center mb-1">
           <h2 className="text-xl font-semibold text-gray-900">
             {isEditing ? t('client.edit') : t('client.new')}
           </h2>
@@ -89,6 +89,9 @@ const ClientForm: React.FC<ClientFormProps> = ({ client, onClose, onSubmit }) =>
             <X className="h-6 w-6" />
           </button>
         </div>
+        <p className="text-sm text-gray-500 mb-4">
+          {isEditing ? 'Mettez à jour les informations de ce client.' : 'Quelques informations suffisent pour commencer à facturer.'}
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -263,14 +266,14 @@ const ClientForm: React.FC<ClientFormProps> = ({ client, onClose, onSubmit }) =>
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${
+              className={`px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white transition-colors ${
                 isSubmitting ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
               }`}
             >

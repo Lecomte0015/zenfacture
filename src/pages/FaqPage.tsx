@@ -36,19 +36,19 @@ export const FaqPage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-12">
+    <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-14">
         <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-          Foire aux questions
+          Vos questions, nos réponses
         </h1>
         <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-          Trouvez des réponses aux questions les plus fréquemment posées
+          On a rassemblé ici ce qu'on nous demande le plus souvent. Si votre question n'y est pas, on est à un clic.
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {faqs.map((faq, index) => (
-          <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+          <div key={index} className="border border-gray-200 rounded-xl overflow-hidden bg-white">
             <button
               className="w-full px-6 py-4 text-left focus:outline-none"
               onClick={() => toggleFaq(index)}
@@ -56,14 +56,14 @@ export const FaqPage = () => {
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium text-gray-900">{faq.question}</h3>
                 {openIndex === index ? (
-                  <FaChevronUp className="h-5 w-5 text-gray-500" />
+                  <FaChevronUp className="h-5 w-5 text-gray-500 shrink-0 ml-4" />
                 ) : (
-                  <FaChevronDown className="h-5 w-5 text-gray-500" />
+                  <FaChevronDown className="h-5 w-5 text-gray-400 shrink-0 ml-4" />
                 )}
               </div>
             </button>
             {openIndex === index && (
-              <div className="px-6 pb-4 pt-0 text-gray-600">
+              <div className="px-6 pb-5 pt-0 text-gray-600 leading-relaxed">
                 <p>{faq.answer}</p>
               </div>
             )}
@@ -71,21 +71,21 @@ export const FaqPage = () => {
         ))}
       </div>
 
-      <div className="mt-12 bg-blue-50 rounded-lg p-6 text-center">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Vous n'avez pas trouvé de réponse ?</h2>
-        <p className="text-gray-600 mb-4">
-          Notre équipe de support est là pour vous aider.
+      <div className="mt-14 bg-primary-50 border border-primary-100 rounded-2xl p-8 text-center">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Toujours une question en tête ?</h2>
+        <p className="text-gray-600 mb-5">
+          Notre équipe basée en Suisse répond en général sous 24h ouvrées.
         </p>
-        <div className="space-x-4">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a
-            href="/help"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            href="/aide"
+            className="inline-flex items-center justify-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
           >
             Contacter le support
           </a>
           <a
             href="/documentation"
-            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center justify-center px-5 py-2.5 border border-gray-300 text-sm font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
           >
             Voir la documentation
           </a>

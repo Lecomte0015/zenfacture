@@ -13,7 +13,7 @@ import { sendInvoiceEmail } from '../../services/emailService';
 
 const STATUT_COLORS: Record<string, string> = {
   brouillon: 'bg-gray-100 text-gray-800',
-  envoye: 'bg-blue-100 text-blue-800',
+  envoye: 'bg-orange-100 text-orange-800',
   accepte: 'bg-green-100 text-green-800',
   refuse: 'bg-red-100 text-red-800',
   expire: 'bg-yellow-100 text-yellow-800',
@@ -93,7 +93,7 @@ const DevisPage: React.FC = () => {
       await editDevis(devisId, { statut: newStatus as any });
     } catch (error) {
       console.error('Erreur changement statut:', error);
-      alert('Erreur lors du changement de statut');
+      alert("Le statut n'a pas pu être mis à jour. Vérifiez votre connexion et réessayez.");
     } finally {
       setUpdatingStatus(null);
     }
@@ -132,7 +132,7 @@ const DevisPage: React.FC = () => {
     setIsSendingEmail(false);
 
     if (result.success) {
-      setSendFeedback({ type: 'success', message: `Devis envoyé à ${sendEmailTo}` });
+      setSendFeedback({ type: 'success', message: `C'est parti ! Le devis a bien été envoyé à ${sendEmailTo}.` });
       // Mettre le statut à "envoye"
       try {
         await editDevis(sendingDevis.id, { statut: 'envoye' });
@@ -167,7 +167,7 @@ const DevisPage: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75" onClick={handleCloseSendModal} />
-            <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+            <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Envoyer le devis par email</h3>
                 <button onClick={handleCloseSendModal} className="text-gray-400 hover:text-gray-600">
@@ -188,7 +188,7 @@ const DevisPage: React.FC = () => {
                   type="email"
                   value={sendEmailTo}
                   onChange={(e) => setSendEmailTo(e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
                   placeholder="client@exemple.com"
                   disabled={isSendingEmail}
                 />
@@ -215,7 +215,7 @@ const DevisPage: React.FC = () => {
                 <button
                   onClick={handleSendDevisEmail}
                   disabled={isSendingEmail || !sendEmailTo.trim()}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSendingEmail ? (
                     <>
@@ -243,7 +243,7 @@ const DevisPage: React.FC = () => {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-orange-600 hover:bg-orange-700"
         >
           <Plus className="-ml-1 mr-2 h-5 w-5" />
           {t('devis.new')}
@@ -259,13 +259,13 @@ const DevisPage: React.FC = () => {
             placeholder={t('common.search') + '...'}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
           />
         </div>
         <select
           value={statutFilter}
           onChange={(e) => setStatutFilter(e.target.value)}
-          className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
         >
           <option value="all">{t('common.all')}</option>
           {['brouillon', 'envoye', 'accepte', 'refuse', 'expire', 'converti'].map(s => (
@@ -282,17 +282,19 @@ const DevisPage: React.FC = () => {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-500 border-t-transparent"></div>
         </div>
       ) : devisList.length === 0 ? (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          <div className="text-center py-12 text-gray-500">
-            <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-lg font-medium">{t('devis.noQuotes')}</p>
-            <p className="mt-1 text-sm">{t('devis.manageQuotes')}</p>
+        <div className="bg-white shadow overflow-hidden rounded-xl">
+          <div className="text-center py-16 px-6">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-50">
+              <FileText className="h-8 w-8 text-orange-500" />
+            </div>
+            <p className="mt-4 text-lg font-medium text-gray-900">{t('devis.noQuotes')}</p>
+            <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">{t('devis.manageQuotes')}</p>
             <button
               onClick={() => setShowForm(true)}
-              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200"
+              className="mt-5 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700"
             >
               <Plus className="-ml-1 mr-2 h-5 w-5" />
               {t('devis.new')}
@@ -300,7 +302,7 @@ const DevisPage: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="bg-white shadow overflow-hidden rounded-xl">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -328,7 +330,7 @@ const DevisPage: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {devis.date_validite || '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium tabular-nums">
                     {formatCurrency(devis.total, devis.devise)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -336,7 +338,7 @@ const DevisPage: React.FC = () => {
                       value={devis.statut}
                       onChange={(e) => handleStatusChange(devis.id, e.target.value)}
                       disabled={updatingStatus === devis.id}
-                      className={`px-2 py-1 text-xs font-semibold rounded border-0 cursor-pointer ${STATUT_COLORS[devis.statut] || ''}`}
+                      className={`px-2 py-1 text-xs font-semibold rounded-full border-0 cursor-pointer ${STATUT_COLORS[devis.statut] || ''}`}
                     >
                       <option value="brouillon">{t('devis.status.brouillon')}</option>
                       <option value="envoye">{t('devis.status.envoye')}</option>
@@ -350,7 +352,7 @@ const DevisPage: React.FC = () => {
                     <div className="flex justify-end space-x-2">
                       <button
                         onClick={() => handleOpenSendModal(devis)}
-                        className="text-gray-400 hover:text-blue-600"
+                        className="text-gray-400 hover:text-orange-600"
                         title="Envoyer par email"
                       >
                         <Mail className="h-4 w-4" />
@@ -366,7 +368,7 @@ const DevisPage: React.FC = () => {
                       )}
                       <button
                         onClick={() => handleEdit(devis)}
-                        className="text-gray-400 hover:text-blue-600"
+                        className="text-gray-400 hover:text-orange-600"
                         title={t('common.edit')}
                       >
                         <Pencil className="h-4 w-4" />

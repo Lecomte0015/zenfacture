@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Pencil, Trash2 } from 'lucide-react';
+import { X, Pencil, Trash2, Receipt } from 'lucide-react';
 import { typedSupabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import { getOrganisationId } from '@/lib/getOrganisationId';
@@ -195,25 +195,25 @@ const ExpensesPage = () => {
 
   // Fonction pour supprimer une dépense
   const handleDeleteExpense = async (id: string) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette dépense ?')) {
+    if (!window.confirm('Supprimer cette dépense ? Cette action est définitive.')) {
       return;
     }
-    
+
     try {
       const { error } = await typedSupabase
         .from('depenses')
         .delete()
         .eq('id', id);
-        
+
       if (error) throw error;
-      
+
       // Mettre à jour la liste des dépenses localement
       setExpenses(prevExpenses => prevExpenses.filter(exp => exp.id !== id));
-      
-      toast.success('Dépense supprimée avec succès !');
+
+      toast.success('Dépense supprimée.');
     } catch (error) {
       console.error('Erreur lors de la suppression de la dépense:', error);
-      toast.error('Erreur lors de la suppression de la dépense');
+      toast.error("La suppression n'a pas pu aboutir. Réessayez dans quelques instants.");
     }
   };
 
@@ -234,10 +234,10 @@ const ExpensesPage = () => {
         )
       );
       
-      toast.success('Statut mis à jour avec succès !');
+      toast.success('Statut de la dépense mis à jour.');
     } catch (error) {
       console.error('Erreur lors de la mise à jour du statut:', error);
-      toast.error('Erreur lors de la mise à jour du statut');
+      toast.error("Le statut n'a pas pu être mis à jour. Réessayez dans quelques instants.");
     }
   };
 
@@ -310,7 +310,7 @@ const ExpensesPage = () => {
           );
         }
         
-        toast.success('Dépense mise à jour avec succès !');
+        toast.success('Dépense mise à jour.');
       } else {
         // Création d'une nouvelle dépense
         const { data, error } = await typedSupabase
@@ -325,7 +325,7 @@ const ExpensesPage = () => {
           setExpenses(prevExpenses => [data[0], ...prevExpenses]);
         }
         
-        toast.success('Dépense enregistrée avec succès !');
+        toast.success('Dépense enregistrée.');
       }
       
       // Réinitialiser le formulaire et l'état d'édition
@@ -341,7 +341,7 @@ const ExpensesPage = () => {
       
     } catch (error) {
       console.error('Erreur lors de l\'enregistrement de la dépense:', error);
-      toast.error('Erreur lors de l\'enregistrement de la dépense');
+      toast.error("L'enregistrement n'a pas pu aboutir. Vérifiez les champs et réessayez.");
     } finally {
       setIsSubmitting(false);
     }
@@ -381,11 +381,27 @@ const ExpensesPage = () => {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center items-center p-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <div className="flex flex-col justify-center items-center p-12 gap-3">
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-orange-500 border-t-transparent"></div>
+          <p className="text-sm text-gray-500">Chargement de vos dépenses...</p>
+        </div>
+      ) : expenses.length === 0 ? (
+        <div className="bg-white shadow overflow-hidden rounded-xl">
+          <div className="text-center py-16 px-6">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-50">
+              <Receipt className="h-8 w-8 text-orange-500" />
+            </div>
+            <p className="mt-4 text-lg font-medium text-gray-900">Aucune dépense enregistrée</p>
+            <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+              Ajoutez vos dépenses professionnelles pour garder une vue claire sur vos coûts.
+            </p>
+            <Button className="mt-5" onClick={() => setIsAddExpenseOpen(true)}>
+              + Nouvelle Dépense
+            </Button>
+          </div>
         </div>
       ) : (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="bg-white shadow overflow-hidden rounded-xl">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -427,7 +443,7 @@ const ExpensesPage = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm font-medium text-gray-900 tabular-nums">
                         {expense.amount ? `${parseFloat(expense.amount.toString()).toFixed(2)} €` : '0,00 €'}
                       </div>
                     </td>
@@ -470,7 +486,7 @@ const ExpensesPage = () => {
       {/* Modal d'ajout de dépense */}
       {isAddExpenseOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
                 {editingExpense ? 'Modifier la dépense' : 'Nouvelle dépense'}
