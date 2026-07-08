@@ -30,13 +30,23 @@ export interface ExportFiduciaire {
 }
 
 /**
- * Génère un token aléatoire sécurisé
+ * Génère un token aléatoire cryptographiquement sécurisé.
+ *
+ * Ce token protège l'accès public /fiduciaire/:token (données comptables/TVA
+ * d'une organisation, consultables sans compte). Il utilisait auparavant
+ * Math.random(), un générateur pseudo-aléatoire NON cryptographique et donc
+ * potentiellement prévisible/reproductible — inadapté à un token d'accès.
+ * On utilise désormais l'API Web Crypto (crypto.getRandomValues), disponible
+ * nativement dans tous les navigateurs modernes, pour un tirage réellement
+ * imprévisible (audit sécurité 2026-07-08).
  */
 const generateToken = (): string => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const randomValues = new Uint32Array(32);
+  crypto.getRandomValues(randomValues);
   let token = '';
-  for (let i = 0; i < 32; i++) {
-    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  for (let i = 0; i < randomValues.length; i++) {
+    token += chars.charAt(randomValues[i] % chars.length);
   }
   return token;
 };

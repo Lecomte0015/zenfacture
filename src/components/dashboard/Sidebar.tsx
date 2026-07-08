@@ -3,11 +3,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useOrganisation } from '@/context/OrganisationContext';
 import { profileHasFeature, type ProfileFeatures } from '@/config/businessProfiles';
+import UserMenu from '@/components/dashboard/UserMenu';
 import {
   Menu, X, Home, FileText, Users, Code, HelpCircle,
   ChevronDown, ChevronRight, BarChart2, Package, ClipboardList,
   RefreshCw, CreditCard, Upload, Building2, Calculator,
-  BookOpen, Zap, Shield, LogOut, Settings, Archive,
+  BookOpen, Zap, Shield, Archive,
   Timer, Wallet, Send, Boxes, PieChart, Layers,
   Mail, ShoppingCart, Link2, AlertOctagon, Globe,
   Target, Truck, PenSquare,
@@ -130,7 +131,7 @@ const STORAGE_KEY = 'sidebar_collapsed_groups';
 
 export const Sidebar = ({ children }: SidebarProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { profilMetier } = useOrganisation();
   const location = useLocation();
 
@@ -166,17 +167,6 @@ export const Sidebar = ({ children }: SidebarProps) => {
     if (!profileKey) return true;
     return profileHasFeature(profilMetier, profileKey);
   };
-
-  const getInitials = () => {
-    const name = (user?.user_metadata?.name as string) || user?.email || '';
-    const parts = name.split(/[\s@]+/).filter(Boolean);
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return parts[0]?.slice(0, 2).toUpperCase() || 'ZF';
-  };
-
-  const userName = (user?.user_metadata?.name as string) || user?.email?.split('@')[0] || 'Utilisateur';
-  const avatarColors = ['bg-blue-600', 'bg-violet-600', 'bg-emerald-600', 'bg-amber-600', 'bg-rose-600'];
-  const avatarColor = avatarColors[(userName.charCodeAt(0) || 0) % avatarColors.length];
 
   const SidebarContent = ({ mobile = false }: { mobile?: boolean }) => (
     <div className="flex flex-col h-full bg-gray-950">
@@ -264,34 +254,9 @@ export const Sidebar = ({ children }: SidebarProps) => {
         })}
       </nav>
 
-      {/* Footer utilisateur */}
+      {/* Footer utilisateur — un seul menu de compte (voir aussi l'avatar du header) */}
       <div className="border-t border-gray-800 p-3 flex-shrink-0">
-        <div className="flex items-center gap-2.5 px-2 py-2">
-          <div className={`w-8 h-8 rounded-full ${avatarColor} text-white text-xs font-bold flex items-center justify-center flex-shrink-0`}>
-            {getInitials()}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-200 truncate">{userName}</p>
-            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-          </div>
-        </div>
-        <div className="mt-1 space-y-0.5">
-          <Link
-            to="/dashboard/settings"
-            onClick={() => mobile && setIsMobileMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400 hover:text-gray-100 hover:bg-white/5 rounded-lg transition-colors"
-          >
-            <Settings className="w-4 h-4" />
-            Paramètres
-          </Link>
-          <button
-            onClick={() => { logout(); if (mobile) setIsMobileMenuOpen(false); }}
-            className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            Déconnexion
-          </button>
-        </div>
+        <UserMenu variant="sidebar" />
       </div>
     </div>
   );

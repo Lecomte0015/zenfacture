@@ -1,9 +1,9 @@
 import { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
-import { Bell } from 'lucide-react';
 import Sidebar from '@/components/dashboard/Sidebar';
 import ProfilMetierModal from '@/components/dashboard/ProfilMetierModal';
+import NotificationsDropdown from '@/components/dashboard/NotificationsDropdown';
+import UserMenu from '@/components/dashboard/UserMenu';
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard':                          'Tableau de bord',
@@ -51,20 +51,8 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const location = useLocation();
-  const { user } = useAuth();
 
   const pageTitle = PAGE_TITLES[location.pathname] ?? 'Dashboard';
-
-  const getInitials = () => {
-    const name = (user?.user_metadata?.name as string) || user?.email || '';
-    return name
-      .split(/[\s@]/)
-      .filter(Boolean)
-      .map((n: string) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2) || 'U';
-  };
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-50">
@@ -81,21 +69,10 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <span className="text-sm font-semibold text-gray-700">{pageTitle}</span>
           </div>
 
-          {/* Right — notifications + avatar */}
+          {/* Right — notifications + compte */}
           <div className="flex items-center gap-2 pr-6">
-            <button
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Notifications"
-            >
-              <Bell className="w-5 h-5" />
-            </button>
-
-            <div
-              title={user?.email}
-              className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white text-xs font-bold flex items-center justify-center shadow-md shadow-blue-600/30 cursor-pointer select-none"
-            >
-              {getInitials()}
-            </div>
+            <NotificationsDropdown />
+            <UserMenu variant="header" />
           </div>
         </div>
 
