@@ -140,22 +140,74 @@ export function buildSpcPayload(data: SwissQrData): string {
 // ─── Génération du QR code ───────────────────────────────────────────────────
 
 export interface QrCodeOptions {
-  size?: number; // Taille en pixels (défaut: 200)
+  size?: number; // Taille en pixels (défaut: 512)
 }
 
 /**
- * Génère le QR code suisse en data URL (base64 PNG).
+ * Superpose la croix suisse (obligatoire) au centre du QR code.
+ * Dimensions officielles selon le Style Guide QR-bill (SIX Group, v1.1) :
+ * croix de 7×7mm sur un QR de 46×46mm imprimé — ratio reproduit ici quelle
+ * que soit la résolution en pixels de l'image source.
+ */
+function overlaySwissCross(qrDataUrl: string, sizePx: number): Promise<string> {
+  return new Promise((resolve) => {
+    if (typeof document === 'undefined' || typeof Image === 'undefined') {
+      // Environnement non-navigateur (ex: tests) : renvoyer le QR sans croix
+      // plutôt que d'échouer.
+      resolve(qrDataUrl);
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = sizePx;
+      canvas.height = sizePx;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(qrDataUrl); return; }
+      ctx.drawImage(img, 0, 0, sizePx, sizePx);
+
+      const cx = sizePx / 2;
+      const cy = sizePx / 2;
+      const whiteBg = sizePx * (9 / 46);   // marge blanche de protection
+      const redSquare = sizePx * (7 / 46); // carré rouge 7×7mm (proportionnel)
+
+      // Fond blanc (garantit la lisibilité du QR autour de la croix)
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(cx - whiteBg / 2, cy - whiteBg / 2, whiteBg, whiteBg);
+
+      // Carré rouge suisse (léger liseré noir pour le détachement visuel)
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(cx - redSquare / 2 - 1, cy - redSquare / 2 - 1, redSquare + 2, redSquare + 2);
+      ctx.fillStyle = '#DC0018';
+      ctx.fillRect(cx - redSquare / 2, cy - redSquare / 2, redSquare, redSquare);
+
+      // Croix blanche
+      const armLength = redSquare * 0.62;
+      const armThickness = redSquare * 0.18;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(cx - armThickness / 2, cy - armLength / 2, armThickness, armLength);
+      ctx.fillRect(cx - armLength / 2, cy - armThickness / 2, armLength, armThickness);
+
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(qrDataUrl); // QR sans croix plutôt qu'un plantage
+    img.src = qrDataUrl;
+  });
+}
+
+/**
+ * Génère le QR code suisse en data URL (base64 PNG), croix suisse incluse.
  * Utilise le niveau de correction d'erreur M (recommandé par SIX).
  */
 export async function generateSwissQrCode(
   data: SwissQrData,
   options: QrCodeOptions = {}
 ): Promise<string> {
-  const { size = 200 } = options;
+  const { size = 512 } = options;
   const QRCode = (await import('qrcode')).default;
   const payload = buildSpcPayload(data);
 
-  return QRCode.toDataURL(payload, {
+  const rawQr = await QRCode.toDataURL(payload, {
     width: size,
     margin: 0,
     errorCorrectionLevel: 'M', // Niveau M recommandé par SIX Group
@@ -164,6 +216,8 @@ export async function generateSwissQrCode(
       light: '#ffffff',
     },
   });
+
+  return overlaySwissCross(rawQr, size);
 }
 
 // ─── Helper : construction depuis les données d'une facture ─────────────────

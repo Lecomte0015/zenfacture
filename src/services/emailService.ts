@@ -236,49 +236,101 @@ export async function generatePdfBase64(invoiceData: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const docAny = doc as any;
 
+    // ══════════════════════════════════════════════════════════════════
+    // ── QR-BILL standard suisse (Style Guide QR-bill, SIX Group v1.1) ──
+    // Même logique que InvoiceModal.tsx::handleDownloadPdf : bloc fixe de
+    // 210×105mm en pied de page, Récépissé (0–62mm) + Section paiement
+    // (62–210mm), disposition non personnalisable.
+    // ══════════════════════════════════════════════════════════════════
     if (invoiceData.qrCodeDataUrl && invoiceData.iban) {
-      const qrY = 230;
-      doc.setLineWidth(0.3); docAny.setLineDashPattern([2, 2], 0);
-      doc.line(marginL, qrY, marginL + contentW, qrY);
+      const pageH = 297;
+      const billHeight = 105;
+      if (y > pageH - billHeight - 6) {
+        doc.addPage();
+      }
+      const billTop = pageH - billHeight;
+
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
+      doc.setTextColor(90, 90, 90);
+      doc.text('Séparer avant le paiement', pageW / 2, billTop - 3, { align: 'center' });
+      doc.setTextColor(0, 0, 0);
+      doc.setLineWidth(0.3); docAny.setLineDashPattern([1.5, 1.5], 0);
+      doc.line(0, billTop, pageW, billTop);
+      doc.line(62, billTop, 62, pageH);
       docAny.setLineDashPattern([], 0);
 
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
-      doc.text('Récépissé', marginL, qrY + 5);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(6);
-      doc.text('Compte / Payable à', marginL, qrY + 10);
-      doc.text(formatIbanDisplay(invoiceData.iban), marginL, qrY + 14);
-      doc.text(invoiceData.company_name || '', marginL, qrY + 18);
-      doc.text(`${invoiceData.company_postal_code || ''} ${invoiceData.company_city || ''}`.trim(), marginL, qrY + 22);
-      doc.text('Payable par', marginL, qrY + 28);
-      doc.text(invoiceData.client_name, marginL, qrY + 32);
-      doc.text(`${invoiceData.client_postal_code || ''} ${invoiceData.client_city || ''}`.trim(), marginL, qrY + 36);
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
-      doc.text('Montant', marginL, qrY + 42);
-      doc.text(`${invoiceData.devise || 'CHF'} ${(invoiceData.total || 0).toFixed(2)}`, marginL, qrY + 47);
+      // ── Récépissé (0–62mm) ──
+      const rX = 5;
+      let rY = billTop + 10;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+      doc.text('Récépissé', rX, rY);
 
-      docAny.setLineDashPattern([2, 2], 0);
-      doc.line(marginL + 52, qrY, marginL + 52, qrY + 55);
-      docAny.setLineDashPattern([], 0);
+      rY = billTop + 19;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(6);
+      doc.text('Compte / Payable à', rX, rY); rY += 3.5;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      doc.text(formatIbanDisplay(invoiceData.iban), rX, rY); rY += 3.5;
+      doc.text(invoiceData.company_name || '', rX, rY); rY += 3.5;
+      doc.text(`${invoiceData.company_postal_code || ''} ${invoiceData.company_city || ''}`.trim(), rX, rY);
+      rY += 6;
 
-      doc.addImage(invoiceData.qrCodeDataUrl, 'PNG', marginL + 57, qrY + 3, 46, 46);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(6);
-      doc.text('QR-Facture Suisse', marginL + 80, qrY + 52, { align: 'center' });
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(6);
+      doc.text('Payable par', rX, rY); rY += 3.5;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      doc.text(invoiceData.client_name || '', rX, rY); rY += 3.5;
+      doc.text(`${invoiceData.client_postal_code || ''} ${invoiceData.client_city || ''}`.trim(), rX, rY);
 
-      const pyX = marginL + 110;
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
-      doc.text('Section de paiement', pyX, qrY + 5);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(6);
-      doc.text('Compte / Payable à', pyX, qrY + 10);
-      doc.text(formatIbanDisplay(invoiceData.iban), pyX, qrY + 14);
-      doc.text(invoiceData.company_name || '', pyX, qrY + 18);
-      doc.text(`${invoiceData.company_postal_code || ''} ${invoiceData.company_city || ''}`.trim(), pyX, qrY + 22);
-      doc.text('Référence', pyX, qrY + 28);
-      doc.text(invoiceData.invoice_number, pyX, qrY + 32);
-      doc.text('Payable par', pyX, qrY + 38);
-      doc.text(invoiceData.client_name, pyX, qrY + 42);
-      doc.text(`${invoiceData.client_postal_code || ''} ${invoiceData.client_city || ''}`.trim(), pyX, qrY + 46);
+      const rBottomY = billTop + 88;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(6);
+      doc.text('Monnaie', rX, rBottomY);
+      doc.text('Montant', rX + 18, rBottomY);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      doc.text(invoiceData.devise || 'CHF', rX, rBottomY + 4);
+      doc.text((invoiceData.total || 0).toFixed(2), rX + 18, rBottomY + 4);
+
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(6);
+      doc.text('Point de dépôt', 62 - 5, billTop + 96, { align: 'right' });
+
+      // ── Section paiement (62–210mm) ──
+      const pX = 67;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+      doc.text('Section paiement', pX, billTop + 10);
+
+      const qrTop = billTop + 17;
+      const qrSize = 46;
+      doc.addImage(invoiceData.qrCodeDataUrl, 'PNG', pX, qrTop, qrSize, qrSize);
+
+      const amtY = qrTop + qrSize + 6;
       doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-      doc.text(`${invoiceData.devise || 'CHF'}  ${(invoiceData.total || 0).toFixed(2)}`, pyX, qrY + 53);
+      doc.text('Monnaie', pX, amtY);
+      doc.text('Montant', pX + 22, amtY);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      doc.text(invoiceData.devise || 'CHF', pX, amtY + 5);
+      doc.text((invoiceData.total || 0).toFixed(2), pX + 22, amtY + 5);
+
+      const infoX = pX + qrSize + 5;
+      let infoY = billTop + 10;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+      doc.text('Compte / Payable à', infoX, infoY); infoY += 4;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      doc.text(formatIbanDisplay(invoiceData.iban), infoX, infoY); infoY += 4;
+      doc.text(invoiceData.company_name || '', infoX, infoY); infoY += 4;
+      doc.text(`${invoiceData.company_postal_code || ''} ${invoiceData.company_city || ''}`.trim(), infoX, infoY);
+      infoY += 7;
+
+      if (invoiceData.invoice_number) {
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+        doc.text('Informations supplémentaires', infoX, infoY); infoY += 4;
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+        doc.text(invoiceData.invoice_number, infoX, infoY);
+        infoY += 7;
+      }
+
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+      doc.text('Payable par', infoX, infoY); infoY += 4;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      doc.text(invoiceData.client_name || '', infoX, infoY); infoY += 4;
+      doc.text(`${invoiceData.client_postal_code || ''} ${invoiceData.client_city || ''}`.trim(), infoX, infoY);
     }
 
     // Retourner en base64 (sans le préfixe data URI)

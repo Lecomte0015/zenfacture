@@ -183,7 +183,7 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
         amount: inv.total,
         currency: (inv.devise === 'EUR' ? 'EUR' : 'CHF'),
         invoiceNumber: inv.invoice_number,
-      }, { size: 180 });
+      }, { size: 512 });
       setQrCodeUrl(url);
     } catch (err: any) {
       console.error('Erreur QR code:', err);
@@ -367,7 +367,9 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
     const primaryRgb = hexToRgb(invoice.primary_color || '#2563EB');
     const baseFont = (invoice.font_family === 'times' || invoice.font_family === 'courier')
       ? invoice.font_family : 'helvetica';
-    const qrPos = invoice.qr_position || 'center';
+    // Remarque : la position du QR-bill (colonne Récépissé/Section paiement)
+    // n'est plus personnalisable — le standard suisse impose une disposition
+    // fixe (récépissé à gauche, section paiement à droite), voir plus bas.
     const addrSpacing = invoice.address_spacing || 'normal';
     const addrLn = addrSpacing === 'compact' ? 4 : addrSpacing === 'spacious' ? 6 : 5;
 
@@ -579,100 +581,141 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
       doc.text(noteLines, marginL, y);
       y += noteLines.length * 4.5;
     }
-    if (invoice.iban) {
-      y += 2;
-      doc.text(`Paiement par virement : IBAN ${formatIbanDisplay(invoice.iban)}`, marginL, y);
-      y += 4.5;
-      doc.text(`Bénéficiaire : ${invoice.company_name || ''}`, marginL, y);
-    }
     doc.setTextColor(0, 0, 0);
+    y += 6;
 
     // ══════════════════════════════════════════════════════════════════
-    // ── QR-BILL standard suisse — fixé à y=230 ──
+    // ── QR-BILL standard suisse (Style Guide QR-bill, SIX Group v1.1) ──
+    // Bloc fixe de 210×105mm en pied de PAGE : Récépissé (0–62mm) +
+    // Section paiement (62–210mm, sans marge latérale). Jamais de
+    // positionnement personnalisable — c'est une règle non négociable
+    // du standard ("le récépissé à gauche, la section paiement à droite").
     // ══════════════════════════════════════════════════════════════════
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const docAny = doc as any;
-    if (qrCodeUrl) {
-      const qrY = 230;
-      doc.setLineWidth(0.3);
-      docAny.setLineDashPattern([2, 2], 0);
-      doc.line(marginL, qrY, marginL + contentW, qrY);
-      docAny.setLineDashPattern([], 0);
 
-      const qrSize = 46;
-      let qrImgX: number, receipX: number, payX: number, sep1X: number, sep2X: number;
+    if (qrCodeUrl && invoice.iban) {
+      const pageH = 297;
+      const billHeight = 105;
 
-      if (qrPos === 'left') {
-        qrImgX  = marginL;
-        sep1X   = marginL + qrSize + 4;
-        receipX = sep1X + 3;
-        sep2X   = marginL + qrSize + 60;
-        payX    = sep2X + 3;
-      } else if (qrPos === 'right') {
-        receipX = marginL;
-        sep1X   = marginL + 50;
-        payX    = sep1X + 3;
-        sep2X   = marginL + contentW - qrSize - 4;
-        qrImgX  = sep2X + 2;
-      } else {
-        receipX = marginL;
-        sep1X   = marginL + 52;
-        qrImgX  = sep1X + 5;
-        sep2X   = qrImgX + qrSize + 4;
-        payX    = sep2X + 3;
+      // Toujours en bas d'une page : si le contenu déjà écrit empiète sur
+      // la zone réservée, on passe à une nouvelle page plutôt que de
+      // rogner le bloc de paiement (jamais moins que les 105mm requis).
+      if (y > pageH - billHeight - 6) {
+        doc.addPage();
       }
+      const billTop = pageH - billHeight; // 192mm, fixe quelle que soit la page
 
-      docAny.setLineDashPattern([2, 2], 0);
-      doc.line(sep1X, qrY, sep1X, qrY + 56);
-      if (qrPos !== 'left' && qrPos !== 'right') {
-        doc.line(sep2X, qrY, sep2X, qrY + 56);
-      }
-      docAny.setLineDashPattern([], 0);
-
-      // QR image
-      doc.addImage(qrCodeUrl, 'PNG', qrImgX, qrY + 4, qrSize, qrSize);
+      // Ligne de séparation + mention (alternative au symbole ciseaux,
+      // autorisée pour les factures PDF par le Style Guide QR-bill).
       doc.setFont(baseFont, 'normal');
-      doc.setFontSize(6);
-      doc.text('QR-Facture Suisse', qrImgX + qrSize / 2, qrY + 53, { align: 'center' });
+      doc.setFontSize(7);
+      doc.setTextColor(90, 90, 90);
+      doc.text('Séparer avant le paiement', pageW / 2, billTop - 3, { align: 'center' });
+      doc.setTextColor(0, 0, 0);
+      doc.setLineWidth(0.3);
+      docAny.setLineDashPattern([1.5, 1.5], 0);
+      doc.line(0, billTop, pageW, billTop);
+      doc.line(62, billTop, 62, pageH); // séparation Récépissé | Section paiement
+      docAny.setLineDashPattern([], 0);
 
-      // Récépissé
-      doc.setFont(baseFont, 'bold'); doc.setFontSize(7.5);
-      doc.text('Récépissé', receipX, qrY + 5);
-      doc.setFont(baseFont, 'normal'); doc.setFontSize(6);
-      const rLines = [
-        'Compte / Payable à',
-        formatIbanDisplay(invoice.iban || ''),
-        invoice.company_name || '',
-        `${invoice.company_postal_code || ''} ${invoice.company_city || ''}`.trim(),
-        '', 'Payable par',
-        invoice.client_name,
-        `${invoice.client_postal_code || ''} ${invoice.client_city || ''}`.trim(),
-      ];
-      let ry = qrY + 10;
-      rLines.forEach(l => { if (l !== '') { doc.text(l, receipX, ry); } ry += 4; });
-      doc.setFont(baseFont, 'bold'); doc.setFontSize(7);
-      doc.text('Montant', receipX, qrY + 44);
-      doc.text(`${invoice.devise || 'CHF'} ${(invoice.total || 0).toFixed(2)}`, receipX, qrY + 49);
+      // ── RÉCÉPISSÉ (x: 0–62mm) ──
+      const rX = 5;
+      let rY = billTop + 10;
+      doc.setFont(baseFont, 'bold'); doc.setFontSize(11);
+      doc.text('Récépissé', rX, rY);
 
-      // Section de paiement
-      doc.setFont(baseFont, 'bold'); doc.setFontSize(7.5);
-      doc.text('Section de paiement', payX, qrY + 5);
-      doc.setFont(baseFont, 'normal'); doc.setFontSize(6);
-      const pLines = [
-        'Compte / Payable à',
-        formatIbanDisplay(invoice.iban || ''),
-        invoice.company_name || '',
-        `${invoice.company_postal_code || ''} ${invoice.company_city || ''}`.trim(),
-        '', 'Référence',
-        invoice.invoice_number,
-        '', 'Payable par',
-        invoice.client_name,
-        `${invoice.client_postal_code || ''} ${invoice.client_city || ''}`.trim(),
-      ];
-      let py = qrY + 10;
-      pLines.forEach(l => { if (l !== '') { doc.text(l, payX, py); } py += 4; });
-      doc.setFont(baseFont, 'bold'); doc.setFontSize(9);
-      doc.text(`${invoice.devise || 'CHF'}  ${(invoice.total || 0).toFixed(2)}`, payX, qrY + 54);
+      rY = billTop + 19;
+      doc.setFont(baseFont, 'bold'); doc.setFontSize(6);
+      doc.text('Compte / Payable à', rX, rY); rY += 3.5;
+      doc.setFont(baseFont, 'normal'); doc.setFontSize(8);
+      doc.text(formatIbanDisplay(invoice.iban), rX, rY); rY += 3.5;
+      doc.text(invoice.company_name || '', rX, rY); rY += 3.5;
+      if (invoice.company_address) { doc.text(invoice.company_address, rX, rY); rY += 3.5; }
+      doc.text(`${invoice.company_postal_code || ''} ${invoice.company_city || ''}`.trim(), rX, rY);
+      rY += 6;
+
+      doc.setFont(baseFont, 'bold'); doc.setFontSize(6);
+      doc.text('Payable par', rX, rY); rY += 3.5;
+      doc.setFont(baseFont, 'normal'); doc.setFontSize(8);
+      doc.text(invoice.client_name || '', rX, rY); rY += 3.5;
+      if (invoice.client_address) { doc.text(invoice.client_address, rX, rY); rY += 3.5; }
+      doc.text(`${invoice.client_postal_code || ''} ${invoice.client_city || ''}`.trim(), rX, rY);
+
+      const rBottomY = billTop + 88;
+      doc.setFont(baseFont, 'bold'); doc.setFontSize(6);
+      doc.text('Monnaie', rX, rBottomY);
+      doc.text('Montant', rX + 18, rBottomY);
+      doc.setFont(baseFont, 'normal'); doc.setFontSize(8);
+      doc.text(invoice.devise || 'CHF', rX, rBottomY + 4);
+      doc.text((invoice.total || 0).toFixed(2), rX + 18, rBottomY + 4);
+
+      doc.setFont(baseFont, 'bold'); doc.setFontSize(6);
+      doc.text('Point de dépôt', 62 - 5, billTop + 96, { align: 'right' });
+
+      // ── SECTION PAIEMENT (x: 62–210mm) ──
+      const pX = 67;
+      doc.setFont(baseFont, 'bold'); doc.setFontSize(11);
+      doc.text('Section paiement', pX, billTop + 10);
+
+      // QR code (46×46mm exactement, marge de tranquillité de 5mm assurée
+      // par l'espace blanc environnant du gabarit)
+      const qrTop = billTop + 17;
+      const qrSize = 46;
+      doc.addImage(qrCodeUrl, 'PNG', pX, qrTop, qrSize, qrSize);
+
+      // Monnaie / Montant sous le QR
+      const amtY = qrTop + qrSize + 6;
+      doc.setFont(baseFont, 'bold'); doc.setFontSize(8);
+      doc.text('Monnaie', pX, amtY);
+      doc.text('Montant', pX + 22, amtY);
+      doc.setFont(baseFont, 'normal'); doc.setFontSize(10);
+      doc.text(invoice.devise || 'CHF', pX, amtY + 5);
+      doc.text((invoice.total || 0).toFixed(2), pX + 22, amtY + 5);
+
+      // Colonne d'informations à droite du QR
+      const infoX = pX + qrSize + 5; // = 118mm
+      let infoY = billTop + 10;
+      doc.setFont(baseFont, 'bold'); doc.setFontSize(8);
+      doc.text('Compte / Payable à', infoX, infoY); infoY += 4;
+      doc.setFont(baseFont, 'normal'); doc.setFontSize(10);
+      doc.text(formatIbanDisplay(invoice.iban), infoX, infoY); infoY += 4;
+      doc.text(invoice.company_name || '', infoX, infoY); infoY += 4;
+      if (invoice.company_address) { doc.text(invoice.company_address, infoX, infoY); infoY += 4; }
+      doc.text(`${invoice.company_postal_code || ''} ${invoice.company_city || ''}`.trim(), infoX, infoY);
+      infoY += 7;
+
+      if (invoice.invoice_number) {
+        doc.setFont(baseFont, 'bold'); doc.setFontSize(8);
+        doc.text('Informations supplémentaires', infoX, infoY); infoY += 4;
+        doc.setFont(baseFont, 'normal'); doc.setFontSize(10);
+        doc.text(invoice.invoice_number, infoX, infoY);
+        infoY += 7;
+      }
+
+      doc.setFont(baseFont, 'bold'); doc.setFontSize(8);
+      doc.text('Payable par', infoX, infoY); infoY += 4;
+      doc.setFont(baseFont, 'normal'); doc.setFontSize(10);
+      doc.text(invoice.client_name || '', infoX, infoY); infoY += 4;
+      if (invoice.client_address) { doc.text(invoice.client_address, infoX, infoY); infoY += 4; }
+      doc.text(`${invoice.client_postal_code || ''} ${invoice.client_city || ''}`.trim(), infoX, infoY);
+    } else if (invoice.iban) {
+      // IBAN configuré mais QR indisponible (ex: IBAN invalide) — indiquer
+      // au moins les coordonnées en texte plutôt que de livrer une facture
+      // qui semble s'arrêter au milieu de la page sans explication.
+      doc.setFont(baseFont, 'normal'); doc.setFontSize(9);
+      doc.setTextColor(150, 60, 0);
+      doc.text('QR-facture indisponible — vérifiez votre IBAN dans les paramètres.', marginL, y);
+      y += 5;
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Paiement par virement : IBAN ${formatIbanDisplay(invoice.iban)}`, marginL, y);
+      y += 4.5;
+      doc.text(`Bénéficiaire : ${invoice.company_name || ''}`, marginL, y);
+    } else {
+      doc.setFont(baseFont, 'normal'); doc.setFontSize(9);
+      doc.setTextColor(150, 60, 0);
+      doc.text("IBAN non configuré — complétez-le dans Paramètres pour générer une QR-facture suisse.", marginL, y);
+      doc.setTextColor(0, 0, 0);
     }
 
     doc.save(`facture-${invoice.invoice_number}.pdf`);
@@ -1146,8 +1189,9 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
                                 <p>{invoice.client_name}</p>
                                 {invoice.client_address && <p>{invoice.client_address}</p>}
                                 <p>{invoice.client_postal_code} {invoice.client_city}</p>
-                                <p className="font-semibold mt-1.5">Montant</p>
+                                <p className="font-semibold mt-1.5">Monnaie / Montant</p>
                                 <p className="font-bold text-[9px]">{invoice.devise || 'CHF'} {invoice.total.toFixed(2)}</p>
+                                <p className="font-semibold mt-2 text-right pr-1">Point de dépôt</p>
                               </div>
                             </div>
 
@@ -1171,9 +1215,9 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
                               )}
                             </div>
 
-                            {/* ③ Section de paiement (droite ~40%) */}
+                            {/* ③ Section paiement (droite ~40%) */}
                             <div className="ml-3 flex-1 text-[8px] leading-tight text-gray-700">
-                              <p className="text-[10px] font-bold mb-1.5">Section de paiement</p>
+                              <p className="text-[10px] font-bold mb-1.5">Section paiement</p>
                               <div className="space-y-1.5">
                                 <div>
                                   <p className="font-semibold">Compte / Payable à</p>
@@ -1182,10 +1226,12 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
                                   {invoice.company_address && <p>{invoice.company_address}</p>}
                                   <p>{invoice.company_postal_code} {invoice.company_city}</p>
                                 </div>
-                                <div>
-                                  <p className="font-semibold">Référence</p>
-                                  <p>{invoice.invoice_number}</p>
-                                </div>
+                                {invoice.invoice_number && (
+                                  <div>
+                                    <p className="font-semibold">Informations supplémentaires</p>
+                                    <p>{invoice.invoice_number}</p>
+                                  </div>
+                                )}
                                 <div>
                                   <p className="font-semibold">Payable par</p>
                                   <p>{invoice.client_name}</p>
@@ -1194,7 +1240,7 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
                                 </div>
                                 <div className="flex gap-6 mt-1">
                                   <div>
-                                    <p className="font-semibold">Devise</p>
+                                    <p className="font-semibold">Monnaie</p>
                                     <p className="font-bold text-[10px]">{invoice.devise || 'CHF'}</p>
                                   </div>
                                   <div>
