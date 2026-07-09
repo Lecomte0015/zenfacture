@@ -1,6 +1,8 @@
 import React from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import { supabase } from '@/lib/supabaseClient';
+import MfaChallenge from '@/components/auth/MfaChallenge';
 
 // Layouts
 import { PublicLayout } from '@/layouts/PublicLayout';
@@ -99,6 +101,44 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return () => clearTimeout(timer);
   }, []);
 
+  // ── Double authentification (AAL2) ────────────────────────────────────────
+  // Supabase ouvre une session dès que le mot de passe est validé (AAL1),
+  // même si l'utilisateur a activé la 2FA. Sans ce contrôle, la 2FA activée
+  // depuis Mon Profil ne protégerait jamais réellement la connexion : c'est
+  // à l'application de bloquer l'accès tant que le second facteur n'a pas
+  // été vérifié.
+  const [mfaCheck, setMfaCheck] = React.useState<'checking' | 'required' | 'satisfied'>('checking');
+  const [mfaFactorId, setMfaFactorId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (error || !data) {
+          if (!cancelled) setMfaCheck('satisfied');
+          return;
+        }
+        if (data.nextLevel === 'aal2' && data.currentLevel !== data.nextLevel) {
+          const { data: factorsData } = await supabase.auth.mfa.listFactors();
+          const totp = factorsData?.totp?.find(f => f.status === 'verified');
+          if (!cancelled) {
+            setMfaFactorId(totp?.id ?? null);
+            setMfaCheck('required');
+          }
+        } else if (!cancelled) {
+          setMfaCheck('satisfied');
+        }
+      } catch {
+        if (!cancelled) setMfaCheck('satisfied');
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [isAuthenticated]);
+
   if (loading && !showContent) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
@@ -112,6 +152,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/auth/login" state={{ from: window.location.pathname }} replace />;
+  }
+
+  if (mfaCheck === 'checking') {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (mfaCheck === 'required') {
+    return <MfaChallenge factorId={mfaFactorId} onVerified={() => setMfaCheck('satisfied')} />;
   }
 
   return <>{children}</>;

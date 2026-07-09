@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { UserCircleIcon, PhotoIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, PhotoIcon, CheckIcon, ShieldCheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../lib/supabaseClient';
+
+/** Facteur MFA vérifié tel que renvoyé par supabase.auth.mfa.listFactors()/.enroll() */
+interface TotpFactor {
+  id: string;
+  factor_type: string;
+  status: 'verified' | 'unverified';
+}
 
 // ─── Schema Zod ──────────────────────────────────────────────────────────────
 
@@ -23,7 +30,138 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [avatar, setAvatar] = useState(user?.user_metadata?.avatar_url || '');
   const [isUploading, setIsUploading] = useState(false);
-  
+
+  // ── Réinitialisation du mot de passe ─────────────────────────────────────
+  const [resetSending, setResetSending] = useState(false);
+  const [infoModal, setInfoModal] = useState<{ variant: 'success' | 'error'; title: string; message: string } | null>(null);
+
+  // ── Authentification à deux facteurs (Supabase MFA / TOTP) ───────────────
+  const [totpFactor, setTotpFactor] = useState<TotpFactor | null>(null);
+  const [mfaLoading, setMfaLoading] = useState(true);
+  const [enrollData, setEnrollData] = useState<{ factorId: string; qrCode: string; secret: string } | null>(null);
+  const [verifyCode, setVerifyCode] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [mfaError, setMfaError] = useState('');
+  const [showDisableConfirm, setShowDisableConfirm] = useState(false);
+  const [disabling, setDisabling] = useState(false);
+
+  const refreshMfaFactors = async () => {
+    setMfaLoading(true);
+    try {
+      const { data, error } = await supabase.auth.mfa.listFactors();
+      if (error) throw error;
+      const verified = (data?.totp || []).find(f => f.status === 'verified') || null;
+      setTotpFactor(verified as TotpFactor | null);
+    } catch (err) {
+      console.error('Erreur lors du chargement des facteurs MFA:', err);
+    } finally {
+      setMfaLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshMfaFactors();
+  }, []);
+
+  const handleStartEnroll = async () => {
+    setMfaError('');
+    try {
+      const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
+      if (error) throw error;
+      setEnrollData({
+        factorId: data.id,
+        qrCode: data.totp.qr_code,
+        secret: data.totp.secret,
+      });
+    } catch (err: any) {
+      setMfaError(err.message || 'Impossible de démarrer l\'activation de la double authentification.');
+    }
+  };
+
+  const handleVerifyEnroll = async () => {
+    if (!enrollData || verifyCode.trim().length < 6) return;
+    setVerifying(true);
+    setMfaError('');
+    try {
+      const { error } = await supabase.auth.mfa.challengeAndVerify({
+        factorId: enrollData.factorId,
+        code: verifyCode.trim(),
+      });
+      if (error) throw error;
+      setEnrollData(null);
+      setVerifyCode('');
+      await refreshMfaFactors();
+      setInfoModal({
+        variant: 'success',
+        title: 'Double authentification activée',
+        message: 'Votre compte est maintenant protégé par un second facteur : un code sera demandé à chaque connexion, en plus de votre mot de passe.',
+      });
+    } catch (err: any) {
+      setMfaError(err.message || 'Code invalide. Vérifiez votre application d\'authentification et réessayez.');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleCancelEnroll = async () => {
+    // Supprime le facteur non-vérifié créé par enroll() pour ne pas laisser de résidu
+    if (enrollData) {
+      try { await supabase.auth.mfa.unenroll({ factorId: enrollData.factorId }); } catch { /* ignore */ }
+    }
+    setEnrollData(null);
+    setVerifyCode('');
+    setMfaError('');
+  };
+
+  const handleDisable2FA = async () => {
+    if (!totpFactor) return;
+    setDisabling(true);
+    try {
+      const { error } = await supabase.auth.mfa.unenroll({ factorId: totpFactor.id });
+      if (error) throw error;
+      setTotpFactor(null);
+      setShowDisableConfirm(false);
+      setInfoModal({
+        variant: 'success',
+        title: 'Double authentification désactivée',
+        message: 'Seul votre mot de passe sera désormais demandé pour vous connecter.',
+      });
+    } catch (err: any) {
+      setShowDisableConfirm(false);
+      setInfoModal({
+        variant: 'error',
+        title: 'Échec de la désactivation',
+        message: err.message || 'Une erreur est survenue. Réessayez dans un instant.',
+      });
+    } finally {
+      setDisabling(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!user?.email || resetSending) return;
+    setResetSending(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setInfoModal({
+        variant: 'success',
+        title: 'Email envoyé',
+        message: `Un lien de réinitialisation vient d'être envoyé à ${user.email}. Vérifiez votre boîte de réception (et vos spams).`,
+      });
+    } catch (err: any) {
+      setInfoModal({
+        variant: 'error',
+        title: "Échec de l'envoi",
+        message: err.message || "Une erreur est survenue lors de l'envoi de l'email. Réessayez dans un instant.",
+      });
+    } finally {
+      setResetSending(false);
+    }
+  };
+
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -346,21 +484,18 @@ export default function ProfilePage() {
               <div className="mt-5 md:mt-0 md:col-span-2">
                 <button
                   type="button"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  onClick={() => {
-                    // Envoyer un email de réinitialisation de mot de passe
-                    // Par exemple: sendPasswordResetEmail(user.email);
-                    alert('C\'est fait — un e-mail pour réinitialiser votre mot de passe vient de partir.');
-                  }}
+                  disabled={resetSending}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                  onClick={handleResetPassword}
                 >
-                  Réinitialiser le mot de passe
+                  {resetSending ? 'Envoi en cours…' : 'Réinitialiser le mot de passe'}
                 </button>
                 <p className="mt-2 text-sm text-gray-500">
                   Nous vous enverrons un lien pour réinitialiser votre mot de passe.
                 </p>
               </div>
             </div>
-            
+
             <div className="border-t border-gray-200 pt-6">
               <div className="md:grid md:grid-cols-3 md:gap-6">
                 <div className="md:col-span-1">
@@ -372,35 +507,169 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="mt-5 md:mt-0 md:col-span-2">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className="relative">
-                        <input
-                          type="checkbox"
-                          id="two-factor-auth"
-                          className="sr-only"
-                          // checked={twoFactorEnabled}
-                          // onChange={handleTwoFactorToggle}
-                        />
-                        <div className="block bg-gray-200 w-14 h-8 rounded-full"></div>
-                        <div className="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                  {mfaLoading ? (
+                    <p className="text-sm text-gray-400">Chargement…</p>
+                  ) : (
+                    <>
+                      <div className="flex items-center">
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={!!totpFactor}
+                          onClick={() => (totpFactor ? setShowDisableConfirm(true) : handleStartEnroll())}
+                          className={`relative inline-flex h-8 w-14 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                            totpFactor ? 'bg-blue-600' : 'bg-gray-200'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform ${
+                              totpFactor ? 'translate-x-7' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                        <span className="ml-3 text-sm font-medium text-gray-700">
+                          {totpFactor ? 'Activée' : 'Désactivée'}
+                        </span>
                       </div>
-                    </div>
-                    <label htmlFor="two-factor-auth" className="ml-3">
-                      <span className="text-sm font-medium text-gray-700">
-                        {false ? 'Activée' : 'Désactivée'}
-                      </span>
-                    </label>
-                  </div>
-                  <p className="mt-2 text-sm text-gray-500">
-                    L'authentification à deux facteurs ajoute une couche de sécurité supplémentaire à votre compte.
-                  </p>
+                      <p className="mt-2 text-sm text-gray-500">
+                        {totpFactor
+                          ? 'Un code de votre application d\'authentification vous sera demandé à chaque connexion.'
+                          : 'L\'authentification à deux facteurs ajoute une couche de sécurité supplémentaire à votre compte.'}
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* ── Modal d'activation 2FA (scan QR + code de vérification) ─────────── */}
+      {enrollData && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="fixed inset-0 bg-gray-500/75" onClick={handleCancelEnroll} />
+            <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <ShieldCheckIcon className="w-5 h-5 text-blue-600" />
+                  Activer la double authentification
+                </h2>
+              </div>
+              <div className="px-6 py-5 space-y-4">
+                <p className="text-sm text-gray-600">
+                  Scannez ce code avec votre application d'authentification (Google Authenticator, 1Password, Authy…).
+                </p>
+                <div className="flex justify-center bg-gray-50 rounded-xl p-4">
+                  {/* qr_code est un SVG encodé en data URI fourni par Supabase */}
+                  <img src={enrollData.qrCode} alt="QR code d'activation" className="w-40 h-40" />
+                </div>
+                <p className="text-xs text-gray-500">
+                  Impossible de scanner ? Entrez ce code manuellement dans votre application :
+                </p>
+                <p className="text-xs font-mono bg-gray-100 rounded-lg px-3 py-2 break-all select-all">
+                  {enrollData.secret}
+                </p>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Code à 6 chiffres
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={verifyCode}
+                    onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="000000"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-center text-lg tracking-widest font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {mfaError && <p className="mt-2 text-sm text-red-600">{mfaError}</p>}
+                </div>
+              </div>
+              <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
+                <button
+                  onClick={handleCancelEnroll}
+                  className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleVerifyEnroll}
+                  disabled={verifying || verifyCode.trim().length < 6}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {verifying ? 'Vérification…' : 'Vérifier et activer'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal de confirmation de désactivation 2FA ───────────────────────── */}
+      {showDisableConfirm && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="fixed inset-0 bg-gray-500/75" onClick={() => setShowDisableConfirm(false)} />
+            <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-orange-50 mb-4">
+                <ExclamationTriangleIcon className="h-6 w-6 text-orange-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Désactiver la double authentification ?</h3>
+              <p className="mt-2 text-sm text-gray-500">
+                Votre compte ne sera plus protégé que par votre mot de passe.
+              </p>
+              <div className="mt-5 flex justify-center gap-3">
+                <button
+                  onClick={() => setShowDisableConfirm(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleDisable2FA}
+                  disabled={disabling}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50"
+                >
+                  {disabling ? 'Désactivation…' : 'Désactiver'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal d'information générique (succès / erreur) ──────────────────── */}
+      {infoModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="fixed inset-0 bg-gray-500/75" onClick={() => setInfoModal(null)} />
+            <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 text-center">
+              <div
+                className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full mb-4 ${
+                  infoModal.variant === 'success' ? 'bg-green-50' : 'bg-red-50'
+                }`}
+              >
+                {infoModal.variant === 'success' ? (
+                  <CheckIcon className="h-6 w-6 text-green-600" />
+                ) : (
+                  <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
+                )}
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">{infoModal.title}</h3>
+              <p className="mt-2 text-sm text-gray-500">{infoModal.message}</p>
+              <button
+                onClick={() => setInfoModal(null)}
+                className="mt-5 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
