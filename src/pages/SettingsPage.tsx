@@ -22,7 +22,12 @@ import { z } from 'zod';
 function validateSwissIban(val: string): boolean {
   const clean = val.replace(/\s/g, '').toUpperCase();
   if (!clean) return true; // facultatif
-  if (!/^CH\d{19}$/.test(clean)) return false;
+  // Format IBAN CH/LI : préfixe pays + 19 caractères alphanumériques.
+  // Le BBAN suisse/liechtensteinois est "5 chiffres + 12 caractères
+  // alphanumériques" (ISO 13616) — certaines banques (ex: PostFinance)
+  // utilisent des lettres dans le numéro de compte, ce n'est pas que des
+  // chiffres. Un regex "CH + 19 chiffres" rejette donc de vrais IBAN valides.
+  if (!/^(CH|LI)[A-Z0-9]{19}$/.test(clean)) return false;
   // Vérification modulo 97 (ISO 7064)
   const rearranged = clean.slice(4) + clean.slice(0, 4);
   const numeric = rearranged.replace(/[A-Z]/g, (c) => String(c.charCodeAt(0) - 55));
@@ -45,7 +50,7 @@ export const orgSchema = z.object({
   telephone: z.string().optional(),
   iban: z.string().refine(
     (val) => validateSwissIban(val),
-    { message: 'IBAN suisse invalide (format : CH + 19 chiffres)' }
+    { message: 'IBAN suisse/liechtensteinois invalide (format : CH/LI + 19 caractères, checksum incorrect)' }
   ),
   numero_tva: z.string().optional(),
   logo_url: z.string().optional(),
@@ -264,10 +269,18 @@ const SettingsPage: React.FC = () => {
     }
   };
 
-  // ── Saisie IBAN — pas de validation bloquante, on accepte tout RIB suisse ──
+  // ── Saisie IBAN — validation live (même règle que la sauvegarde) ──
   const handleIbanChange = (value: string) => {
     setOrgForm(f => ({ ...f, iban: value }));
-    setIbanError(null);
+    if (!value.trim()) {
+      setIbanError(null);
+      return;
+    }
+    setIbanError(
+      validateSwissIban(value)
+        ? null
+        : 'IBAN suisse/liechtensteinois invalide (format : CH/LI + 19 caractères, checksum incorrect).'
+    );
   };
 
   // ── Sauvegarder l'organisation ──

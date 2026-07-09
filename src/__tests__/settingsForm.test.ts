@@ -49,12 +49,19 @@ describe('orgSchema — validation organisation', () => {
     const result = orgSchema.safeParse({ ...validOrg, iban: 'DE89370400440532013000' });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues.map(i => i.message)).toContain('IBAN suisse invalide (format : CH + 19 chiffres)');
+      expect(result.error.issues.map(i => i.message)).toContain('IBAN suisse/liechtensteinois invalide (format : CH/LI + 19 caractères, checksum incorrect)');
     }
   });
 
   it("accepte un IBAN vide (facultatif)", () => {
     expect(orgSchema.safeParse({ ...validOrg, iban: '' }).success).toBe(true);
+  });
+
+  it('accepte un IBAN suisse valide contenant une lettre dans le BBAN (ex: PostFinance)', () => {
+    // Checksum MOD-97 vérifié valide — le BBAN suisse (ISO 13616) autorise
+    // des caractères alphanumériques, pas seulement des chiffres.
+    const result = orgSchema.safeParse({ ...validOrg, iban: 'CH870029029016158840P' });
+    expect(result.success).toBe(true);
   });
 
   it('rejette un IBAN avec mauvais checksum', () => {
