@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import MfaChallenge from '@/components/auth/MfaChallenge';
+import AdminRoute from '@/components/auth/AdminRoute';
 
 // Layouts
 import { PublicLayout } from '@/layouts/PublicLayout';
@@ -330,12 +331,16 @@ function App() {
       {/* Admin Login (separate from regular login) */}
       <Route path="/admin/login" element={<LazyLoad><AdminLoginPage /></LazyLoad>} />
 
-      {/* Admin Back-Office Routes (Super Admin only) */}
+      {/* Admin Back-Office Routes (Super Admin only) — ProtectedRoute vérifie
+          l'authentification + 2FA, AdminRoute vérifie le rôle admin/super_admin
+          (voir components/auth/AdminRoute.tsx pour le contexte de cette faille) */}
       <Route element={
         <ProtectedRoute>
-          <AdminLayout>
-            <Outlet />
-          </AdminLayout>
+          <AdminRoute>
+            <AdminLayout>
+              <Outlet />
+            </AdminLayout>
+          </AdminRoute>
         </ProtectedRoute>
       }>
         <Route path="/dashboard/admin" element={<LazyLoad><AdminDashboard /></LazyLoad>} />
