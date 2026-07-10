@@ -44,6 +44,7 @@ const ClientsPage = React.lazy(() => import('@/pages/dashboard/ClientsPage'));
 const TeamPage = React.lazy(() => import('@/pages/dashboard/TeamPage'));
 const TeamInvitePage = React.lazy(() => import('@/pages/dashboard/TeamInvitePage'));
 const ApiPage = React.lazy(() => import('@/pages/dashboard/ApiPage'));
+const RemindersPage = React.lazy(() => import('@/pages/dashboard/RemindersPage'));
 
 // Admin pages
 const AdminLoginPage = React.lazy(() => import('@/pages/admin/AdminLoginPage'));
@@ -328,6 +329,7 @@ function App() {
         />
         <Route path="/dashboard/profile" element={<LazyLoad><ProfilePage /></LazyLoad>} />
         <Route path="/dashboard/settings" element={<LazyLoad><SettingsPage /></LazyLoad>} />
+        <Route path="/dashboard/rappels" element={<LazyLoad><RemindersPage /></LazyLoad>} />
       </Route>
 
       {/* Admin Login (separate from regular login) */}

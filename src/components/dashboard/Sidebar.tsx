@@ -11,7 +11,7 @@ import {
   BookOpen, Zap, Shield, Archive,
   Timer, Wallet, Send, Boxes, PieChart, Layers,
   Mail, ShoppingCart, Link2, AlertOctagon, Globe,
-  Target, Truck, PenSquare,
+  Target, Truck, PenSquare, Bell,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -81,6 +81,7 @@ const navGroups: NavGroup[] = [
       { name: 'Archives (nLPD)',  href: '/dashboard/archive',       icon: Archive },
       { name: 'Estimation fiscale', href: '/dashboard/tax-estimation', icon: PieChart,  profileKey: 'taxEstimation' },
       { name: 'Envoi postal',     href: '/dashboard/postal',        icon: Mail,       profileKey: 'postal' },
+      { name: 'Rappels & cotisations', href: '/dashboard/rappels',  icon: Bell },
     ],
   },
   {
