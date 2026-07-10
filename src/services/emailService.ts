@@ -254,9 +254,18 @@ export async function generatePdfBase64(invoiceData: {
     doc.text('Total', totX, y + 8.5);
     doc.text(`${(invoiceData.total || 0).toFixed(2)} ${invoiceData.devise || 'CHF'}`, marginL + contentW, y + 8.5, { align: 'right' });
     doc.setTextColor(0, 0, 0);
-    y += totBoxH + 8;
+    y += totBoxH + 6;
 
-    // Conditions de paiement + remarques + conditions générales par défaut
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const docAny = doc as any;
+    const hasBill = !!(invoiceData.qrCodeDataUrl && invoiceData.iban);
+    const pageH = 297;
+    const billHeight = 105;
+    const footerHeight = 22;
+    const reserved = hasBill ? billHeight + footerHeight : footerHeight + 12;
+    const availableBottom = pageH - reserved;
+
+    // Conditions de paiement + remarques
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
     doc.setTextColor(120, 120, 120);
     if (invoiceData.due_date) {
@@ -268,31 +277,22 @@ export async function generatePdfBase64(invoiceData: {
       doc.text(noteLines, marginL, y);
       y += noteLines.length * 4.5;
     }
-    y += 4;
+
+    // Conditions générales par défaut — uniquement si la place le permet
+    // réellement, pour ne jamais provoquer un saut de page inutile.
     doc.setFontSize(7.5);
-    doc.setTextColor(150, 150, 150);
     const cgvText = "Conditions générales : sauf accord contraire écrit, le montant de cette facture est dû net dans le délai indiqué ci-dessus. Passé ce délai, des intérêts moratoires de 5% l'an pourront être appliqués de plein droit, sans mise en demeure préalable. Pour toute question relative à cette facture, merci de nous contacter aux coordonnées ci-dessous.";
     const cgvLines = doc.splitTextToSize(cgvText, contentW);
-    doc.text(cgvLines, marginL, y);
-    y += cgvLines.length * 3.6;
+    const cgvBlockHeight = 4 + cgvLines.length * 3.6;
+    if (y + cgvBlockHeight + 6 < availableBottom - 8) {
+      y += 4;
+      doc.setTextColor(150, 150, 150);
+      doc.text(cgvLines, marginL, y);
+      y += cgvLines.length * 3.6;
+    }
     doc.setTextColor(0, 0, 0);
+    y += 6;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const docAny = doc as any;
-    const hasBill = !!(invoiceData.qrCodeDataUrl && invoiceData.iban);
-
-    // ══════════════════════════════════════════════════════════════════
-    // ── PIED DE PAGE (coordonnées + remerciement) ──
-    // Ancré juste au-dessus du bloc QR-bill (ou en bas de page s'il n'y en
-    // a pas), pour ne jamais laisser un grand vide blanc sur une facture
-    // courte. QR-BILL standard suisse (Style Guide QR-bill, SIX Group
-    // v1.1) : bloc fixe de 210×105mm en pied de page, Récépissé (0–62mm) +
-    // Section paiement (62–210mm), disposition non personnalisable.
-    // ══════════════════════════════════════════════════════════════════
-    const pageH = 297;
-    const billHeight = 105;
-    const footerHeight = 22;
-    const reserved = hasBill ? billHeight + footerHeight : footerHeight + 12;
     if (y > pageH - reserved - 6) {
       doc.addPage();
     }

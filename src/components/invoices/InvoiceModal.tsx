@@ -580,7 +580,19 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
     doc.text('Total', totLeftX, totBoxY + 8.5);
     doc.text(`${(invoice.total || 0).toFixed(2)} ${invoice.devise || 'CHF'}`, totRightX, totBoxY + 8.5, { align: 'right' });
     doc.setTextColor(0, 0, 0);
-    y = totBoxY + totBoxH + 8;
+    y = totBoxY + totBoxH + 6;
+
+    // Espace disponible avant le bas de page réservé (bloc QR-bill + pied de
+    // page) — calculé maintenant pour décider, plus bas, si le paragraphe de
+    // conditions générales (purement décoratif) peut tenir SANS provoquer un
+    // saut de page inutile. Mieux vaut l'omettre que de forcer une deuxième
+    // page à moitié vide pour une facture par ailleurs déjà complète.
+    const hasBill = !!(qrCodeUrl && invoice.iban);
+    const pageH = 297;
+    const billHeight = 105;
+    const footerHeight = 22;
+    const reserved = hasBill ? billHeight + footerHeight : footerHeight + 12;
+    const availableBottom = pageH - reserved;
 
     // ── Conditions + IBAN (remplit l'espace avant QR-bill) ──
     doc.setFont(baseFont, 'normal');
@@ -598,23 +610,26 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
       doc.text(noteLines, marginL, y);
       y += noteLines.length * 4.5;
     }
-    y += 4;
 
     // Conditions générales par défaut (texte usuel, modifiable sur demande) —
     // apporte un contenu légitime plutôt que de laisser un grand vide avant
-    // le bloc de paiement.
+    // le bloc de paiement, mais SEULEMENT si la place le permet réellement :
+    // mieux vaut l'omettre que de forcer une facture par ailleurs complète
+    // sur une deuxième page à moitié vide.
+    const cgvText = "Conditions générales : sauf accord contraire écrit, le montant de cette facture est dû net dans le délai indiqué ci-dessus. Passé ce délai, des intérêts moratoires de 5% l'an pourront être appliqués de plein droit, sans mise en demeure préalable. Pour toute question relative à cette facture, merci de nous contacter aux coordonnées ci-dessous.";
     doc.setFont(baseFont, 'normal');
     doc.setFontSize(7.5);
-    doc.setTextColor(150, 150, 150);
-    const cgvText = "Conditions générales : sauf accord contraire écrit, le montant de cette facture est dû net dans le délai indiqué ci-dessus. Passé ce délai, des intérêts moratoires de 5% l'an pourront être appliqués de plein droit, sans mise en demeure préalable. Pour toute question relative à cette facture, merci de nous contacter aux coordonnées ci-dessous.";
     const cgvLines = doc.splitTextToSize(cgvText, contentW);
-    doc.text(cgvLines, marginL, y);
-    y += cgvLines.length * 3.6;
+    const cgvBlockHeight = 4 + cgvLines.length * 3.6; // gap avant + texte
+    if (y + cgvBlockHeight + 6 < availableBottom - 8) {
+      y += 4;
+      doc.setTextColor(150, 150, 150);
+      doc.text(cgvLines, marginL, y);
+      y += cgvLines.length * 3.6;
+    }
 
     doc.setTextColor(0, 0, 0);
     y += 6;
-
-    const hasBill = !!(qrCodeUrl && invoice.iban);
 
     // Messages de repli quand la QR-facture ne peut pas être générée —
     // affichés dans le flux normal, avant le pied de page.
@@ -653,13 +668,11 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
     // ══════════════════════════════════════════════════════════════════
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const docAny = doc as any;
-    const pageH = 297;
-    const billHeight = 105;
-    const footerHeight = 22;
     // Toujours en bas d'une page : si le contenu déjà écrit empiète sur la
     // zone réservée, on passe à une nouvelle page plutôt que de rogner le
-    // pied de page ou le bloc de paiement.
-    const reserved = hasBill ? billHeight + footerHeight : footerHeight + 12;
+    // pied de page ou le bloc de paiement. (pageH/billHeight/footerHeight/
+    // reserved sont déjà calculés plus haut, avant la décision d'afficher
+    // ou non les conditions générales.)
     if (y > pageH - reserved - 6) {
       doc.addPage();
     }
