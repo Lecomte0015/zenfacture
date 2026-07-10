@@ -14,6 +14,7 @@ import {
 import { supabase } from '@/lib/supabaseClient';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { logAdminAction } from '@/services/adminAuditService';
 
 interface User {
   id: string;
@@ -72,6 +73,8 @@ const AdminUsersPage: React.FC = () => {
 
       if (error) throw error;
 
+      await logAdminAction('block_user', 'profils', userId, { reason: reason || 'Bloqué par l\'administrateur' });
+
       alert('Utilisateur bloqué avec succès');
       await loadUsers();
       setShowModal(false);
@@ -99,6 +102,8 @@ const AdminUsersPage: React.FC = () => {
 
       if (error) throw error;
 
+      await logAdminAction('unblock_user', 'profils', userId);
+
       alert('Utilisateur débloqué avec succès');
       await loadUsers();
       setShowModal(false);
@@ -125,12 +130,16 @@ const AdminUsersPage: React.FC = () => {
 
     setActionLoading(true);
     try {
+      const targetEmail = users.find((u) => u.id === userId)?.email || null;
+
       const { error } = await supabase
         .from('profils')
         .delete()
         .eq('id', userId);
 
       if (error) throw error;
+
+      await logAdminAction('delete_user', 'profils', userId, { email: targetEmail });
 
       alert('Utilisateur supprimé avec succès');
       await loadUsers();
@@ -148,12 +157,16 @@ const AdminUsersPage: React.FC = () => {
 
     setActionLoading(true);
     try {
+      const previousRole = users.find((u) => u.id === userId)?.role;
+
       const { error } = await supabase
         .from('profils')
         .update({ role: newRole })
         .eq('id', userId);
 
       if (error) throw error;
+
+      await logAdminAction('change_role', 'profils', userId, { from: previousRole, to: newRole });
 
       alert('Rôle mis à jour avec succès');
       await loadUsers();

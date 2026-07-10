@@ -1676,6 +1676,96 @@ export interface Database {
         }
         Relationships: []
       }
+      platform_settings: {
+        Row: {
+          id: boolean
+          usd_to_chf: number
+          eur_to_chf: number
+          smtp_host: string | null
+          smtp_port: number | null
+          smtp_user: string | null
+          smtp_from: string | null
+          maintenance_mode: boolean
+          trial_days: number
+          max_invoices_starter: number
+          max_invoices_business: number
+          enable_ebill: boolean
+          enable_api: boolean
+          enable_fiduciaire: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: boolean
+          usd_to_chf?: number
+          eur_to_chf?: number
+          smtp_host?: string | null
+          smtp_port?: number | null
+          smtp_user?: string | null
+          smtp_from?: string | null
+          maintenance_mode?: boolean
+          trial_days?: number
+          max_invoices_starter?: number
+          max_invoices_business?: number
+          enable_ebill?: boolean
+          enable_api?: boolean
+          enable_fiduciaire?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: boolean
+          usd_to_chf?: number
+          eur_to_chf?: number
+          smtp_host?: string | null
+          smtp_port?: number | null
+          smtp_user?: string | null
+          smtp_from?: string | null
+          maintenance_mode?: boolean
+          trial_days?: number
+          max_invoices_starter?: number
+          max_invoices_business?: number
+          enable_ebill?: boolean
+          enable_api?: boolean
+          enable_fiduciaire?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      admin_audit_log: {
+        Row: {
+          id: string
+          admin_id: string | null
+          admin_email: string | null
+          action: string
+          target_type: string
+          target_id: string | null
+          details: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          admin_id?: string | null
+          admin_email?: string | null
+          action: string
+          target_type: string
+          target_id?: string | null
+          details?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          admin_id?: string | null
+          admin_email?: string | null
+          action?: string
+          target_type?: string
+          target_id?: string | null
+          details?: Json | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       archives: {
         Row: {
           id: string

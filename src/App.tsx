@@ -52,6 +52,8 @@ const AdminUsersPage = React.lazy(() => import('@/pages/admin/AdminUsersPage'));
 const AdminOrganisationsPage = React.lazy(() => import('@/pages/admin/AdminOrganisationsPage'));
 const AdminRemindersPage = React.lazy(() => import('@/pages/admin/AdminRemindersPage'));
 const AdminSettingsPage = React.lazy(() => import('@/pages/admin/AdminSettingsPage'));
+const AdminReportsPage = React.lazy(() => import('@/pages/admin/AdminReportsPage'));
+const AdminAuditLogPage = React.lazy(() => import('@/pages/admin/AdminAuditLogPage'));
 
 const TimeTrackingPage = React.lazy(() => import('@/pages/dashboard/TimeTrackingPage'));
 const PayrollPage = React.lazy(() => import('@/pages/dashboard/PayrollPage'));
@@ -348,6 +350,8 @@ function App() {
         <Route path="/dashboard/admin/organisations" element={<LazyLoad><AdminOrganisationsPage /></LazyLoad>} />
         <Route path="/dashboard/admin/rappels" element={<LazyLoad><AdminRemindersPage /></LazyLoad>} />
         <Route path="/dashboard/admin/settings" element={<LazyLoad><AdminSettingsPage /></LazyLoad>} />
+        <Route path="/dashboard/admin/reports" element={<LazyLoad><AdminReportsPage /></LazyLoad>} />
+        <Route path="/dashboard/admin/logs" element={<LazyLoad><AdminAuditLogPage /></LazyLoad>} />
       </Route>
 
       {/* Fiduciary Portal (public route with token) */}

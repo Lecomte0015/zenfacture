@@ -7,7 +7,9 @@ import {
   Bell,
   Settings,
   ArrowLeft,
-  Shield
+  Shield,
+  BarChart3,
+  ScrollText
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -22,6 +24,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/dashboard/admin/users', icon: Users, label: 'Utilisateurs' },
     { path: '/dashboard/admin/organisations', icon: Building2, label: 'Organisations' },
     { path: '/dashboard/admin/rappels', icon: Bell, label: 'Rappels' },
+    { path: '/dashboard/admin/reports', icon: BarChart3, label: 'Rapports' },
+    { path: '/dashboard/admin/logs', icon: ScrollText, label: 'Journal d\'audit' },
     { path: '/dashboard/admin/settings', icon: Settings, label: 'Configuration' },
   ];
 

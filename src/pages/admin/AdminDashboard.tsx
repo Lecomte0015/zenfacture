@@ -18,8 +18,19 @@ interface Stats {
   totalRevenue: number;
   activeSubscriptions: number;
   trialSubscriptions: number;
+  mrr: number;
   recentActivity: any[];
 }
+
+// Tarifs mensuels réels (voir PricingPage.tsx et useTrial.ts — essentiel
+// 19 CHF / pro 49 CHF / entreprise 99 CHF). L'ancien code utilisait un prix
+// forfaitaire inventé de 29 CHF pour TOUS les abonnements actifs, sans
+// distinction de plan : ne pas reproduire cette erreur.
+const PLAN_PRICES_CHF: Record<string, number> = {
+  essentiel: 19,
+  pro: 49,
+  entreprise: 99,
+};
 
 const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState<Stats>({
@@ -29,6 +40,7 @@ const AdminDashboard: React.FC = () => {
     totalRevenue: 0,
     activeSubscriptions: 0,
     trialSubscriptions: 0,
+    mrr: 0,
     recentActivity: [],
   });
   const [loading, setLoading] = useState(true);
@@ -64,17 +76,32 @@ const AdminDashboard: React.FC = () => {
 
       const revenue = paidInvoices?.reduce((sum, inv) => sum + (inv.total || 0), 0) || 0;
 
-      // Compter les abonnements actifs
-      const { count: activeSubsCount } = await supabase
-        .from('organisations')
-        .select('*', { count: 'exact', head: true })
+      // Abonnements : la vraie source de vérité est `profils` (alimentée par
+      // le webhook Stripe — voir supabase/functions/stripe-webhook/index.ts),
+      // pas `organisations.subscription_status` qui est une colonne morte
+      // jamais mise à jour par aucun flux de l'application.
+      const { data: activeProfiles } = await supabase
+        .from('profils')
+        .select('plan_abonnement')
         .eq('subscription_status', 'active');
 
-      // Compter les essais gratuits
+      const activeSubsCount = activeProfiles?.length || 0;
+
+      // MRR réel : somme du tarif de chaque plan payant actif, pas un
+      // montant forfaitaire inventé appliqué à tous les abonnements.
+      const mrr = (activeProfiles || []).reduce((sum, p: any) => {
+        const price = PLAN_PRICES_CHF[p.plan_abonnement as string] || 0;
+        return sum + price;
+      }, 0);
+
+      // Essais en cours : essai non expiré (trial_end_date dans le futur)
+      // et pas encore d'abonnement payant actif, même logique que
+      // useTrial.ts (isOnTrial = daysRemaining > 0 && !hasActiveSubscription).
       const { count: trialSubsCount } = await supabase
-        .from('organisations')
+        .from('profils')
         .select('*', { count: 'exact', head: true })
-        .eq('subscription_status', 'trial');
+        .gt('trial_end_date', new Date().toISOString())
+        .neq('subscription_status', 'active');
 
       setStats({
         totalUsers: usersCount || 0,
@@ -83,6 +110,7 @@ const AdminDashboard: React.FC = () => {
         totalRevenue: revenue,
         activeSubscriptions: activeSubsCount || 0,
         trialSubscriptions: trialSubsCount || 0,
+        mrr,
         recentActivity: [],
       });
     } catch (error) {
@@ -196,7 +224,7 @@ const AdminDashboard: React.FC = () => {
             <CreditCard className="w-5 h-5 text-purple-500" />
           </div>
           <p className="text-3xl font-bold text-gray-900">
-            {formatCurrency(stats.activeSubscriptions * 29)}
+            {formatCurrency(stats.mrr)}
           </p>
           <p className="text-sm text-gray-600 mt-2">Revenu mensuel récurrent</p>
         </div>
