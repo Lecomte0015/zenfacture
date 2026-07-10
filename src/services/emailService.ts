@@ -99,6 +99,8 @@ export async function generatePdfBase64(invoiceData: {
   company_city?: string;
   company_country?: string;
   company_vat?: string;
+  company_email?: string;
+  company_phone?: string;
   client_name: string;
   client_address?: string;
   client_postal_code?: string;
@@ -235,19 +237,39 @@ export async function generatePdfBase64(invoiceData: {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const docAny = doc as any;
+    const hasBill = !!(invoiceData.qrCodeDataUrl && invoiceData.iban);
 
     // ══════════════════════════════════════════════════════════════════
-    // ── QR-BILL standard suisse (Style Guide QR-bill, SIX Group v1.1) ──
-    // Même logique que InvoiceModal.tsx::handleDownloadPdf : bloc fixe de
-    // 210×105mm en pied de page, Récépissé (0–62mm) + Section paiement
-    // (62–210mm), disposition non personnalisable.
+    // ── PIED DE PAGE (coordonnées + remerciement) ──
+    // Ancré juste au-dessus du bloc QR-bill (ou en bas de page s'il n'y en
+    // a pas), pour ne jamais laisser un grand vide blanc sur une facture
+    // courte. QR-BILL standard suisse (Style Guide QR-bill, SIX Group
+    // v1.1) : bloc fixe de 210×105mm en pied de page, Récépissé (0–62mm) +
+    // Section paiement (62–210mm), disposition non personnalisable.
     // ══════════════════════════════════════════════════════════════════
-    if (invoiceData.qrCodeDataUrl && invoiceData.iban) {
-      const pageH = 297;
-      const billHeight = 105;
-      if (y > pageH - billHeight - 6) {
-        doc.addPage();
-      }
+    const pageH = 297;
+    const billHeight = 105;
+    const footerHeight = 18;
+    const reserved = hasBill ? billHeight + footerHeight : footerHeight + 12;
+    if (y > pageH - reserved - 6) {
+      doc.addPage();
+    }
+
+    const footerTop = pageH - reserved;
+    const contactParts = [invoiceData.company_email, invoiceData.company_phone].filter(Boolean) as string[];
+    doc.setDrawColor(215, 215, 215);
+    doc.setLineWidth(0.2);
+    doc.line(marginL, footerTop, pageW - marginR, footerTop);
+    doc.setTextColor(130, 130, 130);
+    if (contactParts.length) {
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      doc.text(contactParts.join('  •  '), pageW / 2, footerTop + 6, { align: 'center' });
+    }
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
+    doc.text('Merci pour votre confiance.', pageW / 2, footerTop + (contactParts.length ? 11 : 7), { align: 'center' });
+    doc.setTextColor(0, 0, 0);
+
+    if (hasBill && invoiceData.iban) {
       const billTop = pageH - billHeight;
 
       doc.setFont('helvetica', 'normal'); doc.setFontSize(7);

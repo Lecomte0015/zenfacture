@@ -39,6 +39,8 @@ interface InvoiceViewData {
   company_postal_code?: string;
   company_country?: string;
   company_vat?: string;
+  company_email?: string;
+  company_phone?: string;
   date: string;
   due_date: string;
   status: string;
@@ -132,6 +134,8 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
                 if (org.ville) invoiceData.company_city = org.ville;
                 if (org.pays) invoiceData.company_country = org.pays;
                 if (org.numero_tva) invoiceData.company_vat = org.numero_tva;
+                if (org.email) invoiceData.company_email = org.email;
+                if (org.telephone) invoiceData.company_phone = org.telephone;
                 if (org.logo_url) invoiceData.company_logo_url = org.logo_url;
                 invoiceData.primary_color = org.primary_color || '#2563EB';
                 invoiceData.header_bg_color = org.header_bg_color || '#F3F4F6';
@@ -584,27 +588,72 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
     doc.setTextColor(0, 0, 0);
     y += 6;
 
+    const hasBill = !!(qrCodeUrl && invoice.iban);
+
+    // Messages de repli quand la QR-facture ne peut pas être générée —
+    // affichés dans le flux normal, avant le pied de page.
+    if (!hasBill) {
+      if (invoice.iban) {
+        // IBAN configuré mais QR indisponible (ex: IBAN invalide) — indiquer
+        // au moins les coordonnées en texte plutôt que de livrer une facture
+        // qui semble s'arrêter au milieu de la page sans explication.
+        doc.setFont(baseFont, 'normal'); doc.setFontSize(9);
+        doc.setTextColor(150, 60, 0);
+        doc.text('QR-facture indisponible — vérifiez votre IBAN dans les paramètres.', marginL, y);
+        y += 5;
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Paiement par virement : IBAN ${formatIbanDisplay(invoice.iban)}`, marginL, y);
+        y += 4.5;
+        doc.text(`Bénéficiaire : ${invoice.company_name || ''}`, marginL, y);
+        y += 6;
+      } else {
+        doc.setFont(baseFont, 'normal'); doc.setFontSize(9);
+        doc.setTextColor(150, 60, 0);
+        doc.text("IBAN non configuré — complétez-le dans Paramètres pour générer une QR-facture suisse.", marginL, y);
+        doc.setTextColor(0, 0, 0);
+        y += 6;
+      }
+    }
+
     // ══════════════════════════════════════════════════════════════════
-    // ── QR-BILL standard suisse (Style Guide QR-bill, SIX Group v1.1) ──
-    // Bloc fixe de 210×105mm en pied de PAGE : Récépissé (0–62mm) +
-    // Section paiement (62–210mm, sans marge latérale). Jamais de
-    // positionnement personnalisable — c'est une règle non négociable
-    // du standard ("le récépissé à gauche, la section paiement à droite").
+    // ── PIED DE PAGE (coordonnées + remerciement) ──
+    // Ancré juste au-dessus du bloc QR-bill (ou en bas de page s'il n'y en
+    // a pas), pour ne jamais laisser un grand vide blanc sur une facture
+    // courte. QR-BILL standard suisse (Style Guide QR-bill, SIX Group
+    // v1.1) : bloc fixe de 210×105mm en pied de PAGE : Récépissé (0–62mm)
+    // + Section paiement (62–210mm, sans marge latérale). Jamais de
+    // positionnement personnalisable — c'est une règle non négociable du
+    // standard ("le récépissé à gauche, la section paiement à droite").
     // ══════════════════════════════════════════════════════════════════
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const docAny = doc as any;
+    const pageH = 297;
+    const billHeight = 105;
+    const footerHeight = 18;
+    // Toujours en bas d'une page : si le contenu déjà écrit empiète sur la
+    // zone réservée, on passe à une nouvelle page plutôt que de rogner le
+    // pied de page ou le bloc de paiement.
+    const reserved = hasBill ? billHeight + footerHeight : footerHeight + 12;
+    if (y > pageH - reserved - 6) {
+      doc.addPage();
+    }
 
-    if (qrCodeUrl && invoice.iban) {
-      const pageH = 297;
-      const billHeight = 105;
+    const footerTop = pageH - reserved;
+    const contactParts = [invoice.company_email, invoice.company_phone].filter(Boolean) as string[];
+    doc.setDrawColor(215, 215, 215);
+    doc.setLineWidth(0.2);
+    doc.line(marginL, footerTop, pageW - marginR, footerTop);
+    doc.setTextColor(130, 130, 130);
+    if (contactParts.length) {
+      doc.setFont(baseFont, 'normal'); doc.setFontSize(8);
+      doc.text(contactParts.join('  •  '), pageW / 2, footerTop + 6, { align: 'center' });
+    }
+    doc.setFont(baseFont, 'italic'); doc.setFontSize(8);
+    doc.text('Merci pour votre confiance.', pageW / 2, footerTop + (contactParts.length ? 11 : 7), { align: 'center' });
+    doc.setTextColor(0, 0, 0);
 
-      // Toujours en bas d'une page : si le contenu déjà écrit empiète sur
-      // la zone réservée, on passe à une nouvelle page plutôt que de
-      // rogner le bloc de paiement (jamais moins que les 105mm requis).
-      if (y > pageH - billHeight - 6) {
-        doc.addPage();
-      }
-      const billTop = pageH - billHeight; // 192mm, fixe quelle que soit la page
+    if (hasBill && invoice.iban) {
+      const billTop = pageH - billHeight; // 192mm, fixe quelle que soit la page (= footerTop + footerHeight)
 
       // Ligne de séparation + mention (alternative au symbole ciseaux,
       // autorisée pour les factures PDF par le Style Guide QR-bill).
@@ -699,23 +748,6 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
       doc.text(invoice.client_name || '', infoX, infoY); infoY += 4;
       if (invoice.client_address) { doc.text(invoice.client_address, infoX, infoY); infoY += 4; }
       doc.text(`${invoice.client_postal_code || ''} ${invoice.client_city || ''}`.trim(), infoX, infoY);
-    } else if (invoice.iban) {
-      // IBAN configuré mais QR indisponible (ex: IBAN invalide) — indiquer
-      // au moins les coordonnées en texte plutôt que de livrer une facture
-      // qui semble s'arrêter au milieu de la page sans explication.
-      doc.setFont(baseFont, 'normal'); doc.setFontSize(9);
-      doc.setTextColor(150, 60, 0);
-      doc.text('QR-facture indisponible — vérifiez votre IBAN dans les paramètres.', marginL, y);
-      y += 5;
-      doc.setTextColor(0, 0, 0);
-      doc.text(`Paiement par virement : IBAN ${formatIbanDisplay(invoice.iban)}`, marginL, y);
-      y += 4.5;
-      doc.text(`Bénéficiaire : ${invoice.company_name || ''}`, marginL, y);
-    } else {
-      doc.setFont(baseFont, 'normal'); doc.setFontSize(9);
-      doc.setTextColor(150, 60, 0);
-      doc.text("IBAN non configuré — complétez-le dans Paramètres pour générer une QR-facture suisse.", marginL, y);
-      doc.setTextColor(0, 0, 0);
     }
 
     doc.save(`facture-${invoice.invoice_number}.pdf`);
@@ -744,6 +776,8 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
       company_city: invoice.company_city,
       company_country: invoice.company_country,
       company_vat: invoice.company_vat,
+      company_email: invoice.company_email,
+      company_phone: invoice.company_phone,
       client_name: invoice.client_name,
       client_address: invoice.client_address,
       client_postal_code: invoice.client_postal_code,
@@ -1162,6 +1196,16 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
                         {invoice.notes && (
                           <span className="ml-2 italic text-gray-500">{invoice.notes}</span>
                         )}
+                      </div>
+
+                      {/* Pied de page : coordonnées + remerciement */}
+                      {(invoice.company_email || invoice.company_phone) && (
+                        <div className="text-center text-[11px] text-gray-400 border-t border-gray-100 pt-2 mb-1">
+                          {[invoice.company_email, invoice.company_phone].filter(Boolean).join('  •  ')}
+                        </div>
+                      )}
+                      <div className="text-center text-[11px] italic text-gray-400 mb-4">
+                        Merci pour votre confiance.
                       </div>
 
                       {/* Erreur QR (IBAN manquant ou invalide) */}
