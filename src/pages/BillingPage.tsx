@@ -2,29 +2,31 @@ import React, { useState } from 'react';
 import { CheckIcon, XMarkIcon, ArrowRightIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import useSubscriptionFeatures, { PlanAbonnement } from '../hooks/useSubscriptionFeatures';
-import { getPriceIdForPlan, redirectToCheckout, estPlanPayant } from '../services/stripeService';
+import { getPriceIdForPlan, redirectToCheckout, estPlanPayant, TARIFS_CHF, CycleFacturation } from '../services/stripeService';
 
 const BillingPage: React.FC = () => {
   const { user } = useAuth();
-  const { 
-    plan: currentPlan, 
-    nomCompletPlan, 
-    fonctionnalites, 
-    mettreAJourPlan, 
-    loading: loadingPlan 
+  const {
+    plan: currentPlan,
+    nomCompletPlan,
+    fonctionnalites,
+    loading: loadingPlan
   } = useSubscriptionFeatures();
-  
+
   const [selectedPlan, setSelectedPlan] = useState<PlanAbonnement | null>(null);
   const [isChangingPlan, setIsChangingPlan] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<CycleFacturation>('monthly');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isRedirectingToStripe, setIsRedirectingToStripe] = useState(false);
 
+  // Prix CHF réels (voir stripeService.ts → TARIFS_CHF, synchronisé avec
+  // PricingPage.tsx et les Prices Stripe). Le plan annuel facture le montant
+  // total une fois par an, pas un prélèvement mensuel réduit.
   const plans = [
     {
       id: 'essentiel',
       name: 'Essentiel',
-      price: 'Gratuit',
       description: 'Parfait pour les indépendants et petites entreprises',
       features: [
         'Jusqu\'à 10 factures/mois',
@@ -33,14 +35,13 @@ const BillingPage: React.FC = () => {
         'Paiements en ligne',
         'Modèles de factures personnalisables'
       ],
-      cta: 'Plan actuel',
+      cta: currentPlan === 'essentiel' ? 'Plan actuel' : 'Choisir Essentiel',
       featured: currentPlan === 'essentiel',
       disabled: false
     },
     {
       id: 'pro',
       name: 'Professionnel',
-      price: '19€',
       description: 'Pour les professionnels qui ont besoin de plus de flexibilité',
       features: [
         'Factures illimitées',
@@ -59,7 +60,6 @@ const BillingPage: React.FC = () => {
     {
       id: 'entreprise',
       name: 'Entreprise',
-      price: '49€',
       description: 'Pour les entreprises avec des besoins avancés',
       features: [
         'Toutes les fonctionnalités Pro',
@@ -75,36 +75,31 @@ const BillingPage: React.FC = () => {
       featured: currentPlan === 'entreprise',
       disabled: false
     }
-  ];
+  ] as const;
 
   const handlePlanChange = async (newPlan: PlanAbonnement) => {
     if (newPlan === currentPlan) return;
 
     setSelectedPlan(newPlan);
 
-    // Si c'est une rétrogradation, demander confirmation
-    if (
-      (currentPlan === 'entreprise' && (newPlan === 'pro' || newPlan === 'essentiel')) ||
-      (currentPlan === 'pro' && newPlan === 'essentiel')
-    ) {
+    // Si c'est une rétrogradation, demander confirmation avant de lancer le
+    // changement (qui passe par Stripe dans tous les cas — voir handleSubscribe).
+    const planRank: Record<PlanAbonnement, number> = { essentiel: 0, pro: 1, entreprise: 2 };
+    if (planRank[newPlan] < planRank[currentPlan]) {
       setIsChangingPlan(true);
       return;
     }
 
-    // Mise à niveau vers un plan payant : passer par Stripe Checkout
-    if (estPlanPayant(newPlan)) {
-      await handleSubscribe(newPlan);
-      return;
-    }
-
-    // Sinon (ex: retour à l'essentiel gratuit), mettre à jour directement
-    await updatePlan(newPlan);
+    await handleSubscribe(newPlan);
   };
 
   /**
-   * Lance le paiement Stripe Checkout pour un plan payant (Professionnel/Entreprise).
-   * Nécessite VITE_STRIPE_PRICE_ID_PRO / VITE_STRIPE_PRICE_ID_ENTREPRISE (voir .env.example)
-   * et que les Edge Functions create-checkout-session / stripe-webhook soient déployées.
+   * Lance ou modifie l'abonnement Stripe pour le plan + cycle sélectionnés.
+   * Les 3 plans sont désormais payants (Essentiel inclus) — voir
+   * stripeService.ts → PLANS_PAYANTS / getPriceIdForPlan. Si un abonnement
+   * est déjà actif, l'Edge Function le modifie en place (pas de nouvelle
+   * session Checkout, pas de double facturation — voir
+   * create-checkout-session/index.ts).
    */
   const handleSubscribe = async (plan: PlanAbonnement) => {
     if (!user?.id) {
@@ -112,56 +107,40 @@ const BillingPage: React.FC = () => {
       return;
     }
 
-    const priceId = getPriceIdForPlan(plan);
+    const priceId = getPriceIdForPlan(plan, billingCycle);
     if (!priceId) {
       setError(
-        "Le paiement Stripe n'est pas encore configuré pour ce plan. Contactez le support ou configurez VITE_STRIPE_PRICE_ID_PRO / VITE_STRIPE_PRICE_ID_ENTREPRISE."
+        `Le paiement Stripe n'est pas encore configuré pour ce plan (${billingCycle}). Contactez le support ou vérifiez les variables VITE_STRIPE_PRICE_ID_* (voir .env.example).`
       );
       return;
     }
 
     try {
       setError(null);
+      setSuccess(null);
       setIsRedirectingToStripe(true);
-      const { error: checkoutError } = await redirectToCheckout(priceId, user.id, user.email ?? undefined);
+      const { error: checkoutError, updated } = await redirectToCheckout(priceId, user.id, user.email ?? undefined);
       if (checkoutError) {
         setError(checkoutError);
         setIsRedirectingToStripe(false);
+      } else if (updated) {
+        // Changement de plan effectué en place, pas de redirection Stripe.
+        setSuccess(`Votre abonnement a été mis à jour vers le plan ${plan}. Le montant est ajusté au prorata sur votre prochaine facture.`);
+        setIsRedirectingToStripe(false);
       }
-      // En cas de succès, redirectToCheckout redirige déjà le navigateur vers Stripe.
+      // Sinon, redirectToCheckout redirige déjà le navigateur vers Stripe.
     } catch (err) {
       console.error('Erreur lors de la redirection vers Stripe Checkout:', err);
       setError('Une erreur est survenue lors de la préparation du paiement. Veuillez réessayer.');
       setIsRedirectingToStripe(false);
     }
   };
-  
+
   const confirmPlanChange = async () => {
     if (!selectedPlan) return;
-    await updatePlan(selectedPlan);
     setIsChangingPlan(false);
+    await handleSubscribe(selectedPlan);
     setSelectedPlan(null);
-  };
-  
-  const updatePlan = async (newPlan: PlanAbonnement) => {
-    try {
-      setError(null);
-      setSuccess(null);
-      
-      // En production, vous devrez intégrer avec votre système de paiement ici
-      // Pour l'instant, nous allons simplement mettre à jour le plan dans la base de données
-      
-      const success = await mettreAJourPlan(newPlan);
-      
-      if (success) {
-        setSuccess(`Votre abonnement a été mis à jour vers le plan ${newPlan}.`);
-      } else {
-        setError('Une erreur est survenue lors de la mise à jour de votre abonnement.');
-      }
-    } catch (err) {
-      console.error('Erreur lors de la mise à jour du plan:', err);
-      setError('Une erreur est survenue. Veuillez réessayer plus tard.');
-    }
   };
 
   // Fonction pour formater la date d'essai gratuit
@@ -341,9 +320,31 @@ const BillingPage: React.FC = () => {
 
       <div id="plans" className="mt-16 mb-8">
         <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">Choisissez le plan qui vous convient</h2>
-        <p className="text-gray-600 text-center max-w-2xl mx-auto mb-12">
+        <p className="text-gray-600 text-center max-w-2xl mx-auto mb-6">
           Sélectionnez le forfait qui correspond le mieux à vos besoins. Vous pouvez changer de plan à tout moment.
         </p>
+
+        <div className="flex items-center justify-center mb-12">
+          <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-gray-900' : 'text-gray-400'}`}>
+            Mensuel
+          </span>
+          <button
+            type="button"
+            className="mx-4 flex h-6 w-11 items-center rounded-full bg-blue-600 p-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annually' : 'monthly')}
+            aria-pressed={billingCycle === 'annually'}
+            aria-label="Basculer entre tarification mensuelle et annuelle"
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${
+                billingCycle === 'monthly' ? 'translate-x-1' : 'translate-x-6'
+              }`}
+            />
+          </button>
+          <span className={`text-sm font-medium flex items-center ${billingCycle === 'annually' ? 'text-gray-900' : 'text-gray-400'}`}>
+            Annuel <span className="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-800">Économisez ~20%</span>
+          </span>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan) => (
@@ -367,14 +368,14 @@ const BillingPage: React.FC = () => {
                 
                 <div className="mt-4">
                   <p className="text-4xl font-extrabold text-gray-900">
-                    {plan.price}
-                    {plan.id !== 'essentiel' && (
-                      <span className="text-base font-medium text-gray-500">/mois</span>
-                    )}
+                    {TARIFS_CHF[plan.id as PlanAbonnement][billingCycle === 'monthly' ? 'monthly' : 'annually'] / (billingCycle === 'monthly' ? 1 : 12)} CHF
+                    <span className="text-base font-medium text-gray-500">/mois</span>
                   </p>
-                  {plan.id !== 'essentiel' && (
-                    <p className="mt-1 text-sm text-gray-500">Facturé mensuellement</p>
-                  )}
+                  <p className="mt-1 text-sm text-gray-500">
+                    {billingCycle === 'monthly'
+                      ? 'Facturé mensuellement'
+                      : `Facturé ${TARIFS_CHF[plan.id as PlanAbonnement].annually} CHF/an`}
+                  </p>
                 </div>
                 
                 <ul className="mt-6 space-y-3">

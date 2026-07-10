@@ -2,12 +2,16 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { CheckIcon } from '@heroicons/react/20/solid';
 
+// Prix mensuels affichés tels quels ; prix "annually" = équivalent mensuel
+// une fois l'abonnement annuel payé en une fois (montant réel facturé :
+// annualTotal, ex. 15 CHF × 12 = 180 CHF/an pour Essentiel — voir
+// stripeService.ts → TARIFS_CHF, qui doit rester synchronisé avec ces valeurs).
 const tiers = [
   {
     name: 'Essentiel',
     id: 'essentiel',
-    href: '/auth/register?plan=essentiel',
     price: { monthly: '19 CHF', annually: '15 CHF' },
+    annualTotal: '180 CHF',
     description: 'Parfait pour les indépendants et les petites entreprises',
     features: [
       'Jusqu\'à 10 factures par mois',
@@ -19,9 +23,9 @@ const tiers = [
   },
   {
     name: 'Professionnel',
-    id: 'professionnel',
-    href: '/auth/register?plan=pro',
+    id: 'pro',
     price: { monthly: '49 CHF', annually: '39 CHF' },
+    annualTotal: '468 CHF',
     description: 'Idéal pour les entreprises en croissance',
     features: [
       'Factures illimitées',
@@ -35,8 +39,8 @@ const tiers = [
   {
     name: 'Entreprise',
     id: 'entreprise',
-    href: '/auth/register?plan=entreprise',
     price: { monthly: '99 CHF', annually: '79 CHF' },
+    annualTotal: '948 CHF',
     description: 'Pour les entreprises avec des besoins avancés',
     features: [
       'Toutes les fonctionnalités Professionnel',
@@ -122,10 +126,13 @@ export const PricingPage = () => {
                   <span className="text-5xl font-bold tracking-tight">
                     {tier.price[billingCycle]}
                   </span>
-                  <span className="ml-1 text-xl font-semibold">
-                    /{billingCycle === 'monthly' ? 'mois' : 'an'}
-                  </span>
+                  <span className="ml-1 text-xl font-semibold">/mois</span>
                 </p>
+                {billingCycle === 'annually' && (
+                  <p className="mt-1 text-sm text-gray-500">
+                    Facturé {tier.annualTotal}/an
+                  </p>
+                )}
                 <p className="mt-6 text-gray-600">{tier.description}</p>
 
                 {/* Feature list */}
@@ -143,7 +150,7 @@ export const PricingPage = () => {
               </div>
 
               <Link
-                to={tier.href}
+                to={`/auth/register?plan=${tier.id}&cycle=${billingCycle}`}
                 className={classNames(
                   tier.featured
                     ? 'bg-primary-600 text-white hover:bg-primary-700 hover:text-white'

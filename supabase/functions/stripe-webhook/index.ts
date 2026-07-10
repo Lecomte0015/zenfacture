@@ -12,8 +12,9 @@
  *   STRIPE_SECRET_KEY      — Clé secrète Stripe
  *   STRIPE_WEBHOOK_SECRET  — Secret de signature (whsec_...), fourni par le
  *                            Dashboard Stripe lors de la création de l'endpoint webhook
- *   STRIPE_PRICE_ID_PRO         — price_... du plan Professionnel (pour mapper price → plan)
- *   STRIPE_PRICE_ID_ENTREPRISE  — price_... du plan Entreprise
+ *   STRIPE_PRICE_ID_ESSENTIEL_MONTHLY / _ANNUALLY — price_... du plan Essentiel
+ *   STRIPE_PRICE_ID_PRO_MONTHLY / _ANNUALLY        — price_... du plan Professionnel
+ *   STRIPE_PRICE_ID_ENTREPRISE_MONTHLY / _ANNUALLY — price_... du plan Entreprise
  *
  * Configuration Dashboard Stripe (à faire manuellement par l'utilisateur) :
  *   Developers → Webhooks → Add endpoint
@@ -27,8 +28,19 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY') ?? '';
 const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET') ?? '';
-const STRIPE_PRICE_ID_PRO = Deno.env.get('STRIPE_PRICE_ID_PRO') ?? '';
-const STRIPE_PRICE_ID_ENTREPRISE = Deno.env.get('STRIPE_PRICE_ID_ENTREPRISE') ?? '';
+
+// Table de correspondance price_id → plan. Un plan a un prix mensuel ET un
+// prix annuel (voir PricingPage.tsx) : les deux doivent mapper vers le même
+// plan, seul `subscription_status`/facturation change, pas les fonctionnalités.
+const PRICE_ID_TO_PLAN: Record<string, 'essentiel' | 'pro' | 'entreprise'> = {
+  [Deno.env.get('STRIPE_PRICE_ID_ESSENTIEL_MONTHLY') ?? '']: 'essentiel',
+  [Deno.env.get('STRIPE_PRICE_ID_ESSENTIEL_ANNUALLY') ?? '']: 'essentiel',
+  [Deno.env.get('STRIPE_PRICE_ID_PRO_MONTHLY') ?? '']: 'pro',
+  [Deno.env.get('STRIPE_PRICE_ID_PRO_ANNUALLY') ?? '']: 'pro',
+  [Deno.env.get('STRIPE_PRICE_ID_ENTREPRISE_MONTHLY') ?? '']: 'entreprise',
+  [Deno.env.get('STRIPE_PRICE_ID_ENTREPRISE_ANNUALLY') ?? '']: 'entreprise',
+};
+delete PRICE_ID_TO_PLAN[''];
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
@@ -37,8 +49,7 @@ const supabase = createClient(
 );
 
 function planFromPriceId(priceId: string | null | undefined): 'essentiel' | 'pro' | 'entreprise' {
-  if (priceId && priceId === STRIPE_PRICE_ID_ENTREPRISE) return 'entreprise';
-  if (priceId && priceId === STRIPE_PRICE_ID_PRO) return 'pro';
+  if (priceId && PRICE_ID_TO_PLAN[priceId]) return PRICE_ID_TO_PLAN[priceId];
   return 'essentiel';
 }
 
