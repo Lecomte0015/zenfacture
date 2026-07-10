@@ -383,6 +383,19 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
       Math.round(primaryRgb[1] * 0.12 + 225),
       Math.round(primaryRgb[2] * 0.12 + 225),
     ];
+    // Teinte un peu plus marquée pour le bandeau d'en-tête (identité visuelle)
+    const headerBandRgb: [number, number, number] = [
+      Math.round(primaryRgb[0] * 0.16 + 213),
+      Math.round(primaryRgb[1] * 0.16 + 213),
+      Math.round(primaryRgb[2] * 0.16 + 213),
+    ];
+
+    // ══════════════════════════════════════════════════════════════════
+    // ── BANDEAU D'EN-TÊTE (identité visuelle, pleine largeur) ──
+    // ══════════════════════════════════════════════════════════════════
+    const headerBandHeight = 54;
+    doc.setFillColor(...headerBandRgb);
+    doc.rect(0, 0, pageW, headerBandHeight, 'F');
 
     // ══════════════════════════════════════════════════════════════════
     // ── HEADER : Logo gauche + FACTURE + détails droite ──
@@ -554,20 +567,20 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
     y += 5;
     doc.text('TVA :', totLeftX, y);
     doc.text(`${(invoice.tax_amount || 0).toFixed(2)} ${invoice.devise || 'CHF'}`, totRightX, y, { align: 'right' });
-    y += 3;
-    doc.setDrawColor(180, 180, 180);
-    doc.setLineWidth(0.3);
-    doc.line(totLeftX, y, totRightX, y);
-    doc.setDrawColor(0, 0, 0);
     y += 5;
+
+    // Total mis en valeur dans un encadré teinté (plus de présence visuelle)
+    const totBoxY = y;
+    const totBoxH = 13;
+    doc.setFillColor(...lightPrimary);
+    doc.roundedRect(totLeftX - 4, totBoxY, contentW - (totLeftX - marginL) + 4, totBoxH, 1.5, 1.5, 'F');
     doc.setFont(baseFont, 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(30, 30, 30);
-    doc.text('Total :', totLeftX, y);
+    doc.setFontSize(13);
     doc.setTextColor(...primaryRgb);
-    doc.text(`${(invoice.total || 0).toFixed(2)} ${invoice.devise || 'CHF'}`, totRightX, y, { align: 'right' });
+    doc.text('Total', totLeftX, totBoxY + 8.5);
+    doc.text(`${(invoice.total || 0).toFixed(2)} ${invoice.devise || 'CHF'}`, totRightX, totBoxY + 8.5, { align: 'right' });
     doc.setTextColor(0, 0, 0);
-    y += 10;
+    y = totBoxY + totBoxH + 8;
 
     // ── Conditions + IBAN (remplit l'espace avant QR-bill) ──
     doc.setFont(baseFont, 'normal');
@@ -585,6 +598,19 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
       doc.text(noteLines, marginL, y);
       y += noteLines.length * 4.5;
     }
+    y += 4;
+
+    // Conditions générales par défaut (texte usuel, modifiable sur demande) —
+    // apporte un contenu légitime plutôt que de laisser un grand vide avant
+    // le bloc de paiement.
+    doc.setFont(baseFont, 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(150, 150, 150);
+    const cgvText = "Conditions générales : sauf accord contraire écrit, le montant de cette facture est dû net dans le délai indiqué ci-dessus. Passé ce délai, des intérêts moratoires de 5% l'an pourront être appliqués de plein droit, sans mise en demeure préalable. Pour toute question relative à cette facture, merci de nous contacter aux coordonnées ci-dessous.";
+    const cgvLines = doc.splitTextToSize(cgvText, contentW);
+    doc.text(cgvLines, marginL, y);
+    y += cgvLines.length * 3.6;
+
     doc.setTextColor(0, 0, 0);
     y += 6;
 
@@ -629,7 +655,7 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
     const docAny = doc as any;
     const pageH = 297;
     const billHeight = 105;
-    const footerHeight = 18;
+    const footerHeight = 22;
     // Toujours en bas d'une page : si le contenu déjà écrit empiète sur la
     // zone réservée, on passe à une nouvelle page plutôt que de rogner le
     // pied de page ou le bloc de paiement.
@@ -640,16 +666,20 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
 
     const footerTop = pageH - reserved;
     const contactParts = [invoice.company_email, invoice.company_phone].filter(Boolean) as string[];
-    doc.setDrawColor(215, 215, 215);
-    doc.setLineWidth(0.2);
-    doc.line(marginL, footerTop, pageW - marginR, footerTop);
-    doc.setTextColor(130, 130, 130);
+
+    // Bannière "Merci" teintée — remplace un simple filet + petit texte par
+    // un élément visuel à part entière, plus flatteur qu'une ligne perdue
+    // dans le vide.
+    doc.setFillColor(...lightPrimary);
+    doc.rect(0, footerTop, pageW, footerHeight, 'F');
+    doc.setFont(baseFont, 'bold'); doc.setFontSize(11);
+    doc.setTextColor(...primaryRgb);
+    doc.text('Merci pour votre confiance !', pageW / 2, footerTop + 9, { align: 'center' });
     if (contactParts.length) {
       doc.setFont(baseFont, 'normal'); doc.setFontSize(8);
-      doc.text(contactParts.join('  •  '), pageW / 2, footerTop + 6, { align: 'center' });
+      doc.setTextColor(110, 110, 110);
+      doc.text(contactParts.join('  •  '), pageW / 2, footerTop + 16, { align: 'center' });
     }
-    doc.setFont(baseFont, 'italic'); doc.setFontSize(8);
-    doc.text('Merci pour votre confiance.', pageW / 2, footerTop + (contactParts.length ? 11 : 7), { align: 'center' });
     doc.setTextColor(0, 0, 0);
 
     if (hasBill && invoice.iban) {
@@ -796,6 +826,7 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
       tax_amount: invoice.tax_amount,
       total: invoice.total,
       devise: invoice.devise,
+      notes: invoice.notes,
       iban: invoice.iban,
       qrCodeDataUrl: qrCodeUrl || undefined,
       company_logo_url: invoice.company_logo_url,
@@ -1013,8 +1044,11 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
                         </div>
                       )}
 
-                      {/* ── HEADER : Logo + FACTURE ── */}
-                      <div className="flex justify-between items-start mb-5">
+                      {/* ── HEADER : Logo + FACTURE (bandeau teinté, identité visuelle) ── */}
+                      <div
+                        className="flex justify-between items-start mb-5 -mx-6 -mt-6 px-6 pt-6 pb-5 rounded-t-lg"
+                        style={{ backgroundColor: `${invoice.primary_color || '#2563EB'}14` }}
+                      >
                         {/* Logo */}
                         <div>
                           {invoice.company_logo_url && (
@@ -1183,14 +1217,17 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
                           <span className="text-gray-600">TVA:</span>
                           <span>{formatCurrency(invoice.tax_amount)}</span>
                         </div>
-                        <div className="totals-row total flex justify-between py-2 text-base font-bold border-t-2 border-gray-800 mt-2">
-                          <span>Total:</span>
+                        <div
+                          className="totals-row total flex justify-between items-center py-2.5 px-3 rounded-md text-base font-bold mt-2"
+                          style={{ backgroundColor: `${invoice.primary_color || '#2563EB'}14` }}
+                        >
+                          <span style={{ color: invoice.primary_color || '#2563EB' }}>Total</span>
                           <span style={{ color: invoice.primary_color || '#2563EB' }}>{formatCurrency(invoice.total)}</span>
                         </div>
                       </div>
 
                       {/* Notes et conditions de paiement */}
-                      <div className="footer text-xs text-gray-500 mb-4 max-w-2xl border-t border-gray-100 pt-3">
+                      <div className="footer text-xs text-gray-500 mb-2 max-w-2xl border-t border-gray-100 pt-3">
                         <span className="font-semibold text-gray-700">Conditions : </span>
                         Paiement dû avant le {formatDate(invoice.due_date)}.
                         {invoice.notes && (
@@ -1198,14 +1235,27 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
                         )}
                       </div>
 
-                      {/* Pied de page : coordonnées + remerciement */}
-                      {(invoice.company_email || invoice.company_phone) && (
-                        <div className="text-center text-[11px] text-gray-400 border-t border-gray-100 pt-2 mb-1">
-                          {[invoice.company_email, invoice.company_phone].filter(Boolean).join('  •  ')}
-                        </div>
-                      )}
-                      <div className="text-center text-[11px] italic text-gray-400 mb-4">
-                        Merci pour votre confiance.
+                      {/* Conditions générales par défaut (modifiable sur demande) */}
+                      <div className="text-[10px] text-gray-400 mb-6 max-w-2xl leading-relaxed">
+                        Conditions générales : sauf accord contraire écrit, le montant de cette facture est dû net
+                        dans le délai indiqué ci-dessus. Passé ce délai, des intérêts moratoires de 5% l'an pourront
+                        être appliqués de plein droit, sans mise en demeure préalable. Pour toute question relative à
+                        cette facture, merci de nous contacter aux coordonnées ci-dessous.
+                      </div>
+
+                      {/* Pied de page : bannière remerciement teintée */}
+                      <div
+                        className="text-center rounded-lg py-3 mb-4 -mx-6 px-6"
+                        style={{ backgroundColor: `${invoice.primary_color || '#2563EB'}14` }}
+                      >
+                        <p className="text-sm font-bold" style={{ color: invoice.primary_color || '#2563EB' }}>
+                          Merci pour votre confiance !
+                        </p>
+                        {(invoice.company_email || invoice.company_phone) && (
+                          <p className="text-[11px] text-gray-500 mt-1">
+                            {[invoice.company_email, invoice.company_phone].filter(Boolean).join('  •  ')}
+                          </p>
+                        )}
                       </div>
 
                       {/* Erreur QR (IBAN manquant ou invalide) */}

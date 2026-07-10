@@ -113,6 +113,7 @@ export async function generatePdfBase64(invoiceData: {
   tax_amount: number;
   total: number;
   devise?: string;
+  notes?: string;
   iban?: string;
   qrCodeDataUrl?: string;
   company_logo_url?: string;
@@ -147,6 +148,16 @@ export async function generatePdfBase64(invoiceData: {
 
     const primaryRgb = hexToRgb(invoiceData.primary_color || '#2563EB');
     const headerBgRgb = hexToRgb(invoiceData.header_bg_color || '#F3F4F6');
+    const lightPrimary: [number, number, number] = [
+      Math.round(primaryRgb[0] * 0.12 + 225),
+      Math.round(primaryRgb[1] * 0.12 + 225),
+      Math.round(primaryRgb[2] * 0.12 + 225),
+    ];
+    const headerBandRgb: [number, number, number] = [
+      Math.round(primaryRgb[0] * 0.16 + 213),
+      Math.round(primaryRgb[1] * 0.16 + 213),
+      Math.round(primaryRgb[2] * 0.16 + 213),
+    ];
 
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const pageW = 210;
@@ -157,6 +168,10 @@ export async function generatePdfBase64(invoiceData: {
     const ln = (n = 1) => { y += n; };
 
     const fmt = (d?: string) => d ? new Date(d).toLocaleDateString('fr-CH', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
+
+    // Bandeau d'en-tête coloré (identité visuelle, pleine largeur)
+    doc.setFillColor(...headerBandRgb);
+    doc.rect(0, 0, pageW, 46, 'F');
 
     // Logo
     if (invoiceData.company_logo_url) {
@@ -228,11 +243,38 @@ export async function generatePdfBase64(invoiceData: {
     doc.text(`${(invoiceData.subtotal || 0).toFixed(2)} ${invoiceData.devise || 'CHF'}`, marginL + contentW, y, { align: 'right' });
     ln(5); doc.text('TVA :', totX, y);
     doc.text(`${(invoiceData.tax_amount || 0).toFixed(2)} ${invoiceData.devise || 'CHF'}`, marginL + contentW, y, { align: 'right' });
-    ln(2); doc.setLineWidth(0.4); doc.line(totX, y, marginL + contentW, y); ln(5);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-    doc.text('Total :', totX, y);
+    ln(5);
+
+    // Total mis en valeur dans un encadré teinté
+    const totBoxH = 13;
+    doc.setFillColor(...lightPrimary);
+    doc.roundedRect(totX - 4, y, marginL + contentW - (totX - 4), totBoxH, 1.5, 1.5, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
     doc.setTextColor(...primaryRgb);
-    doc.text(`${(invoiceData.total || 0).toFixed(2)} ${invoiceData.devise || 'CHF'}`, marginL + contentW, y, { align: 'right' });
+    doc.text('Total', totX, y + 8.5);
+    doc.text(`${(invoiceData.total || 0).toFixed(2)} ${invoiceData.devise || 'CHF'}`, marginL + contentW, y + 8.5, { align: 'right' });
+    doc.setTextColor(0, 0, 0);
+    y += totBoxH + 8;
+
+    // Conditions de paiement + remarques + conditions générales par défaut
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    if (invoiceData.due_date) {
+      doc.text(`Conditions de paiement : dû avant le ${fmt(invoiceData.due_date)}.`, marginL, y);
+      y += 4.5;
+    }
+    if (invoiceData.notes) {
+      const noteLines = doc.splitTextToSize(`Remarques : ${invoiceData.notes}`, contentW);
+      doc.text(noteLines, marginL, y);
+      y += noteLines.length * 4.5;
+    }
+    y += 4;
+    doc.setFontSize(7.5);
+    doc.setTextColor(150, 150, 150);
+    const cgvText = "Conditions générales : sauf accord contraire écrit, le montant de cette facture est dû net dans le délai indiqué ci-dessus. Passé ce délai, des intérêts moratoires de 5% l'an pourront être appliqués de plein droit, sans mise en demeure préalable. Pour toute question relative à cette facture, merci de nous contacter aux coordonnées ci-dessous.";
+    const cgvLines = doc.splitTextToSize(cgvText, contentW);
+    doc.text(cgvLines, marginL, y);
+    y += cgvLines.length * 3.6;
     doc.setTextColor(0, 0, 0);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -249,7 +291,7 @@ export async function generatePdfBase64(invoiceData: {
     // ══════════════════════════════════════════════════════════════════
     const pageH = 297;
     const billHeight = 105;
-    const footerHeight = 18;
+    const footerHeight = 22;
     const reserved = hasBill ? billHeight + footerHeight : footerHeight + 12;
     if (y > pageH - reserved - 6) {
       doc.addPage();
@@ -257,16 +299,18 @@ export async function generatePdfBase64(invoiceData: {
 
     const footerTop = pageH - reserved;
     const contactParts = [invoiceData.company_email, invoiceData.company_phone].filter(Boolean) as string[];
-    doc.setDrawColor(215, 215, 215);
-    doc.setLineWidth(0.2);
-    doc.line(marginL, footerTop, pageW - marginR, footerTop);
-    doc.setTextColor(130, 130, 130);
+
+    // Bannière "Merci" teintée
+    doc.setFillColor(...lightPrimary);
+    doc.rect(0, footerTop, pageW, footerHeight, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+    doc.setTextColor(...primaryRgb);
+    doc.text('Merci pour votre confiance !', pageW / 2, footerTop + 9, { align: 'center' });
     if (contactParts.length) {
       doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-      doc.text(contactParts.join('  •  '), pageW / 2, footerTop + 6, { align: 'center' });
+      doc.setTextColor(110, 110, 110);
+      doc.text(contactParts.join('  •  '), pageW / 2, footerTop + 16, { align: 'center' });
     }
-    doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
-    doc.text('Merci pour votre confiance.', pageW / 2, footerTop + (contactParts.length ? 11 : 7), { align: 'center' });
     doc.setTextColor(0, 0, 0);
 
     if (hasBill && invoiceData.iban) {
