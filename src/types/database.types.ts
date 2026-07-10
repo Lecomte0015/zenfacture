@@ -1692,6 +1692,11 @@ export interface Database {
           enable_ebill: boolean
           enable_api: boolean
           enable_fiduciaire: boolean
+          banner_enabled: boolean
+          banner_text: string | null
+          banner_image_url: string | null
+          banner_link_url: string | null
+          banner_link_label: string | null
           updated_at: string
           updated_by: string | null
         }
@@ -1710,6 +1715,11 @@ export interface Database {
           enable_ebill?: boolean
           enable_api?: boolean
           enable_fiduciaire?: boolean
+          banner_enabled?: boolean
+          banner_text?: string | null
+          banner_image_url?: string | null
+          banner_link_url?: string | null
+          banner_link_label?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -1728,6 +1738,11 @@ export interface Database {
           enable_ebill?: boolean
           enable_api?: boolean
           enable_fiduciaire?: boolean
+          banner_enabled?: boolean
+          banner_text?: string | null
+          banner_image_url?: string | null
+          banner_link_url?: string | null
+          banner_link_label?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -3016,7 +3031,16 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_announcement_banner: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          banner_enabled: boolean
+          banner_text: string | null
+          banner_image_url: string | null
+          banner_link_url: string | null
+          banner_link_label: string | null
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

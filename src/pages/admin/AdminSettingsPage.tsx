@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   DollarSign,
   Mail,
@@ -6,11 +6,15 @@ import {
   Key,
   Save,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Image as ImageIcon,
+  X,
+  Upload
 } from 'lucide-react';
 import {
   getPlatformSettings,
   updatePlatformSettings,
+  uploadBannerImage,
   PlatformSettings
 } from '@/services/platformSettingsService';
 import { logAdminAction } from '@/services/adminAuditService';
@@ -21,6 +25,8 @@ const AdminSettingsPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'success' | 'error'>('idle');
   const [unlimitedBusiness, setUnlimitedBusiness] = useState(true);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const bannerFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadSettings();
@@ -60,6 +66,23 @@ const AdminSettingsPage: React.FC = () => {
       setSaveState('error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleBannerImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !settings) return;
+
+    setUploadingBanner(true);
+    try {
+      const url = await uploadBannerImage(file);
+      setSettings({ ...settings, banner_image_url: url });
+    } catch (error) {
+      console.error("Erreur lors de l'upload de l'image de bannière :", error);
+      setSaveState('error');
+    } finally {
+      setUploadingBanner(false);
+      if (bannerFileInputRef.current) bannerFileInputRef.current.value = '';
     }
   };
 
@@ -306,6 +329,125 @@ const AdminSettingsPage: React.FC = () => {
                 }
                 className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
+            </div>
+          </div>
+        </div>
+
+        {/* Bannière d'annonce */}
+        <div className="bg-white rounded-lg shadow border border-gray-200 p-6 lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <ImageIcon className="w-5 h-5 text-pink-600 mr-2" />
+              <h3 className="text-lg font-semibold text-gray-900">Bannière d'annonce</h3>
+            </div>
+            <label className="flex items-center text-sm font-medium text-gray-700">
+              <input
+                type="checkbox"
+                checked={settings.banner_enabled}
+                onChange={(e) => setSettings({ ...settings, banner_enabled: e.target.checked })}
+                className="w-5 h-5 mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              Activée
+            </label>
+          </div>
+          <p className="text-xs text-gray-500 mb-4">
+            Affichée en haut du site public et du dashboard client (offre spéciale, maintenance prévue...).
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Texte de la bannière
+                </label>
+                <textarea
+                  rows={3}
+                  value={settings.banner_text || ''}
+                  onChange={(e) => setSettings({ ...settings, banner_text: e.target.value })}
+                  placeholder="Ex : Offre de lancement : -20% sur le plan annuel jusqu'au 31 juillet !"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Lien (optionnel)
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.banner_link_url || ''}
+                    onChange={(e) => setSettings({ ...settings, banner_link_url: e.target.value })}
+                    placeholder="/tarifs"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Libellé du lien
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.banner_link_label || ''}
+                    onChange={(e) => setSettings({ ...settings, banner_link_label: e.target.value })}
+                    placeholder="En profiter"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Image de fond (optionnelle)
+              </label>
+              {settings.banner_image_url ? (
+                <div className="relative">
+                  <img
+                    src={settings.banner_image_url}
+                    alt="Aperçu bannière"
+                    className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSettings({ ...settings, banner_image_url: null })}
+                    className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-700 rounded-full p-1 shadow"
+                    aria-label="Retirer l'image"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => bannerFileInputRef.current?.click()}
+                  disabled={uploadingBanner}
+                  className="w-full h-32 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors disabled:opacity-50"
+                >
+                  {uploadingBanner ? (
+                    <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></span>
+                  ) : (
+                    <>
+                      <Upload className="w-6 h-6 mb-2" />
+                      <span className="text-sm">Choisir une image</span>
+                    </>
+                  )}
+                </button>
+              )}
+              <input
+                ref={bannerFileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/webp"
+                onChange={handleBannerImageChange}
+                className="hidden"
+              />
+              {settings.banner_image_url && (
+                <button
+                  type="button"
+                  onClick={() => bannerFileInputRef.current?.click()}
+                  className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+                >
+                  Changer l'image
+                </button>
+              )}
             </div>
           </div>
         </div>

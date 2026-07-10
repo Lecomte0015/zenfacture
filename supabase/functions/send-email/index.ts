@@ -8,9 +8,11 @@
  *   APP_FROM_NAME   — Nom de l'expéditeur (ex: ZenFacture)
  *
  * Types d'email supportés :
- *   - "invoice"  : Envoi d'une facture avec PDF en pièce jointe
- *   - "reminder" : Rappel de paiement
- *   - "generic"  : Email générique (to + subject + html)
+ *   - "invoice"   : Envoi d'une facture avec PDF en pièce jointe
+ *   - "reminder"  : Rappel de paiement
+ *   - "welcome"   : Email de bienvenue envoyé après inscription
+ *   - "marketing" : Email marketing / annonce ponctuelle (envoyé par un admin)
+ *   - "generic"   : Email générique (to + subject + html)
  */
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
@@ -171,6 +173,143 @@ function templateReminder(params: {
 </html>`;
 }
 
+function templateWelcome(params: { recipientName: string }): string {
+  const { recipientName } = params;
+  return `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Bienvenue sur ZenFacture</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:#2563eb;padding:32px 40px;">
+              <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">Bienvenue sur ZenFacture 🎉</h1>
+              <p style="margin:4px 0 0;color:#93c5fd;font-size:14px;">Facturation QR suisse simplifiée</p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px;">
+              <p style="margin:0 0 16px;color:#374151;font-size:15px;">Bonjour ${recipientName},</p>
+              <p style="margin:0 0 24px;color:#374151;font-size:15px;">
+                Merci d'avoir créé votre compte ZenFacture ! Votre période d'essai de 15 jours vient de démarrer,
+                avec accès à toutes les fonctionnalités du plan Essentiel.
+              </p>
+
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;margin-bottom:28px;">
+                <tr>
+                  <td style="padding:20px;">
+                    <p style="margin:0 0 10px;color:#0c4a6e;font-size:14px;font-weight:600;">Pour bien démarrer :</p>
+                    <ul style="margin:0;padding-left:18px;color:#0369a1;font-size:14px;line-height:1.8;">
+                      <li>Complétez votre profil d'entreprise (logo, IBAN QR)</li>
+                      <li>Ajoutez votre premier client</li>
+                      <li>Créez et envoyez votre première facture</li>
+                    </ul>
+                  </td>
+                </tr>
+              </table>
+
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="border-radius:8px;background:#2563eb;">
+                    <a href="https://zenfacture.ch/dashboard" style="display:inline-block;padding:14px 28px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;">
+                      Accéder à mon tableau de bord →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 40px;background:#f9fafb;border-top:1px solid #e5e7eb;">
+              <p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.6;">
+                Une question ? Répondez simplement à cet email, notre équipe vous répond rapidement.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function templateMarketing(params: {
+  recipientName: string;
+  heading: string;
+  bodyHtml: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+}): string {
+  const { recipientName, heading, bodyHtml, ctaLabel, ctaUrl } = params;
+  return `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${heading}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+
+          <tr>
+            <td style="background:#2563eb;padding:32px 40px;">
+              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${heading}</h1>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:40px;">
+              <p style="margin:0 0 24px;color:#374151;font-size:15px;">Bonjour ${recipientName},</p>
+              <div style="color:#374151;font-size:15px;line-height:1.7;margin-bottom:28px;">${bodyHtml}</div>
+              ${ctaLabel && ctaUrl ? `
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="border-radius:8px;background:#2563eb;">
+                    <a href="${ctaUrl}" style="display:inline-block;padding:14px 28px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;">
+                      ${ctaLabel}
+                    </a>
+                  </td>
+                </tr>
+              </table>` : ''}
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:24px 40px;background:#f9fafb;border-top:1px solid #e5e7eb;">
+              <p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.6;">
+                Vous recevez cet email car vous avez un compte ZenFacture.
+                Vous pouvez gérer vos préférences de communication depuis votre profil.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 // ─── Handler principal ────────────────────────────────────────────────────────
 
 serve(async (req) => {
@@ -236,6 +375,36 @@ serve(async (req) => {
         to: [to],
         subject: `[Rappel ${level}/3] Facture ${invoiceNumber} en attente de paiement`,
         html: templateReminder({ recipientName: recipientName || to, senderName: senderName || FROM_NAME, invoiceNumber, amount, currency, dueDate: dueDateFormatted, level }),
+      };
+
+    } else if (type === 'welcome') {
+      const { to, recipientName } = body;
+      if (!to) {
+        return new Response(JSON.stringify({ error: 'Champ requis manquant : to' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      emailPayload = {
+        from: `${FROM_NAME} <${FROM_EMAIL}>`,
+        to: [to],
+        subject: 'Bienvenue sur ZenFacture 🎉',
+        html: templateWelcome({ recipientName: recipientName || to }),
+      };
+
+    } else if (type === 'marketing') {
+      const { to, recipientName, subject, heading, bodyHtml, ctaLabel, ctaUrl } = body;
+      if (!to || !subject || !heading || !bodyHtml) {
+        return new Response(JSON.stringify({ error: 'Champs requis manquants : to, subject, heading, bodyHtml' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      emailPayload = {
+        from: `${FROM_NAME} <${FROM_EMAIL}>`,
+        to: [to],
+        subject,
+        html: templateMarketing({ recipientName: recipientName || to, heading, bodyHtml, ctaLabel, ctaUrl }),
       };
 
     } else {

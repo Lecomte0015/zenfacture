@@ -2,6 +2,7 @@ import { createContext, useContext, useState, ReactNode, useEffect, useCallback 
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
 import { PlanAbonnement } from '../hooks/useSubscriptionFeatures';
+import { sendWelcomeEmail } from '../services/transactionalEmailService';
 
 type Fonctionnalites = {
   multiUtilisateurs: boolean;
@@ -322,6 +323,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (orgError) {
             console.error('Erreur lors de la création de l\'organisation:', orgError);
           }
+
+          // Email de bienvenue (Resend) — "fire and forget" : un échec d'envoi
+          // ne doit jamais faire échouer l'inscription, le compte est déjà créé.
+          sendWelcomeEmail(email, name).catch(() => {});
 
           const userData = await createUserFromSupabase(data.user);
           return {

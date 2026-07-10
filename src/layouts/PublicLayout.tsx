@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { FiFileText, FiMenu, FiX } from 'react-icons/fi';
+import AnnouncementBanner from '@/components/common/AnnouncementBanner';
 
 const navLinks = [
   { name: 'Fonctionnalités', href: '/fonctionnalites' },
@@ -206,6 +207,7 @@ export const PublicLayout = ({ children }: { children?: React.ReactNode }) => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      <AnnouncementBanner />
       <Navbar />
       <main className="flex-1">
         {isLanding ? (

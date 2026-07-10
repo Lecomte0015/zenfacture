@@ -9,12 +9,15 @@ import {
   Eye,
   CheckCircle,
   XCircle,
-  Edit
+  Edit,
+  Send,
+  Megaphone
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { logAdminAction } from '@/services/adminAuditService';
+import { sendMarketingEmail } from '@/services/transactionalEmailService';
 
 interface User {
   id: string;
@@ -35,6 +38,12 @@ const AdminUsersPage: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Composition d'un email marketing (ciblé sur un utilisateur, ou en diffusion)
+  const [showMarketingModal, setShowMarketingModal] = useState(false);
+  const [marketingScope, setMarketingScope] = useState<'single' | 'broadcast'>('single');
+  const [marketingForm, setMarketingForm] = useState({ subject: '', heading: '', bodyHtml: '', ctaLabel: '', ctaUrl: '' });
+  const [marketingSending, setMarketingSending] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -181,6 +190,79 @@ const AdminUsersPage: React.FC = () => {
     }
   };
 
+  const openMarketingModal = (scope: 'single' | 'broadcast') => {
+    setMarketingScope(scope);
+    setMarketingForm({ subject: '', heading: '', bodyHtml: '', ctaLabel: '', ctaUrl: '' });
+    setShowMarketingModal(true);
+  };
+
+  const handleSendMarketingEmail = async () => {
+    const { subject, heading, bodyHtml, ctaLabel, ctaUrl } = marketingForm;
+    if (!subject.trim() || !heading.trim() || !bodyHtml.trim()) {
+      alert('Veuillez renseigner au minimum le sujet, le titre et le message.');
+      return;
+    }
+
+    const recipients = marketingScope === 'single'
+      ? (selectedUser?.email ? [selectedUser] : [])
+      : users.filter((u) => u.is_active && u.email);
+
+    if (recipients.length === 0) {
+      alert("Aucun destinataire valide (email manquant ou aucun utilisateur actif).");
+      return;
+    }
+
+    if (marketingScope === 'broadcast') {
+      const confirmText = 'ENVOYER';
+      const userInput = window.prompt(
+        `⚠️ Vous allez envoyer cet email à ${recipients.length} utilisateur${recipients.length > 1 ? 's' : ''} actif${recipients.length > 1 ? 's' : ''}.\n\nTapez "${confirmText}" pour confirmer la diffusion :`
+      );
+      if (userInput !== confirmText) {
+        if (userInput !== null) alert('Diffusion annulée. Le texte de confirmation ne correspond pas.');
+        return;
+      }
+    }
+
+    setMarketingSending(true);
+    try {
+      const results = await Promise.allSettled(
+        recipients.map((u) =>
+          sendMarketingEmail({
+            to: u.email as string,
+            recipientName: u.name || u.email || '',
+            subject,
+            heading,
+            bodyHtml,
+            ctaLabel: ctaLabel || undefined,
+            ctaUrl: ctaUrl || undefined,
+          })
+        )
+      );
+
+      const failures = results.filter((r) => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
+
+      await logAdminAction('send_marketing_email', 'profils', marketingScope === 'single' ? selectedUser?.id : undefined, {
+        scope: marketingScope,
+        recipientCount: recipients.length,
+        failureCount: failures.length,
+        subject,
+      });
+
+      if (failures.length === 0) {
+        alert(`Email envoyé avec succès à ${recipients.length} destinataire${recipients.length > 1 ? 's' : ''}.`);
+      } else {
+        alert(`Envoi terminé : ${recipients.length - failures.length} réussi(s), ${failures.length} échec(s). Voir la console pour le détail.`);
+      }
+
+      setShowMarketingModal(false);
+    } catch (error) {
+      console.error("Erreur lors de l'envoi de l'email marketing:", error);
+      alert("Erreur lors de l'envoi de l'email marketing");
+    } finally {
+      setMarketingSending(false);
+    }
+  };
+
   const filteredUsers = users.filter((user) => {
     const matchesSearch = user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.name?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -216,11 +298,20 @@ const AdminUsersPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Gestion des utilisateurs</h1>
-        <p className="text-gray-600 mt-2">
-          {filteredUsers.length} utilisateur{filteredUsers.length > 1 ? 's' : ''} trouvé{filteredUsers.length > 1 ? 's' : ''}
-        </p>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Gestion des utilisateurs</h1>
+          <p className="text-gray-600 mt-2">
+            {filteredUsers.length} utilisateur{filteredUsers.length > 1 ? 's' : ''} trouvé{filteredUsers.length > 1 ? 's' : ''}
+          </p>
+        </div>
+        <button
+          onClick={() => openMarketingModal('broadcast')}
+          className="shrink-0 flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+        >
+          <Megaphone className="w-4 h-4 mr-2" />
+          Diffusion marketing
+        </button>
       </div>
 
       {/* Search */}
@@ -413,6 +504,22 @@ const AdminUsersPage: React.FC = () => {
                 </dl>
               </div>
 
+              {/* Email marketing ciblé */}
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Send className="w-5 h-5 mr-2 text-blue-600" />
+                  Communication
+                </h3>
+                <button
+                  onClick={() => openMarketingModal('single')}
+                  disabled={!selectedUser.email}
+                  className="flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Envoyer un email marketing à cet utilisateur
+                </button>
+              </div>
+
               {/* Changer le rôle */}
               <div className="border-t pt-6">
                 <h3 className="text-lg font-semibold mb-4 flex items-center">
@@ -491,6 +598,105 @@ const AdminUsersPage: React.FC = () => {
                 className="w-full px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-50"
               >
                 Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de composition d'email marketing */}
+      {showMarketingModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                    <Megaphone className="w-5 h-5 mr-2 text-blue-600" />
+                    {marketingScope === 'single' ? 'Email à un utilisateur' : 'Diffusion marketing'}
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {marketingScope === 'single'
+                      ? `Destinataire : ${selectedUser?.email}`
+                      : `Envoyé à tous les utilisateurs actifs (${users.filter((u) => u.is_active && u.email).length})`}
+                  </p>
+                </div>
+                <button onClick={() => setShowMarketingModal(false)} className="text-gray-400 hover:text-gray-600">
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sujet de l'email</label>
+                <input
+                  type="text"
+                  value={marketingForm.subject}
+                  onChange={(e) => setMarketingForm({ ...marketingForm, subject: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ex : Découvrez les nouveautés ZenFacture"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Titre affiché en en-tête</label>
+                <input
+                  type="text"
+                  value={marketingForm.heading}
+                  onChange={(e) => setMarketingForm({ ...marketingForm, heading: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ex : Une nouveauté vous attend"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                <textarea
+                  value={marketingForm.bodyHtml}
+                  onChange={(e) => setMarketingForm({ ...marketingForm, bodyHtml: e.target.value })}
+                  rows={5}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Votre message..."
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Libellé du bouton (optionnel)</label>
+                  <input
+                    type="text"
+                    value={marketingForm.ctaLabel}
+                    onChange={(e) => setMarketingForm({ ...marketingForm, ctaLabel: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Ex : Découvrir"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Lien du bouton (optionnel)</label>
+                  <input
+                    type="url"
+                    value={marketingForm.ctaUrl}
+                    onChange={(e) => setMarketingForm({ ...marketingForm, ctaUrl: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 bg-gray-50 flex gap-3">
+              <button
+                onClick={() => setShowMarketingModal(false)}
+                disabled={marketingSending}
+                className="flex-1 px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleSendMarketingEmail}
+                disabled={marketingSending}
+                className="flex-1 flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {marketingSending ? 'Envoi...' : 'Envoyer'}
               </button>
             </div>
           </div>

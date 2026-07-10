@@ -4,6 +4,7 @@ import Sidebar from '@/components/dashboard/Sidebar';
 import ProfilMetierModal from '@/components/dashboard/ProfilMetierModal';
 import NotificationsDropdown from '@/components/dashboard/NotificationsDropdown';
 import UserMenu from '@/components/dashboard/UserMenu';
+import AnnouncementBanner from '@/components/common/AnnouncementBanner';
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard':                          'Tableau de bord',
@@ -43,6 +44,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/dashboard/profile':                  'Profil',
   '/dashboard/settings':                 'Paramètres',
   '/dashboard/billing':                  'Abonnement',
+  '/dashboard/rappels':                   'Rappels & cotisations',
 };
 
 interface DashboardLayoutProps {
@@ -61,6 +63,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       {/* ── Main area ─────────────────────────────────────────────── */}
       <div className="flex flex-col flex-1 overflow-hidden">
+        <AnnouncementBanner />
 
         {/* Top header bar */}
         <div className="h-14 shrink-0 border-b border-gray-200 bg-white flex items-center justify-between shadow-sm z-10">
