@@ -6,10 +6,11 @@ export interface AdminReminder {
   id?: string;
   user_id: string;
   title: string;
-  description: string;
+  description?: string | null;
   due_date: string; // ISO date string
   status: ReminderStatus;
   category: string;
+  notification_sent?: boolean | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -25,7 +26,7 @@ export const getAdminReminders = async (): Promise<AdminReminder[]> => {
   }
 
   const { data, error } = await supabase
-    .from('rappels')
+    .from('admin_reminders')
     .select('*')
     .eq('user_id', user.id)
     .order('due_date', { ascending: true });
@@ -35,7 +36,10 @@ export const getAdminReminders = async (): Promise<AdminReminder[]> => {
     throw error;
   }
 
-  return data || [];
+  // `status`/`category` sont des TEXT contraints par un CHECK côté base
+  // (voir migration 20260317000000_admin_reminders.sql) — Supabase les
+  // type en `string` générique, d'où ce cast vers l'union locale.
+  return (data || []) as AdminReminder[];
 };
 
 /**
@@ -49,7 +53,7 @@ export const createAdminReminder = async (reminder: Omit<AdminReminder, 'id' | '
   }
 
   const { data, error } = await supabase
-    .from('rappels')
+    .from('admin_reminders')
     .insert([{ ...reminder, user_id: user.id }])
     .select()
     .single();
@@ -59,7 +63,7 @@ export const createAdminReminder = async (reminder: Omit<AdminReminder, 'id' | '
     throw error;
   }
 
-  return data;
+  return data as AdminReminder;
 };
 
 /**
@@ -67,7 +71,7 @@ export const createAdminReminder = async (reminder: Omit<AdminReminder, 'id' | '
  */
 export const updateAdminReminder = async (id: string, updates: Partial<AdminReminder>): Promise<AdminReminder> => {
   const { data, error } = await supabase
-    .from('rappels')
+    .from('admin_reminders')
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', id)
     .select()
@@ -78,7 +82,7 @@ export const updateAdminReminder = async (id: string, updates: Partial<AdminRemi
     throw error;
   }
 
-  return data;
+  return data as AdminReminder;
 };
 
 /**
@@ -86,7 +90,7 @@ export const updateAdminReminder = async (id: string, updates: Partial<AdminRemi
  */
 export const deleteAdminReminder = async (id: string): Promise<void> => {
   const { error } = await supabase
-    .from('rappels')
+    .from('admin_reminders')
     .delete()
     .eq('id', id);
 
@@ -111,7 +115,7 @@ export const getUpcomingAdminReminders = async (daysAhead: number = 7): Promise<
   futureDate.setDate(now.getDate() + daysAhead);
 
   const { data, error } = await supabase
-    .from('rappels')
+    .from('admin_reminders')
     .select('*')
     .eq('user_id', user.id)
     .gte('due_date', now.toISOString())
@@ -123,5 +127,5 @@ export const getUpcomingAdminReminders = async (daysAhead: number = 7): Promise<
     throw error;
   }
 
-  return data || [];
+  return (data || []) as AdminReminder[];
 };

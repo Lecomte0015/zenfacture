@@ -104,7 +104,7 @@ const AdminRemindersPage: React.FC = () => {
   const handleOpenEditDialog = (reminder: AdminReminder) => {
     setFormData({
       title: reminder.title,
-      description: reminder.description,
+      description: reminder.description || '',
       due_date: reminder.due_date.split('T')[0],
       status: reminder.status,
       category: reminder.category,
