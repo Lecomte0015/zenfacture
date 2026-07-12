@@ -8,16 +8,22 @@ import {
   CheckCircle,
   AlertCircle,
   Image as ImageIcon,
+  GalleryHorizontal,
+  Video,
   X,
-  Upload
+  Upload,
+  Plus
 } from 'lucide-react';
 import {
   getPlatformSettings,
   updatePlatformSettings,
   uploadBannerImage,
   uploadHeroImage,
+  uploadHeroCarouselImage,
+  uploadHeroVideo,
   DEFAULT_HERO,
-  PlatformSettings
+  PlatformSettings,
+  HeroMediaType
 } from '@/services/platformSettingsService';
 import { logAdminAction } from '@/services/adminAuditService';
 
@@ -31,6 +37,11 @@ const AdminSettingsPage: React.FC = () => {
   const bannerFileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingHero, setUploadingHero] = useState(false);
   const heroFileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingCarouselImage, setUploadingCarouselImage] = useState(false);
+  const carouselFileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const videoFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadSettings();
@@ -104,6 +115,46 @@ const AdminSettingsPage: React.FC = () => {
     } finally {
       setUploadingHero(false);
       if (heroFileInputRef.current) heroFileInputRef.current.value = '';
+    }
+  };
+
+  const handleAddCarouselImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !settings) return;
+
+    setUploadingCarouselImage(true);
+    try {
+      const url = await uploadHeroCarouselImage(file);
+      setSettings({ ...settings, hero_carousel_urls: [...settings.hero_carousel_urls, url] });
+    } catch (error) {
+      console.error("Erreur lors de l'upload d'une image du carrousel :", error);
+      setSaveState('error');
+    } finally {
+      setUploadingCarouselImage(false);
+      if (carouselFileInputRef.current) carouselFileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveCarouselImage = (url: string) => {
+    if (!settings) return;
+    setSettings({ ...settings, hero_carousel_urls: settings.hero_carousel_urls.filter((u) => u !== url) });
+  };
+
+  const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !settings) return;
+
+    setUploadingVideo(true);
+    setVideoError(null);
+    try {
+      const url = await uploadHeroVideo(file);
+      setSettings({ ...settings, hero_video_url: url });
+    } catch (error) {
+      console.error("Erreur lors de l'upload de la vidéo du hero :", error);
+      setVideoError(error instanceof Error ? error.message : "Erreur lors de l'upload de la vidéo.");
+    } finally {
+      setUploadingVideo(false);
+      if (videoFileInputRef.current) videoFileInputRef.current.value = '';
     }
   };
 
@@ -613,60 +664,203 @@ const AdminSettingsPage: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Image de fond (optionnelle)
+                Média de fond
               </label>
-              {settings.hero_image_url ? (
-                <div className="relative">
-                  <img
-                    src={settings.hero_image_url}
-                    alt="Aperçu hero"
-                    className="w-full h-40 object-cover rounded-lg border border-gray-200"
-                  />
+
+              {/* Sélecteur du type de média */}
+              <div className="flex gap-2 mb-3">
+                {([
+                  { type: 'image' as HeroMediaType, label: 'Image', icon: ImageIcon },
+                  { type: 'carousel' as HeroMediaType, label: 'Carrousel', icon: GalleryHorizontal },
+                  { type: 'video' as HeroMediaType, label: 'Vidéo', icon: Video },
+                ]).map(({ type, label, icon: Icon }) => (
                   <button
+                    key={type}
                     type="button"
-                    onClick={() => setSettings({ ...settings, hero_image_url: null })}
-                    className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-700 rounded-full p-1 shadow"
-                    aria-label="Retirer l'image"
+                    onClick={() => setSettings({ ...settings, hero_media_type: type })}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                      settings.hero_media_type === type
+                        ? 'bg-orange-50 border-orange-300 text-orange-700'
+                        : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                    }`}
                   >
-                    <X className="w-4 h-4" />
+                    <Icon className="w-4 h-4" />
+                    {label}
                   </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => heroFileInputRef.current?.click()}
-                  disabled={uploadingHero}
-                  className="w-full h-40 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors disabled:opacity-50"
-                >
-                  {uploadingHero ? (
-                    <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></span>
+                ))}
+              </div>
+
+              {/* ── Mode image unique ── */}
+              {settings.hero_media_type === 'image' && (
+                <>
+                  {settings.hero_image_url ? (
+                    <div className="relative">
+                      <img
+                        src={settings.hero_image_url}
+                        alt="Aperçu hero"
+                        className="w-full h-40 object-cover rounded-lg border border-gray-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setSettings({ ...settings, hero_image_url: null })}
+                        className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-700 rounded-full p-1 shadow"
+                        aria-label="Retirer l'image"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
                   ) : (
-                    <>
-                      <Upload className="w-6 h-6 mb-2" />
-                      <span className="text-sm">Choisir une image</span>
-                    </>
+                    <button
+                      type="button"
+                      onClick={() => heroFileInputRef.current?.click()}
+                      disabled={uploadingHero}
+                      className="w-full h-40 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors disabled:opacity-50"
+                    >
+                      {uploadingHero ? (
+                        <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></span>
+                      ) : (
+                        <>
+                          <Upload className="w-6 h-6 mb-2" />
+                          <span className="text-sm">Choisir une image</span>
+                        </>
+                      )}
+                    </button>
                   )}
-                </button>
+                  <input
+                    ref={heroFileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    onChange={handleHeroImageChange}
+                    className="hidden"
+                  />
+                  {settings.hero_image_url && (
+                    <button
+                      type="button"
+                      onClick={() => heroFileInputRef.current?.click()}
+                      className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      Changer l'image
+                    </button>
+                  )}
+                  <p className="mt-2 text-[11px] text-gray-400">
+                    Sans image, la couleur de fond ci-contre est utilisée à la place.
+                  </p>
+                </>
               )}
-              <input
-                ref={heroFileInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/jpg,image/webp"
-                onChange={handleHeroImageChange}
-                className="hidden"
-              />
-              {settings.hero_image_url && (
-                <button
-                  type="button"
-                  onClick={() => heroFileInputRef.current?.click()}
-                  className="mt-2 text-sm text-blue-600 hover:text-blue-700"
-                >
-                  Changer l'image
-                </button>
+
+              {/* ── Mode carrousel ── */}
+              {settings.hero_media_type === 'carousel' && (
+                <>
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    {settings.hero_carousel_urls.map((url) => (
+                      <div key={url} className="relative">
+                        <img
+                          src={url}
+                          alt="Aperçu carrousel"
+                          className="w-full h-20 object-cover rounded-lg border border-gray-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCarouselImage(url)}
+                          className="absolute top-1 right-1 bg-white/90 hover:bg-white text-gray-700 rounded-full p-0.5 shadow"
+                          aria-label="Retirer cette image"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => carouselFileInputRef.current?.click()}
+                      disabled={uploadingCarouselImage}
+                      className="h-20 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors disabled:opacity-50"
+                    >
+                      {uploadingCarouselImage ? (
+                        <span className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-500"></span>
+                      ) : (
+                        <Plus className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                  <input
+                    ref={carouselFileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    onChange={handleAddCarouselImage}
+                    className="hidden"
+                  />
+                  <p className="text-[11px] text-gray-400">
+                    {settings.hero_carousel_urls.length < 2
+                      ? 'Ajoutez au moins 2 images pour un vrai effet de carrousel.'
+                      : `${settings.hero_carousel_urls.length} images — défilement automatique sur la page d'accueil.`}
+                  </p>
+                </>
               )}
-              <p className="mt-2 text-[11px] text-gray-400">
-                Sans image, la couleur de fond ci-contre est utilisée à la place.
-              </p>
+
+              {/* ── Mode vidéo ── */}
+              {settings.hero_media_type === 'video' && (
+                <>
+                  {settings.hero_video_url ? (
+                    <div className="relative">
+                      <video
+                        src={settings.hero_video_url}
+                        className="w-full h-40 object-cover rounded-lg border border-gray-200"
+                        muted
+                        loop
+                        autoPlay
+                        playsInline
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setSettings({ ...settings, hero_video_url: null })}
+                        className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-700 rounded-full p-1 shadow"
+                        aria-label="Retirer la vidéo"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => videoFileInputRef.current?.click()}
+                      disabled={uploadingVideo}
+                      className="w-full h-40 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors disabled:opacity-50"
+                    >
+                      {uploadingVideo ? (
+                        <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></span>
+                      ) : (
+                        <>
+                          <Upload className="w-6 h-6 mb-2" />
+                          <span className="text-sm">Choisir une vidéo (MP4/WebM, 20 Mo max)</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                  <input
+                    ref={videoFileInputRef}
+                    type="file"
+                    accept="video/mp4,video/webm"
+                    onChange={handleVideoChange}
+                    className="hidden"
+                  />
+                  {settings.hero_video_url && (
+                    <button
+                      type="button"
+                      onClick={() => videoFileInputRef.current?.click()}
+                      className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      Changer la vidéo
+                    </button>
+                  )}
+                  {videoError && (
+                    <p className="mt-2 text-xs text-red-600">{videoError}</p>
+                  )}
+                  <p className="mt-2 text-[11px] text-gray-400">
+                    Pas de compression automatique — utilisez un court clip déjà compressé
+                    (idéalement une boucle de quelques secondes, sans son).
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>

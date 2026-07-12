@@ -1708,6 +1708,9 @@ export interface Database {
           hero_button_bg_color: string | null
           hero_button_text_color: string | null
           hero_image_url: string | null
+          hero_media_type: string
+          hero_carousel_urls: string[]
+          hero_video_url: string | null
           updated_at: string
           updated_by: string | null
         }
@@ -1742,6 +1745,9 @@ export interface Database {
           hero_button_bg_color?: string | null
           hero_button_text_color?: string | null
           hero_image_url?: string | null
+          hero_media_type?: string
+          hero_carousel_urls?: string[]
+          hero_video_url?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -1776,6 +1782,9 @@ export interface Database {
           hero_button_bg_color?: string | null
           hero_button_text_color?: string | null
           hero_image_url?: string | null
+          hero_media_type?: string
+          hero_carousel_urls?: string[]
+          hero_video_url?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -3088,6 +3097,9 @@ export interface Database {
           hero_button_bg_color: string | null
           hero_button_text_color: string | null
           hero_image_url: string | null
+          hero_media_type: string
+          hero_carousel_urls: string[]
+          hero_video_url: string | null
         }[]
       }
     }

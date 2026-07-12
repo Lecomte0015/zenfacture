@@ -43,9 +43,16 @@ export interface PlatformSettings {
   hero_button_bg_color: string | null;
   hero_button_text_color: string | null;
   hero_image_url: string | null;
+  /** 'image' (par défaut) | 'carousel' | 'video' — voir migration
+   * 20260713000000_hero_carousel_video.sql */
+  hero_media_type: HeroMediaType;
+  hero_carousel_urls: string[];
+  hero_video_url: string | null;
   updated_at?: string;
   updated_by?: string | null;
 }
+
+export type HeroMediaType = 'image' | 'carousel' | 'video';
 
 /** Sous-ensemble public de la bannière — voir public.get_announcement_banner() */
 export interface AnnouncementBanner {
@@ -69,6 +76,9 @@ export interface HomepageHero {
   hero_button_bg_color: string | null;
   hero_button_text_color: string | null;
   hero_image_url: string | null;
+  hero_media_type: HeroMediaType;
+  hero_carousel_urls: string[];
+  hero_video_url: string | null;
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -101,6 +111,9 @@ const DEFAULT_SETTINGS: PlatformSettings = {
   hero_button_bg_color: null,
   hero_button_text_color: null,
   hero_image_url: null,
+  hero_media_type: 'image',
+  hero_carousel_urls: [],
+  hero_video_url: null,
 };
 
 /** Valeurs affichées sur HomePage.tsx tant que l'admin n'a rien personnalisé
@@ -118,6 +131,9 @@ export const DEFAULT_HERO: HomepageHero = {
   hero_button_bg_color: '#ea580c',
   hero_button_text_color: '#ffffff',
   hero_image_url: null,
+  hero_media_type: 'image',
+  hero_carousel_urls: [],
+  hero_video_url: null,
 };
 
 /**
@@ -242,6 +258,68 @@ export const uploadHeroImage = async (file: File): Promise<string> => {
 };
 
 /**
+ * Upload une image du carrousel du hero (même bucket et même compression que
+ * `uploadHeroImage` — seul le préfixe de fichier diffère). Retourne l'URL
+ * publique à ajouter soi-même au tableau `hero_carousel_urls` avant de
+ * sauvegarder via `updatePlatformSettings`.
+ */
+export const uploadHeroCarouselImage = async (file: File): Promise<string> => {
+  const optimized = await compressImage(file, { maxWidth: 1920, maxHeight: 1080 });
+  const ext = optimized.name.split('.').pop() || 'jpg';
+  const path = `hero-carousel-${Date.now()}-${Math.round(Math.random() * 1e6)}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('platform-hero')
+    .upload(path, optimized, { upsert: true, contentType: optimized.type });
+
+  if (uploadError) {
+    console.error("Erreur lors de l'upload d'une image du carrousel :", uploadError);
+    throw uploadError;
+  }
+
+  const { data } = supabase.storage.from('platform-hero').getPublicUrl(path);
+  return data.publicUrl;
+};
+
+/** Taille max acceptée pour une vidéo de hero (doit rester cohérente avec le
+ * file_size_limit du bucket `platform-hero-videos`, voir migration
+ * 20260713000000_hero_carousel_video.sql). Aucune compression vidéo n'est
+ * faite côté navigateur : l'admin doit fournir un fichier déjà compressé
+ * (idéalement un court clip en boucle, quelques Mo). */
+export const MAX_HERO_VIDEO_BYTES = 20 * 1024 * 1024;
+
+/**
+ * Upload une vidéo de fond pour le hero dans le bucket public
+ * `platform-hero-videos`. Contrairement aux images, il n'y a pas de
+ * compression automatique — le fichier est envoyé tel quel (après
+ * vérification de la taille). Retourne l'URL publique.
+ */
+export const uploadHeroVideo = async (file: File): Promise<string> => {
+  if (file.size > MAX_HERO_VIDEO_BYTES) {
+    throw new Error(
+      `Vidéo trop lourde (${(file.size / (1024 * 1024)).toFixed(1)} Mo). ` +
+      `Maximum ${MAX_HERO_VIDEO_BYTES / (1024 * 1024)} Mo — compressez la vidéo avant de l'importer ` +
+      `(idéalement un court clip en boucle de quelques secondes).`
+    );
+  }
+
+  const ext = file.name.split('.').pop() || 'mp4';
+  const path = `hero-video-${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('platform-hero-videos')
+    .upload(path, file, { upsert: true, contentType: file.type });
+
+  if (uploadError) {
+    console.error("Erreur lors de l'upload de la vidéo du hero :", uploadError);
+    throw uploadError;
+  }
+
+  const { data } = supabase.storage.from('platform-hero-videos').getPublicUrl(path);
+  return data.publicUrl;
+};
+
+/**
  * Récupère le hero de la page d'accueil via la fonction SECURITY DEFINER
  * `public.get_homepage_hero()` — accessible à tous (visiteurs non connectés
  * inclus), contrairement au reste de `platform_settings`. Retourne
@@ -274,5 +352,8 @@ export const getHomepageHero = async (): Promise<HomepageHero> => {
     hero_button_bg_color: row.hero_button_bg_color ?? DEFAULT_HERO.hero_button_bg_color,
     hero_button_text_color: row.hero_button_text_color ?? DEFAULT_HERO.hero_button_text_color,
     hero_image_url: row.hero_image_url ?? DEFAULT_HERO.hero_image_url,
+    hero_media_type: row.hero_media_type ?? DEFAULT_HERO.hero_media_type,
+    hero_carousel_urls: row.hero_carousel_urls ?? DEFAULT_HERO.hero_carousel_urls,
+    hero_video_url: row.hero_video_url ?? DEFAULT_HERO.hero_video_url,
   };
 };

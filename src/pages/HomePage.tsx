@@ -204,6 +204,99 @@ const FAQ = () => {
   );
 };
 
+// ─── Fond du hero — image unique, carrousel, ou vidéo (configuré depuis
+// Admin > Configuration > Bannière hero) ─────────────────────────────────────
+
+const HeroBackground = ({ hero }: { hero: HomepageHero }) => {
+  const [slide, setSlide] = useState(0);
+  const carouselUrls = hero.hero_carousel_urls;
+
+  useEffect(() => {
+    if (hero.hero_media_type !== 'carousel' || carouselUrls.length < 2) return;
+    const id = setInterval(() => {
+      setSlide((s) => (s + 1) % carouselUrls.length);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [hero.hero_media_type, carouselUrls.length]);
+
+  if (hero.hero_media_type === 'video' && hero.hero_video_url) {
+    return (
+      <>
+        <video
+          src={hero.hero_video_url}
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        <div
+          className="absolute inset-0"
+          style={{ backgroundColor: hexToRgba(hero.hero_bg_color || DEFAULT_HERO.hero_bg_color, 0.65) }}
+        />
+      </>
+    );
+  }
+
+  if (hero.hero_media_type === 'carousel' && carouselUrls.length > 0) {
+    return (
+      <>
+        {carouselUrls.map((url, i) => (
+          <img
+            key={url}
+            src={url}
+            alt=""
+            aria-hidden="true"
+            loading={i === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000"
+            style={{ opacity: i === slide ? 1 : 0 }}
+          />
+        ))}
+        <div
+          className="absolute inset-0"
+          style={{ backgroundColor: hexToRgba(hero.hero_bg_color || DEFAULT_HERO.hero_bg_color, 0.65) }}
+        />
+        {carouselUrls.length > 1 && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            {carouselUrls.map((url, i) => (
+              <button
+                key={url}
+                type="button"
+                aria-label={`Image ${i + 1}`}
+                onClick={() => setSlide(i)}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${i === slide ? 'bg-white w-4' : 'bg-white/50'}`}
+              />
+            ))}
+          </div>
+        )}
+      </>
+    );
+  }
+
+  if (hero.hero_image_url) {
+    return (
+      <>
+        <img
+          src={hero.hero_image_url}
+          alt=""
+          aria-hidden="true"
+          loading="eager"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        <div
+          className="absolute inset-0"
+          style={{ backgroundColor: hexToRgba(hero.hero_bg_color || DEFAULT_HERO.hero_bg_color, 0.65) }}
+        />
+      </>
+    );
+  }
+
+  return null;
+};
+
 // ─── Page principale ──────────────────────────────────────────────────────────
 
 const HomePage = () => {
@@ -230,24 +323,8 @@ const HomePage = () => {
         className="relative min-h-[600px] lg:min-h-[680px] flex items-center overflow-hidden"
         style={{ backgroundColor: hero.hero_bg_color || DEFAULT_HERO.hero_bg_color || undefined }}
       >
-        {/* Photo de fond (optionnelle — configurée depuis le back-office) */}
-        {hero.hero_image_url && (
-          <>
-            <img
-              src={hero.hero_image_url}
-              alt=""
-              aria-hidden="true"
-              loading="eager"
-              decoding="async"
-              className="absolute inset-0 w-full h-full object-cover object-center"
-            />
-            {/* Voile de la couleur de fond choisie, pour garder le texte lisible */}
-            <div
-              className="absolute inset-0"
-              style={{ backgroundColor: hexToRgba(hero.hero_bg_color || DEFAULT_HERO.hero_bg_color, 0.65) }}
-            />
-          </>
-        )}
+        {/* Média de fond (image / carrousel / vidéo — configuré depuis le back-office) */}
+        <HeroBackground hero={hero} />
 
         {/* Contenu centré */}
         <div className="relative w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
