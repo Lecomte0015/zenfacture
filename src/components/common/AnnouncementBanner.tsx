@@ -56,10 +56,10 @@ const AnnouncementBanner: React.FC = () => {
     <div
       className="relative w-full text-white"
       style={{
-        backgroundColor: '#1D4ED8',
+        backgroundColor: '#ea580c',
         ...(banner.imageUrl
           ? {
-              backgroundImage: `linear-gradient(90deg, rgba(29,78,216,0.92), rgba(29,78,216,0.75)), url(${banner.imageUrl})`,
+              backgroundImage: `linear-gradient(90deg, rgba(234,88,12,0.92), rgba(234,88,12,0.75)), url(${banner.imageUrl})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }

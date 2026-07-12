@@ -54,9 +54,9 @@ function templateInvoice(params: {
 
           <!-- Header -->
           <tr>
-            <td style="background:#2563eb;padding:32px 40px;">
+            <td style="background:#ea580c;padding:32px 40px;">
               <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">ZenFacture</h1>
-              <p style="margin:4px 0 0;color:#93c5fd;font-size:14px;">Facturation suisse simplifiée</p>
+              <p style="margin:4px 0 0;color:#fed7aa;font-size:14px;">Facturation suisse simplifiée</p>
             </td>
           </tr>
 
@@ -69,12 +69,12 @@ function templateInvoice(params: {
               </p>
 
               <!-- Montant -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;margin-bottom:28px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;margin-bottom:28px;">
                 <tr>
                   <td style="padding:20px;">
-                    <p style="margin:0 0 4px;color:#0284c7;font-size:12px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Montant à payer</p>
-                    <p style="margin:0;color:#0c4a6e;font-size:28px;font-weight:700;">${amount} ${currency}</p>
-                    <p style="margin:6px 0 0;color:#0369a1;font-size:13px;">Échéance : <strong>${dueDate}</strong></p>
+                    <p style="margin:0 0 4px;color:#c2410c;font-size:12px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Montant à payer</p>
+                    <p style="margin:0;color:#7c2d12;font-size:28px;font-weight:700;">${amount} ${currency}</p>
+                    <p style="margin:6px 0 0;color:#9a3412;font-size:13px;">Échéance : <strong>${dueDate}</strong></p>
                   </td>
                 </tr>
               </table>
@@ -121,7 +121,7 @@ function templateReminder(params: {
     : level === 2
     ? 'deuxième rappel'
     : 'dernier rappel avant procédure';
-  const urgency = level >= 3 ? '#dc2626' : level === 2 ? '#d97706' : '#2563eb';
+  const urgency = level >= 3 ? '#dc2626' : level === 2 ? '#d97706' : '#ea580c';
 
   return `
 <!DOCTYPE html>
@@ -191,9 +191,9 @@ function templateWelcome(params: { recipientName: string }): string {
 
           <!-- Header -->
           <tr>
-            <td style="background:#2563eb;padding:32px 40px;">
+            <td style="background:#ea580c;padding:32px 40px;">
               <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">Bienvenue sur ZenFacture 🎉</h1>
-              <p style="margin:4px 0 0;color:#93c5fd;font-size:14px;">Facturation QR suisse simplifiée</p>
+              <p style="margin:4px 0 0;color:#fed7aa;font-size:14px;">Facturation QR suisse simplifiée</p>
             </td>
           </tr>
 
@@ -206,11 +206,11 @@ function templateWelcome(params: { recipientName: string }): string {
                 avec accès à toutes les fonctionnalités du plan Essentiel.
               </p>
 
-              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;margin-bottom:28px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;margin-bottom:28px;">
                 <tr>
                   <td style="padding:20px;">
-                    <p style="margin:0 0 10px;color:#0c4a6e;font-size:14px;font-weight:600;">Pour bien démarrer :</p>
-                    <ul style="margin:0;padding-left:18px;color:#0369a1;font-size:14px;line-height:1.8;">
+                    <p style="margin:0 0 10px;color:#7c2d12;font-size:14px;font-weight:600;">Pour bien démarrer :</p>
+                    <ul style="margin:0;padding-left:18px;color:#9a3412;font-size:14px;line-height:1.8;">
                       <li>Complétez votre profil d'entreprise (logo, IBAN QR)</li>
                       <li>Ajoutez votre premier client</li>
                       <li>Créez et envoyez votre première facture</li>
@@ -221,7 +221,7 @@ function templateWelcome(params: { recipientName: string }): string {
 
               <table cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="border-radius:8px;background:#2563eb;">
+                  <td style="border-radius:8px;background:#ea580c;">
                     <a href="https://zenfacture.ch/dashboard" style="display:inline-block;padding:14px 28px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;">
                       Accéder à mon tableau de bord →
                     </a>
@@ -271,7 +271,7 @@ function templateMarketing(params: {
         <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);">
 
           <tr>
-            <td style="background:#2563eb;padding:32px 40px;">
+            <td style="background:#ea580c;padding:32px 40px;">
               <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${heading}</h1>
             </td>
           </tr>
@@ -283,7 +283,7 @@ function templateMarketing(params: {
               ${ctaLabel && ctaUrl ? `
               <table cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="border-radius:8px;background:#2563eb;">
+                  <td style="border-radius:8px;background:#ea580c;">
                     <a href="${ctaUrl}" style="display:inline-block;padding:14px 28px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;">
                       ${ctaLabel}
                     </a>

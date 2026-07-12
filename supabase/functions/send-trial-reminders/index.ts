@@ -119,7 +119,7 @@ async function sendTrialReminderEmail(supabaseClient: any, user: any, daysRemain
     
     <p>
       <a href="${Deno.env.get('SITE_URL')}/pricing" 
-         style="display: inline-block; padding: 10px 20px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 5px;">
+         style="display: inline-block; padding: 10px 20px; background-color: #ea580c; color: white; text-decoration: none; border-radius: 5px;">
         Voir les abonnements
       </a>
     </p>
@@ -156,7 +156,7 @@ async function sendTrialEndedEmail(supabaseClient: any, user: any) {
     
     <p>
       <a href="${Deno.env.get('SITE_URL')}/pricing" 
-         style="display: inline-block; padding: 10px 20px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 5px;">
+         style="display: inline-block; padding: 10px 20px; background-color: #ea580c; color: white; text-decoration: none; border-radius: 5px;">
         Choisir un abonnement
       </a>
     </p>
