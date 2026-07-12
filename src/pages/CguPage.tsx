@@ -156,7 +156,7 @@ const CguPage: React.FC = () => {
                 Pour toute question relative aux présentes CGU, vous pouvez nous contacter à l'adresse :
               </p>
               <p className="text-gray-700 leading-relaxed mt-2">
-                <strong>Email :</strong> support@zenfacture.ch<br />
+                <strong>Email :</strong> contact@zenfacture.ch<br />
                 <strong>Adresse :</strong> ZenFacture SA, Suisse
               </p>
             </section>

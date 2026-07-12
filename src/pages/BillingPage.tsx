@@ -439,7 +439,7 @@ const BillingPage: React.FC = () => {
                 },
                 {
                   question: "Proposez-vous une réduction pour les associations ou les ONG ?",
-                  answer: "Oui, nous offrons des réductions pour les associations à but non lucratif et les ONG. Veuillez nous contacter à support@zenfacture.com pour plus d'informations."
+                  answer: "Oui, nous offrons des réductions pour les associations à but non lucratif et les ONG. Veuillez nous contacter à contact@zenfacture.ch pour plus d'informations."
                 }
               ].map((item, index) => (
                 <div key={index} className="pt-6">
@@ -463,7 +463,7 @@ const BillingPage: React.FC = () => {
             <div className="mt-8 text-center">
               <p className="text-base text-gray-500">
                 Vous avez d'autres questions ?{' '}
-                <a href="mailto:support@zenfacture.com" className="font-medium text-indigo-600 hover:text-indigo-500">
+                <a href="mailto:contact@zenfacture.ch" className="font-medium text-indigo-600 hover:text-indigo-500">
                   Contactez notre équipe
                 </a>
               </p>

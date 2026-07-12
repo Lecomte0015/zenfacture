@@ -225,13 +225,13 @@ const RegisterPage = () => {
               <div className="ml-3 text-sm">
                 <label htmlFor="terms" className="font-medium text-gray-700">
                   J'accepte les{' '}
-                  <a href="#" className="text-primary-600 hover:text-primary-500">
+                  <Link to="/cgu" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:text-primary-500">
                     conditions d'utilisation
-                  </a>{' '}
+                  </Link>{' '}
                   et la{' '}
-                  <a href="#" className="text-primary-600 hover:text-primary-500">
+                  <Link to="/confidentialite" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:text-primary-500">
                     politique de confidentialité
-                  </a>
+                  </Link>
                 </label>
               </div>
             </div>

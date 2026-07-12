@@ -37,7 +37,7 @@ const ConfidentialitePage: React.FC = () => {
               <p className="text-gray-700 leading-relaxed">
                 <strong>ZenFacture SA</strong><br />
                 Adresse : Suisse<br />
-                Email : privacy@zenfacture.ch<br />
+                Email : contact@zenfacture.ch<br />
                 Téléphone : +41 XX XXX XX XX
               </p>
             </section>
@@ -161,7 +161,7 @@ const ConfidentialitePage: React.FC = () => {
                 <li><strong>Droit de retirer votre consentement :</strong> À tout moment pour les cookies et communications</li>
               </ul>
               <p className="text-gray-700 leading-relaxed mt-4">
-                Pour exercer vos droits, contactez-nous à : <strong>privacy@zenfacture.ch</strong>
+                Pour exercer vos droits, contactez-nous à : <strong>contact@zenfacture.ch</strong>
               </p>
             </section>
 
@@ -210,7 +210,7 @@ const ConfidentialitePage: React.FC = () => {
                 de vos données personnelles :
               </p>
               <p className="text-gray-700 leading-relaxed mt-2">
-                <strong>Email :</strong> privacy@zenfacture.ch<br />
+                <strong>Email :</strong> contact@zenfacture.ch<br />
                 <strong>Adresse :</strong> ZenFacture SA, Suisse
               </p>
             </section>
