@@ -470,7 +470,7 @@ serve(async (req) => {
       };
 
     } else if (type === 'devis') {
-      const { to, recipientName, senderName, invoiceNumber, amount, currency, dueDate, notes } = body;
+      const { to, recipientName, senderName, invoiceNumber, amount, currency, dueDate, notes, pdfBase64 } = body;
       if (!to || !invoiceNumber) {
         return new Response(JSON.stringify({ error: 'Champs requis manquants : to, invoiceNumber' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -486,6 +486,9 @@ serve(async (req) => {
         to: [to],
         subject: `Devis ${invoiceNumber} — ${amount} ${currency}`,
         html: templateDevis({ recipientName: recipientName || to, senderName: senderName || FROM_NAME, devisNumber: invoiceNumber, amount, currency, validUntil: validUntilFormatted, notes }),
+        attachments: pdfBase64
+          ? [{ filename: `devis-${invoiceNumber}.pdf`, content: pdfBase64 }]
+          : undefined,
       };
 
     } else if (type === 'welcome') {
