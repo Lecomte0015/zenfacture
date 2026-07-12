@@ -1697,6 +1697,17 @@ export interface Database {
           banner_image_url: string | null
           banner_link_url: string | null
           banner_link_label: string | null
+          hero_title: string | null
+          hero_subtitle: string | null
+          hero_cta_label: string | null
+          hero_cta_url: string | null
+          hero_secondary_cta_label: string | null
+          hero_secondary_cta_url: string | null
+          hero_bg_color: string | null
+          hero_text_color: string | null
+          hero_button_bg_color: string | null
+          hero_button_text_color: string | null
+          hero_image_url: string | null
           updated_at: string
           updated_by: string | null
         }
@@ -1720,6 +1731,17 @@ export interface Database {
           banner_image_url?: string | null
           banner_link_url?: string | null
           banner_link_label?: string | null
+          hero_title?: string | null
+          hero_subtitle?: string | null
+          hero_cta_label?: string | null
+          hero_cta_url?: string | null
+          hero_secondary_cta_label?: string | null
+          hero_secondary_cta_url?: string | null
+          hero_bg_color?: string | null
+          hero_text_color?: string | null
+          hero_button_bg_color?: string | null
+          hero_button_text_color?: string | null
+          hero_image_url?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -1743,6 +1765,17 @@ export interface Database {
           banner_image_url?: string | null
           banner_link_url?: string | null
           banner_link_label?: string | null
+          hero_title?: string | null
+          hero_subtitle?: string | null
+          hero_cta_label?: string | null
+          hero_cta_url?: string | null
+          hero_secondary_cta_label?: string | null
+          hero_secondary_cta_url?: string | null
+          hero_bg_color?: string | null
+          hero_text_color?: string | null
+          hero_button_bg_color?: string | null
+          hero_button_text_color?: string | null
+          hero_image_url?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -3039,6 +3072,22 @@ export interface Database {
           banner_image_url: string | null
           banner_link_url: string | null
           banner_link_label: string | null
+        }[]
+      }
+      get_homepage_hero: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          hero_title: string | null
+          hero_subtitle: string | null
+          hero_cta_label: string | null
+          hero_cta_url: string | null
+          hero_secondary_cta_label: string | null
+          hero_secondary_cta_url: string | null
+          hero_bg_color: string | null
+          hero_text_color: string | null
+          hero_button_bg_color: string | null
+          hero_button_text_color: string | null
+          hero_image_url: string | null
         }[]
       }
     }

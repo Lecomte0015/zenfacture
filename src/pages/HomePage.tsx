@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   CheckCircle, ArrowRight, Shield, FileText, Repeat,
@@ -7,6 +7,24 @@ import {
 } from 'lucide-react';
 import SEO from '../components/common/SEO';
 import ChatAssistant from '../components/chat/ChatAssistant';
+import { getHomepageHero, DEFAULT_HERO, HomepageHero } from '@/services/platformSettingsService';
+
+/** '#rrggbb' -> 'rgba(r,g,b,alpha)', utilisé pour le voile sombre sur l'image
+ * de fond du hero (garde le texte lisible tout en respectant la couleur de
+ * fond choisie par l'admin plutôt qu'un gris neutre fixe). */
+const hexToRgba = (hex: string | null | undefined, alpha: number): string => {
+  const fallback = '12,10,9';
+  if (!hex) return `rgba(${fallback},${alpha})`;
+  const clean = hex.replace('#', '');
+  const bigint = parseInt(clean.length === 3
+    ? clean.split('').map(c => c + c).join('')
+    : clean, 16);
+  if (Number.isNaN(bigint)) return `rgba(${fallback},${alpha})`;
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
+};
 
 // ─── Aperçu d'une vraie facture ZenFacture ───────────────────────────────────
 
@@ -189,6 +207,12 @@ const FAQ = () => {
 // ─── Page principale ──────────────────────────────────────────────────────────
 
 const HomePage = () => {
+  const [hero, setHero] = useState<HomepageHero>(DEFAULT_HERO);
+
+  useEffect(() => {
+    getHomepageHero().then(setHero);
+  }, []);
+
   return (
     <>
       <SEO />
@@ -201,17 +225,27 @@ const HomePage = () => {
         </Link>
       </div>
 
-      {/* ══ 2. HERO — photo de fond ══════════════════════════════════════════ */}
-      <section className="relative min-h-[600px] lg:min-h-[680px] flex items-center overflow-hidden">
-        {/* Photo de fond */}
-        <img
-          src="/image/hi.jpg"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
-        {/* Overlay sombre pour lisibilité */}
-        <div className="absolute inset-0 bg-gray-950/65" />
+      {/* ══ 2. HERO — configurable depuis Admin > Configuration > Bannière hero ══ */}
+      <section
+        className="relative min-h-[600px] lg:min-h-[680px] flex items-center overflow-hidden"
+        style={{ backgroundColor: hero.hero_bg_color || DEFAULT_HERO.hero_bg_color || undefined }}
+      >
+        {/* Photo de fond (optionnelle — configurée depuis le back-office) */}
+        {hero.hero_image_url && (
+          <>
+            <img
+              src={hero.hero_image_url}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover object-center"
+            />
+            {/* Voile de la couleur de fond choisie, pour garder le texte lisible */}
+            <div
+              className="absolute inset-0"
+              style={{ backgroundColor: hexToRgba(hero.hero_bg_color || DEFAULT_HERO.hero_bg_color, 0.65) }}
+            />
+          </>
+        )}
 
         {/* Contenu centré */}
         <div className="relative w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
@@ -221,27 +255,43 @@ const HomePage = () => {
             Certifié SIX Payment Services · Swiss Made · nLPD
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.08] tracking-tight mb-6">
-            La facturation suisse,<br /> enfin simple.
+          <h1
+            className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight mb-6"
+            style={{ color: hero.hero_text_color || DEFAULT_HERO.hero_text_color || undefined }}
+          >
+            {(hero.hero_title || DEFAULT_HERO.hero_title || '').split('\n').map((line, i, arr) => (
+              <span key={i}>
+                {line}
+                {i < arr.length - 1 && <br />}
+              </span>
+            ))}
           </h1>
 
-          <p className="text-lg sm:text-xl text-gray-300 leading-relaxed mb-9 max-w-xl mx-auto">
-            Créez des factures professionnelles avec QR-bill conforme, envoyez-les par email et encaissez vos paiements — depuis une interface pensée pour les PME et indépendants suisses.
+          <p
+            className="text-lg sm:text-xl leading-relaxed mb-9 max-w-xl mx-auto opacity-85"
+            style={{ color: hero.hero_text_color || DEFAULT_HERO.hero_text_color || undefined }}
+          >
+            {hero.hero_subtitle || DEFAULT_HERO.hero_subtitle}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-7">
             <Link
-              to="/auth/register"
-              className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-lg transition-all"
+              to={hero.hero_cta_url || DEFAULT_HERO.hero_cta_url || '/auth/register'}
+              className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold rounded-lg shadow-lg transition-all hover:opacity-90"
+              style={{
+                backgroundColor: hero.hero_button_bg_color || DEFAULT_HERO.hero_button_bg_color || undefined,
+                color: hero.hero_button_text_color || DEFAULT_HERO.hero_button_text_color || undefined,
+              }}
             >
-              Commencer gratuitement — 30 jours
+              {hero.hero_cta_label || DEFAULT_HERO.hero_cta_label}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
-              to="/tarifs"
-              className="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-white border border-white/30 hover:border-white/60 hover:bg-white/10 rounded-lg transition-all"
+              to={hero.hero_secondary_cta_url || DEFAULT_HERO.hero_secondary_cta_url || '/tarifs'}
+              className="inline-flex items-center justify-center px-8 py-4 text-base font-medium border border-white/30 hover:border-white/60 hover:bg-white/10 rounded-lg transition-all"
+              style={{ color: hero.hero_text_color || DEFAULT_HERO.hero_text_color || undefined }}
             >
-              Voir les tarifs
+              {hero.hero_secondary_cta_label || DEFAULT_HERO.hero_secondary_cta_label}
             </Link>
           </div>
 

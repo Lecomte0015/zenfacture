@@ -29,6 +29,19 @@ export interface PlatformSettings {
   banner_image_url: string | null;
   banner_link_url: string | null;
   banner_link_label: string | null;
+  /** Hero de la page d'accueil (site public) — voir migration
+   * 20260712000000_hero_settings.sql */
+  hero_title: string | null;
+  hero_subtitle: string | null;
+  hero_cta_label: string | null;
+  hero_cta_url: string | null;
+  hero_secondary_cta_label: string | null;
+  hero_secondary_cta_url: string | null;
+  hero_bg_color: string | null;
+  hero_text_color: string | null;
+  hero_button_bg_color: string | null;
+  hero_button_text_color: string | null;
+  hero_image_url: string | null;
   updated_at?: string;
   updated_by?: string | null;
 }
@@ -40,6 +53,21 @@ export interface AnnouncementBanner {
   banner_image_url: string | null;
   banner_link_url: string | null;
   banner_link_label: string | null;
+}
+
+/** Sous-ensemble public du hero — voir public.get_homepage_hero() */
+export interface HomepageHero {
+  hero_title: string | null;
+  hero_subtitle: string | null;
+  hero_cta_label: string | null;
+  hero_cta_url: string | null;
+  hero_secondary_cta_label: string | null;
+  hero_secondary_cta_url: string | null;
+  hero_bg_color: string | null;
+  hero_text_color: string | null;
+  hero_button_bg_color: string | null;
+  hero_button_text_color: string | null;
+  hero_image_url: string | null;
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -61,6 +89,34 @@ const DEFAULT_SETTINGS: PlatformSettings = {
   banner_image_url: null,
   banner_link_url: null,
   banner_link_label: null,
+  hero_title: null,
+  hero_subtitle: null,
+  hero_cta_label: null,
+  hero_cta_url: null,
+  hero_secondary_cta_label: null,
+  hero_secondary_cta_url: null,
+  hero_bg_color: null,
+  hero_text_color: null,
+  hero_button_bg_color: null,
+  hero_button_text_color: null,
+  hero_image_url: null,
+};
+
+/** Valeurs affichées sur HomePage.tsx tant que l'admin n'a rien personnalisé
+ * (aucune ligne en base, ou colonnes hero_* encore NULL) — reprennent le
+ * contenu qui était en dur dans HomePage.tsx avant cette fonctionnalité. */
+export const DEFAULT_HERO: HomepageHero = {
+  hero_title: 'La facturation suisse,\nenfin simple.',
+  hero_subtitle: "Créez des factures professionnelles avec QR-bill conforme, envoyez-les par email et encaissez vos paiements — depuis une interface pensée pour les PME et indépendants suisses.",
+  hero_cta_label: 'Commencer gratuitement — 30 jours',
+  hero_cta_url: '/auth/register',
+  hero_secondary_cta_label: 'Voir les tarifs',
+  hero_secondary_cta_url: '/tarifs',
+  hero_bg_color: '#0c0a09',
+  hero_text_color: '#ffffff',
+  hero_button_bg_color: '#ea580c',
+  hero_button_text_color: '#ffffff',
+  hero_image_url: null,
 };
 
 /**
@@ -150,4 +206,64 @@ export const getAnnouncementBanner = async (): Promise<AnnouncementBanner | null
   // Les fonctions RETURNS TABLE renvoient un tableau (0 ou 1 ligne ici)
   const row = Array.isArray(data) ? data[0] : data;
   return (row as AnnouncementBanner) ?? null;
+};
+
+/**
+ * Upload l'image de fond du hero de la page d'accueil dans le bucket public
+ * `platform-hero` (écriture réservée aux admins par RLS storage — voir
+ * migration 20260712000000_hero_settings.sql) et retourne son URL publique.
+ * N'écrit PAS `platform_settings.hero_image_url` elle-même : appelez
+ * `updatePlatformSettings({ hero_image_url })` ensuite.
+ */
+export const uploadHeroImage = async (file: File): Promise<string> => {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `hero-${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('platform-hero')
+    .upload(path, file, { upsert: true, contentType: file.type });
+
+  if (uploadError) {
+    console.error("Erreur lors de l'upload de l'image du hero :", uploadError);
+    throw uploadError;
+  }
+
+  const { data } = supabase.storage.from('platform-hero').getPublicUrl(path);
+  return data.publicUrl;
+};
+
+/**
+ * Récupère le hero de la page d'accueil via la fonction SECURITY DEFINER
+ * `public.get_homepage_hero()` — accessible à tous (visiteurs non connectés
+ * inclus), contrairement au reste de `platform_settings`. Retourne
+ * `DEFAULT_HERO` (contenu d'origine de HomePage.tsx) tant que l'admin n'a
+ * rien personnalisé, pour ne jamais afficher une page vide.
+ */
+export const getHomepageHero = async (): Promise<HomepageHero> => {
+  const { data, error } = await supabase.rpc('get_homepage_hero');
+
+  if (error) {
+    console.error('Erreur lors du chargement du hero :', error);
+    return DEFAULT_HERO;
+  }
+
+  const row = (Array.isArray(data) ? data[0] : data) as HomepageHero | undefined;
+  if (!row) return DEFAULT_HERO;
+
+  // Complète chaque champ individuellement avec la valeur par défaut : la
+  // ligne peut exister (autres réglages déjà sauvegardés) sans que l'admin
+  // ait encore rempli les champs hero_*.
+  return {
+    hero_title: row.hero_title ?? DEFAULT_HERO.hero_title,
+    hero_subtitle: row.hero_subtitle ?? DEFAULT_HERO.hero_subtitle,
+    hero_cta_label: row.hero_cta_label ?? DEFAULT_HERO.hero_cta_label,
+    hero_cta_url: row.hero_cta_url ?? DEFAULT_HERO.hero_cta_url,
+    hero_secondary_cta_label: row.hero_secondary_cta_label ?? DEFAULT_HERO.hero_secondary_cta_label,
+    hero_secondary_cta_url: row.hero_secondary_cta_url ?? DEFAULT_HERO.hero_secondary_cta_url,
+    hero_bg_color: row.hero_bg_color ?? DEFAULT_HERO.hero_bg_color,
+    hero_text_color: row.hero_text_color ?? DEFAULT_HERO.hero_text_color,
+    hero_button_bg_color: row.hero_button_bg_color ?? DEFAULT_HERO.hero_button_bg_color,
+    hero_button_text_color: row.hero_button_text_color ?? DEFAULT_HERO.hero_button_text_color,
+    hero_image_url: row.hero_image_url ?? DEFAULT_HERO.hero_image_url,
+  };
 };

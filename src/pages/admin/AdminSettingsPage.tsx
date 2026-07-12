@@ -15,6 +15,8 @@ import {
   getPlatformSettings,
   updatePlatformSettings,
   uploadBannerImage,
+  uploadHeroImage,
+  DEFAULT_HERO,
   PlatformSettings
 } from '@/services/platformSettingsService';
 import { logAdminAction } from '@/services/adminAuditService';
@@ -27,6 +29,8 @@ const AdminSettingsPage: React.FC = () => {
   const [unlimitedBusiness, setUnlimitedBusiness] = useState(true);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const bannerFileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const heroFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadSettings();
@@ -83,6 +87,23 @@ const AdminSettingsPage: React.FC = () => {
     } finally {
       setUploadingBanner(false);
       if (bannerFileInputRef.current) bannerFileInputRef.current.value = '';
+    }
+  };
+
+  const handleHeroImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !settings) return;
+
+    setUploadingHero(true);
+    try {
+      const url = await uploadHeroImage(file);
+      setSettings({ ...settings, hero_image_url: url });
+    } catch (error) {
+      console.error("Erreur lors de l'upload de l'image du hero :", error);
+      setSaveState('error');
+    } finally {
+      setUploadingHero(false);
+      if (heroFileInputRef.current) heroFileInputRef.current.value = '';
     }
   };
 
@@ -448,6 +469,204 @@ const AdminSettingsPage: React.FC = () => {
                   Changer l'image
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Hero de la page d'accueil */}
+        <div className="bg-white rounded-lg shadow border border-gray-200 p-6 lg:col-span-2">
+          <div className="flex items-center mb-4">
+            <ImageIcon className="w-5 h-5 text-orange-600 mr-2" />
+            <h3 className="text-lg font-semibold text-gray-900">Bannière hero (page d'accueil)</h3>
+          </div>
+          <p className="text-xs text-gray-500 mb-4">
+            Grand visuel en haut de la page d'accueil publique. Laissez un champ vide pour garder le
+            texte par défaut (affiché en placeholder ci-dessous).
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Titre</label>
+                <textarea
+                  rows={2}
+                  value={settings.hero_title || ''}
+                  onChange={(e) => setSettings({ ...settings, hero_title: e.target.value })}
+                  placeholder={DEFAULT_HERO.hero_title || ''}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Sous-titre</label>
+                <textarea
+                  rows={3}
+                  value={settings.hero_subtitle || ''}
+                  onChange={(e) => setSettings({ ...settings, hero_subtitle: e.target.value })}
+                  placeholder={DEFAULT_HERO.hero_subtitle || ''}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Bouton principal</label>
+                  <input
+                    type="text"
+                    value={settings.hero_cta_label || ''}
+                    onChange={(e) => setSettings({ ...settings, hero_cta_label: e.target.value })}
+                    placeholder={DEFAULT_HERO.hero_cta_label || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Lien du bouton</label>
+                  <input
+                    type="text"
+                    value={settings.hero_cta_url || ''}
+                    onChange={(e) => setSettings({ ...settings, hero_cta_url: e.target.value })}
+                    placeholder={DEFAULT_HERO.hero_cta_url || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Bouton secondaire</label>
+                  <input
+                    type="text"
+                    value={settings.hero_secondary_cta_label || ''}
+                    onChange={(e) => setSettings({ ...settings, hero_secondary_cta_label: e.target.value })}
+                    placeholder={DEFAULT_HERO.hero_secondary_cta_label || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Lien du bouton</label>
+                  <input
+                    type="text"
+                    value={settings.hero_secondary_cta_url || ''}
+                    onChange={(e) => setSettings({ ...settings, hero_secondary_cta_url: e.target.value })}
+                    placeholder={DEFAULT_HERO.hero_secondary_cta_url || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Couleur de fond</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={settings.hero_bg_color || DEFAULT_HERO.hero_bg_color || '#0c0a09'}
+                      onChange={(e) => setSettings({ ...settings, hero_bg_color: e.target.value })}
+                      className="h-10 w-12 rounded border border-gray-300 cursor-pointer"
+                    />
+                    <span className="text-xs text-gray-500">
+                      {settings.hero_bg_color || DEFAULT_HERO.hero_bg_color}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[11px] text-gray-400">Visible uniquement sans image de fond.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Couleur du texte</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={settings.hero_text_color || DEFAULT_HERO.hero_text_color || '#ffffff'}
+                      onChange={(e) => setSettings({ ...settings, hero_text_color: e.target.value })}
+                      className="h-10 w-12 rounded border border-gray-300 cursor-pointer"
+                    />
+                    <span className="text-xs text-gray-500">
+                      {settings.hero_text_color || DEFAULT_HERO.hero_text_color}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Couleur du bouton</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={settings.hero_button_bg_color || DEFAULT_HERO.hero_button_bg_color || '#ea580c'}
+                      onChange={(e) => setSettings({ ...settings, hero_button_bg_color: e.target.value })}
+                      className="h-10 w-12 rounded border border-gray-300 cursor-pointer"
+                    />
+                    <span className="text-xs text-gray-500">
+                      {settings.hero_button_bg_color || DEFAULT_HERO.hero_button_bg_color}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Couleur du texte du bouton</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={settings.hero_button_text_color || DEFAULT_HERO.hero_button_text_color || '#ffffff'}
+                      onChange={(e) => setSettings({ ...settings, hero_button_text_color: e.target.value })}
+                      className="h-10 w-12 rounded border border-gray-300 cursor-pointer"
+                    />
+                    <span className="text-xs text-gray-500">
+                      {settings.hero_button_text_color || DEFAULT_HERO.hero_button_text_color}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Image de fond (optionnelle)
+              </label>
+              {settings.hero_image_url ? (
+                <div className="relative">
+                  <img
+                    src={settings.hero_image_url}
+                    alt="Aperçu hero"
+                    className="w-full h-40 object-cover rounded-lg border border-gray-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSettings({ ...settings, hero_image_url: null })}
+                    className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-700 rounded-full p-1 shadow"
+                    aria-label="Retirer l'image"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => heroFileInputRef.current?.click()}
+                  disabled={uploadingHero}
+                  className="w-full h-40 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors disabled:opacity-50"
+                >
+                  {uploadingHero ? (
+                    <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></span>
+                  ) : (
+                    <>
+                      <Upload className="w-6 h-6 mb-2" />
+                      <span className="text-sm">Choisir une image</span>
+                    </>
+                  )}
+                </button>
+              )}
+              <input
+                ref={heroFileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/webp"
+                onChange={handleHeroImageChange}
+                className="hidden"
+              />
+              {settings.hero_image_url && (
+                <button
+                  type="button"
+                  onClick={() => heroFileInputRef.current?.click()}
+                  className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+                >
+                  Changer l'image
+                </button>
+              )}
+              <p className="mt-2 text-[11px] text-gray-400">
+                Sans image, la couleur de fond ci-contre est utilisée à la place.
+              </p>
             </div>
           </div>
         </div>

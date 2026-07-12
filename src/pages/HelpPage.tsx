@@ -72,8 +72,8 @@ export const HelpPage = () => {
                 Une question, un doute ? Écrivez-nous, une vraie personne vous répond.
               </p>
               <div className="mt-6">
-                <a href="mailto:support@zenfacture.com" className="text-base font-medium text-purple-600 hover:text-purple-500">
-                  Envoyer un email<span aria-hidden="true"> &rarr;</span>
+                <a href="mailto:contact@zenfacture.ch" className="text-base font-medium text-purple-600 hover:text-purple-500">
+                  contact@zenfacture.ch<span aria-hidden="true"> &rarr;</span>
                 </a>
               </div>
             </div>
