@@ -58,6 +58,10 @@ TO authenticated
 USING (bucket_id = 'platform-hero-videos' AND public.is_admin());
 
 -- ── Fonction publique : remplace get_homepage_hero() avec les nouveaux champs
+-- Postgres refuse un CREATE OR REPLACE qui change la liste des colonnes de
+-- retour (RETURNS TABLE) : il faut d'abord supprimer l'ancienne version.
+DROP FUNCTION IF EXISTS public.get_homepage_hero();
+
 CREATE OR REPLACE FUNCTION public.get_homepage_hero()
 RETURNS TABLE (
   hero_title TEXT,
