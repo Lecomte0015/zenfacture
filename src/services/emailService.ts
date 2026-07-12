@@ -33,6 +33,27 @@ export interface SendInvoiceEmailParams {
   pdfBase64?: string;
 }
 
+export interface SendDevisEmailParams {
+  /** Email du destinataire */
+  to: string;
+  /** Nom du destinataire (pour la personnalisation) */
+  recipientName?: string;
+  /** Nom de l'entreprise émettrice */
+  senderName: string;
+  /** Numéro du devis */
+  devisNumber: string;
+  /** Montant total formaté (ex: "1 250.00") */
+  amount: string;
+  /** Devise (ex: "CHF") */
+  currency: string;
+  /** Date de validité ISO */
+  validUntil: string;
+  /** Notes/remarques optionnelles */
+  notes?: string;
+  /** PDF en base64 pour pièce jointe (optionnel) */
+  pdfBase64?: string;
+}
+
 export interface SendReminderEmailParams {
   to: string;
   recipientName?: string;
@@ -87,6 +108,15 @@ export async function sendReminderEmail(params: SendReminderEmailParams): Promis
 }
 
 /**
+ * Envoie un devis par email au client.
+ * Le PDF est optionnel — si fourni, il est attaché en pièce jointe.
+ */
+export async function sendDevisEmail(params: SendDevisEmailParams): Promise<EmailResult> {
+  const { devisNumber, validUntil, ...rest } = params;
+  return invokeEmailFunction({ type: 'devis', invoiceNumber: devisNumber, dueDate: validUntil, ...rest });
+}
+
+/**
  * Génère le PDF d'une facture en base64 pour l'attacher à un email.
  * Utilise la même logique que handleDownloadPdf dans InvoiceModal.
  * Retourne null si jsPDF n'est pas disponible ou si une erreur survient.
@@ -119,6 +149,8 @@ export async function generatePdfBase64(invoiceData: {
   company_logo_url?: string;
   primary_color?: string;
   header_bg_color?: string;
+  /** 'FACTURE' (défaut) ou 'DEVIS' — ajuste le titre, le libellé de date et les CGV. */
+  documentLabel?: 'FACTURE' | 'DEVIS';
 }): Promise<string | null> {
   try {
     const { default: jsPDF } = await import('jspdf');
@@ -168,6 +200,8 @@ export async function generatePdfBase64(invoiceData: {
     const ln = (n = 1) => { y += n; };
 
     const fmt = (d?: string) => d ? new Date(d).toLocaleDateString('fr-CH', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
+    const docLabel = invoiceData.documentLabel || 'FACTURE';
+    const isDevis = docLabel === 'DEVIS';
 
     // Bandeau d'en-tête coloré (identité visuelle, pleine largeur)
     doc.setFillColor(...headerBandRgb);
@@ -185,7 +219,7 @@ export async function generatePdfBase64(invoiceData: {
     doc.text(invoiceData.company_name || '', marginL, y);
     doc.setFontSize(invoiceData.company_logo_url ? 14 : 22);
     doc.setTextColor(...primaryRgb);
-    doc.text('FACTURE', pageW - marginR, invoiceData.company_logo_url ? y + 17 : y, { align: 'right' });
+    doc.text(docLabel, pageW - marginR, invoiceData.company_logo_url ? y + 17 : y, { align: 'right' });
     doc.setTextColor(0, 0, 0);
 
     ln(6); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
@@ -196,7 +230,7 @@ export async function generatePdfBase64(invoiceData: {
     doc.text(`Date : ${fmt(invoiceData.date)}`, pageW - marginR, y, { align: 'right' });
     ln(4);
     doc.text(invoiceData.company_country || 'Suisse', marginL, y);
-    doc.text(`Échéance : ${fmt(invoiceData.due_date)}`, pageW - marginR, y, { align: 'right' });
+    doc.text(`${isDevis ? 'Valable jusqu\'au' : 'Échéance'} : ${fmt(invoiceData.due_date)}`, pageW - marginR, y, { align: 'right' });
     if (invoiceData.company_vat) { ln(4); doc.text(`IDE: CHE-${invoiceData.company_vat}`, marginL, y); }
 
     ln(12);
@@ -269,7 +303,12 @@ export async function generatePdfBase64(invoiceData: {
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
     doc.setTextColor(120, 120, 120);
     if (invoiceData.due_date) {
-      doc.text(`Conditions de paiement : dû avant le ${fmt(invoiceData.due_date)}.`, marginL, y);
+      doc.text(
+        isDevis
+          ? `Devis valable jusqu'au ${fmt(invoiceData.due_date)}.`
+          : `Conditions de paiement : dû avant le ${fmt(invoiceData.due_date)}.`,
+        marginL, y
+      );
       y += 4.5;
     }
     if (invoiceData.notes) {
@@ -281,7 +320,9 @@ export async function generatePdfBase64(invoiceData: {
     // Conditions générales par défaut — uniquement si la place le permet
     // réellement, pour ne jamais provoquer un saut de page inutile.
     doc.setFontSize(7.5);
-    const cgvText = "Conditions générales : sauf accord contraire écrit, le montant de cette facture est dû net dans le délai indiqué ci-dessus. Passé ce délai, des intérêts moratoires de 5% l'an pourront être appliqués de plein droit, sans mise en demeure préalable. Pour toute question relative à cette facture, merci de nous contacter aux coordonnées ci-dessous.";
+    const cgvText = isDevis
+      ? "Ce devis est valable jusqu'à la date indiquée ci-dessus et ne constitue pas une facture. Il devient caduc passé ce délai. Pour toute question ou pour valider cette offre, merci de nous contacter aux coordonnées ci-dessous."
+      : "Conditions générales : sauf accord contraire écrit, le montant de cette facture est dû net dans le délai indiqué ci-dessus. Passé ce délai, des intérêts moratoires de 5% l'an pourront être appliqués de plein droit, sans mise en demeure préalable. Pour toute question relative à cette facture, merci de nous contacter aux coordonnées ci-dessous.";
     const cgvLines = doc.splitTextToSize(cgvText, contentW);
     const cgvBlockHeight = 4 + cgvLines.length * 3.6;
     if (y + cgvBlockHeight + 6 < availableBottom - 8) {

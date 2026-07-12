@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { Plus, Search, FileText, Pencil, Trash2, ArrowRight, Mail, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDevis } from '../../hooks/useDevis';
-import { DevisData, generateDevisNumber, convertirEnFacture, updateDevis } from '../../services/devisService';
+import { DevisData, DevisArticle, generateDevisNumber, convertirEnFacture, updateDevis } from '../../services/devisService';
 import { useClients } from '../../hooks/useClients';
 import { useProduits } from '../../hooks/useProduits';
 import DevisForm from '../../components/devis/DevisForm';
 import DeviseSelector from '../../components/common/DeviseSelector';
 import { DeviseCode } from '../../services/deviseService';
 import { formatCurrency } from '../../utils/format';
-import { sendInvoiceEmail } from '../../services/emailService';
+import { sendDevisEmail, generatePdfBase64 } from '../../services/emailService';
+import { supabase } from '../../lib/supabaseClient';
 
 const STATUT_COLORS: Record<string, string> = {
   brouillon: 'bg-gray-100 text-gray-800',
@@ -118,15 +119,72 @@ const DevisPage: React.FC = () => {
     setIsSendingEmail(true);
     setSendFeedback(null);
 
-    const result = await sendInvoiceEmail({
+    const client = clients.find(c => c.id === sendingDevis.client_id);
+
+    // Récupérer les infos fraîches de l'organisation (nom, logo, couleurs) pour
+    // que le PDF du devis reflète l'identité visuelle réelle de l'utilisateur,
+    // comme pour les factures.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let org: any = null;
+    try {
+      const { data } = await (supabase as any)
+        .from('organisations')
+        .select('nom, adresse, code_postal, ville, pays, numero_tva, email, telephone, logo_url, primary_color, header_bg_color')
+        .eq('id', sendingDevis.organisation_id)
+        .single();
+      org = data;
+    } catch (_e) {
+      // Non bloquant : le PDF sera généré sans logo/couleurs personnalisées
+    }
+
+    const articles: DevisArticle[] = Array.isArray(sendingDevis.articles) ? sendingDevis.articles : [];
+    const items = articles.map((a) => ({
+      description: a.description,
+      quantity: a.quantite,
+      unitPrice: a.prix_unitaire,
+      vatRate: a.taux_tva,
+      total: a.montant,
+    }));
+
+    const pdfBase64 = await generatePdfBase64({
+      invoice_number: sendingDevis.numero_devis,
+      company_name: org?.nom,
+      company_address: org?.adresse,
+      company_postal_code: org?.code_postal,
+      company_city: org?.ville,
+      company_country: org?.pays,
+      company_vat: org?.numero_tva,
+      company_email: org?.email,
+      company_phone: org?.telephone,
+      company_logo_url: org?.logo_url,
+      primary_color: org?.primary_color,
+      header_bg_color: org?.header_bg_color,
+      client_name: getClientName(sendingDevis.client_id),
+      client_address: client?.adresse || undefined,
+      client_postal_code: client?.code_postal || undefined,
+      client_city: client?.ville || undefined,
+      client_country: client?.pays,
+      date: sendingDevis.date_devis,
+      due_date: sendingDevis.date_validite || sendingDevis.date_devis,
+      items,
+      subtotal: sendingDevis.sous_total,
+      tax_amount: sendingDevis.total_tva,
+      total: sendingDevis.total,
+      devise: sendingDevis.devise,
+      notes: sendingDevis.notes || undefined,
+      documentLabel: 'DEVIS',
+    });
+
+    const result = await sendDevisEmail({
       to: sendEmailTo.trim(),
       recipientName: getClientName(sendingDevis.client_id),
-      senderName: 'ZenFacture',
-      invoiceNumber: sendingDevis.numero_devis,
+      senderName: org?.nom || 'ZenFacture',
+      devisNumber: sendingDevis.numero_devis,
       amount: sendingDevis.total.toFixed(2),
       currency: sendingDevis.devise || 'CHF',
-      dueDate: sendingDevis.date_validite || sendingDevis.date_devis,
+      validUntil: sendingDevis.date_validite || sendingDevis.date_devis,
       notes: sendingDevis.notes || undefined,
+      pdfBase64: pdfBase64 ?? undefined,
     });
 
     setIsSendingEmail(false);

@@ -9,6 +9,7 @@
  *
  * Types d'email supportés :
  *   - "invoice"   : Envoi d'une facture avec PDF en pièce jointe
+ *   - "devis"     : Envoi d'un devis avec PDF en pièce jointe
  *   - "reminder"  : Rappel de paiement
  *   - "welcome"   : Email de bienvenue envoyé après inscription
  *   - "marketing" : Email marketing / annonce ponctuelle (envoyé par un admin)
@@ -177,6 +178,83 @@ function templateReminder(params: {
               </p>
             </td>
           </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function templateDevis(params: {
+  recipientName: string;
+  senderName: string;
+  devisNumber: string;
+  amount: string;
+  currency: string;
+  validUntil: string;
+  notes?: string;
+}): string {
+  const { recipientName, senderName, devisNumber, amount, currency, validUntil, notes } = params;
+  return `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Devis ${devisNumber}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:#ea580c;padding:32px 40px;">
+              <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">ZenFacture</h1>
+              <p style="margin:4px 0 0;color:#fed7aa;font-size:14px;">Facturation suisse simplifiée</p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px;">
+              <p style="margin:0 0 16px;color:#374151;font-size:15px;">Bonjour ${recipientName},</p>
+              <p style="margin:0 0 24px;color:#374151;font-size:15px;">
+                Veuillez trouver ci-joint le devis <strong>${devisNumber}</strong> de <strong>${senderName}</strong>.
+              </p>
+
+              <!-- Montant -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;margin-bottom:28px;">
+                <tr>
+                  <td style="padding:20px;">
+                    <p style="margin:0 0 4px;color:#c2410c;font-size:12px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Montant total</p>
+                    <p style="margin:0;color:#7c2d12;font-size:28px;font-weight:700;">${amount} ${currency}</p>
+                    <p style="margin:6px 0 0;color:#9a3412;font-size:13px;">Valable jusqu'au : <strong>${validUntil}</strong></p>
+                  </td>
+                </tr>
+              </table>
+
+              ${notes ? `<p style="margin:0 0 24px;color:#6b7280;font-size:14px;font-style:italic;background:#f9fafb;padding:16px;border-radius:6px;border-left:3px solid #d1d5db;">${notes}</p>` : ''}
+
+              <p style="margin:0 0 8px;color:#374151;font-size:14px;">
+                N'hésitez pas à répondre à cet email pour toute question ou pour valider cette offre.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 40px;background:#f9fafb;border-top:1px solid #e5e7eb;">
+              <p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.6;">
+                Cet email a été envoyé via <strong>ZenFacture</strong> au nom de <strong>${senderName}</strong>.<br>
+                Pour toute question, contactez directement l'émetteur de ce devis.
+              </p>
+            </td>
+          </tr>
+
         </table>
       </td>
     </tr>
@@ -389,6 +467,25 @@ serve(async (req) => {
         to: [to],
         subject: `[Rappel ${level}/3] Facture ${invoiceNumber} en attente de paiement`,
         html: templateReminder({ recipientName: recipientName || to, senderName: senderName || FROM_NAME, invoiceNumber, amount, currency, dueDate: dueDateFormatted, level }),
+      };
+
+    } else if (type === 'devis') {
+      const { to, recipientName, senderName, invoiceNumber, amount, currency, dueDate, notes } = body;
+      if (!to || !invoiceNumber) {
+        return new Response(JSON.stringify({ error: 'Champs requis manquants : to, invoiceNumber' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const validUntilFormatted = dueDate
+        ? new Date(dueDate).toLocaleDateString('fr-CH', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        : '-';
+
+      emailPayload = {
+        from: `${senderName || FROM_NAME} <${FROM_EMAIL}>`,
+        to: [to],
+        subject: `Devis ${invoiceNumber} — ${amount} ${currency}`,
+        html: templateDevis({ recipientName: recipientName || to, senderName: senderName || FROM_NAME, devisNumber: invoiceNumber, amount, currency, validUntil: validUntilFormatted, notes }),
       };
 
     } else if (type === 'welcome') {
