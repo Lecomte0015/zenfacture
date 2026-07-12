@@ -334,11 +334,21 @@ export async function generatePdfBase64(invoiceData: {
     doc.setTextColor(0, 0, 0);
     y += 6;
 
-    if (y > pageH - reserved - 6) {
+    // Sans bulletin QR (devis, ou facture sans IBAN configuré), le pied de
+    // page suit directement le contenu au lieu d'être plaqué en bas d'une
+    // page A4 complète — sinon un document court laisse un grand vide avant
+    // le bandeau "Merci pour votre confiance". Avec bulletin QR, la position
+    // reste fixe en bas de page (format suisse réglementaire).
+    if (hasBill) {
+      if (y > pageH - reserved - 6) {
+        doc.addPage();
+      }
+    } else if (y > pageH - footerHeight - 16) {
       doc.addPage();
+      y = 20;
     }
 
-    const footerTop = pageH - reserved;
+    const footerTop = hasBill ? (pageH - reserved) : Math.min(pageH - footerHeight - 10, y + 10);
     const contactParts = [invoiceData.company_email, invoiceData.company_phone].filter(Boolean) as string[];
 
     // Bannière "Merci" teintée
