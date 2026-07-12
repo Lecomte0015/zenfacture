@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import { compressImage } from '@/utils/imageCompression';
 
 /**
  * Configuration globale de la plateforme, persistée dans la table singleton
@@ -174,12 +175,15 @@ export const updatePlatformSettings = async (
  * appelez `updatePlatformSettings({ banner_image_url })` ensuite.
  */
 export const uploadBannerImage = async (file: File): Promise<string> => {
-  const ext = file.name.split('.').pop() || 'png';
+  // Compression côté navigateur avant upload : une bannière n'a besoin ni de
+  // très haute résolution ni d'un poids de plusieurs Mo pour un simple bandeau.
+  const optimized = await compressImage(file, { maxWidth: 1600, maxHeight: 500 });
+  const ext = optimized.name.split('.').pop() || 'jpg';
   const path = `banner-${Date.now()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
     .from('platform-banners')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, optimized, { upsert: true, contentType: optimized.type });
 
   if (uploadError) {
     console.error("Erreur lors de l'upload de l'image de bannière :", uploadError);
@@ -216,12 +220,17 @@ export const getAnnouncementBanner = async (): Promise<AnnouncementBanner | null
  * `updatePlatformSettings({ hero_image_url })` ensuite.
  */
 export const uploadHeroImage = async (file: File): Promise<string> => {
-  const ext = file.name.split('.').pop() || 'jpg';
+  // Compression côté navigateur avant upload : sans cette étape, une photo
+  // envoyée telle quelle depuis un téléphone (souvent 3-8 Mo) est ensuite
+  // servie telle quelle sur la page d'accueil à chaque visite — c'est la
+  // cause la plus fréquente d'un hero qui met du temps à s'afficher.
+  const optimized = await compressImage(file, { maxWidth: 1920, maxHeight: 1080 });
+  const ext = optimized.name.split('.').pop() || 'jpg';
   const path = `hero-${Date.now()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
     .from('platform-hero')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, optimized, { upsert: true, contentType: optimized.type });
 
   if (uploadError) {
     console.error("Erreur lors de l'upload de l'image du hero :", uploadError);

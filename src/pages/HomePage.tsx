@@ -237,6 +237,8 @@ const HomePage = () => {
               src={hero.hero_image_url}
               alt=""
               aria-hidden="true"
+              loading="eager"
+              decoding="async"
               className="absolute inset-0 w-full h-full object-cover object-center"
             />
             {/* Voile de la couleur de fond choisie, pour garder le texte lisible */}
