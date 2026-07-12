@@ -1,9 +1,15 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const BASE_ALLOWED_HEADERS =
+  'authorization, x-client-info, apikey, content-type, x-application-name';
+
+function buildCorsHeaders(req: Request): Record<string, string> {
+  const requestedHeaders = req.headers.get('Access-Control-Request-Headers');
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': requestedHeaders || BASE_ALLOWED_HEADERS,
+  };
+}
 
 interface OcrResult {
   montant: number;
@@ -16,6 +22,8 @@ interface OcrResult {
 }
 
 serve(async (req) => {
+  const corsHeaders = buildCorsHeaders(req);
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });

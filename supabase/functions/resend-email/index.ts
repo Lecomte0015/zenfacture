@@ -17,10 +17,22 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Liste de base des headers autorisés. Le client @supabase/supabase-js ajoute
+// parfois des headers custom (ex: x-client-info, x-application-name) selon
+// la version du SDK — pour éviter d'avoir à mettre à jour cette liste à
+// chaque nouvelle version, la fonction reflète dynamiquement les headers
+// réellement demandés par le navigateur dans la requête preflight (voir plus
+// bas, `buildCorsHeaders`), avec cette liste comme filet de sécurité.
+const BASE_ALLOWED_HEADERS =
+  'authorization, x-client-info, apikey, content-type, x-application-name';
+
+function buildCorsHeaders(req: Request): Record<string, string> {
+  const requestedHeaders = req.headers.get('Access-Control-Request-Headers');
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': requestedHeaders || BASE_ALLOWED_HEADERS,
+  };
+}
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
 const FROM_EMAIL = Deno.env.get('APP_FROM_EMAIL') ?? 'factures@zenfacture.ch';
@@ -313,6 +325,8 @@ function templateMarketing(params: {
 // ─── Handler principal ────────────────────────────────────────────────────────
 
 serve(async (req) => {
+  const corsHeaders = buildCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }

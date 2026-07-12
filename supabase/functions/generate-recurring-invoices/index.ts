@@ -1,10 +1,16 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const BASE_ALLOWED_HEADERS =
+  'authorization, x-client-info, apikey, content-type, x-application-name';
+
+function buildCorsHeaders(req: Request): Record<string, string> {
+  const requestedHeaders = req.headers.get('Access-Control-Request-Headers');
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': requestedHeaders || BASE_ALLOWED_HEADERS,
+  };
+}
 
 /**
  * Calcule la prochaine date d'émission selon la fréquence.
@@ -45,6 +51,8 @@ function genererNumeroFacture(today: Date): string {
 }
 
 serve(async (req) => {
+  const corsHeaders = buildCorsHeaders(req);
+
   // Gestion CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
