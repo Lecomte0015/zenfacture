@@ -136,18 +136,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Si le profil n'existe pas, créer un profil minimal
       if (!profileData) {
         console.log('[Auth] Création du profil minimal pour:', userData.email);
+        // Reprend le nom / les dates d'essai sauvegardés dans user_metadata au
+        // moment de l'inscription (voir AuthContext.register) : quand la
+        // confirmation par email est activée, cette création est différée
+        // jusqu'à ce qu'une vraie session existe (ici), car sans session les
+        // policies RLS de `profils`/`organisations` ("id = auth.uid()")
+        // bloqueraient l'écriture au moment du signUp.
+        const meta = userData.user_metadata || {};
         const { error: createError } = await supabase
           .from('profils')
           .upsert({
             id: userData.id,
             email: userData.email,
-            name: userData.user_metadata?.name || userData.email?.split('@')[0] || 'Utilisateur',
+            name: meta.name || userData.email?.split('@')[0] || 'Utilisateur',
+            trial_start_date: meta.trial_start_date || new Date().toISOString(),
+            trial_end_date: meta.trial_end_date || null,
+            plan_abonnement: 'essentiel',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           }, { onConflict: 'id' });
 
         if (createError) {
           console.error('[Auth] Erreur création profil:', createError);
+        } else {
+          // L'organisation n'a pas non plus pu être créée au moment du signUp
+          // (même raison RLS) : on la crée maintenant via la RPC SECURITY
+          // DEFINER, avec le nom éventuellement choisi dans le formulaire
+          // d'inscription.
+          const orgName = meta.organisation_name || (meta.name ? `Organisation de ${meta.name}` : 'Mon entreprise');
+          const { error: orgError } = await supabase.rpc('creer_organisation', {
+            nom_organisation: orgName,
+          });
+          if (orgError) {
+            console.error('[Auth] Erreur création organisation (auto-réparation post-confirmation):', orgError);
+          }
         }
       }
 
@@ -280,6 +302,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         options: {
           data: {
             name,
+            organisation_name: organisationName || null,
             trial_start_date: trialStartDate,
             trial_end_date: trialEndDate.toISOString(),
           },
@@ -292,6 +315,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Si l'utilisateur est créé mais nécessite une confirmation par email
       if (data.user && data.user.identities && data.user.identities.length === 0) {
         throw new Error('Un utilisateur avec cet email existe déjà');
+      }
+
+      // Si la confirmation par email est activée côté Supabase Auth, `signUp`
+      // crée bien l'utilisateur mais NE renvoie AUCUNE session tant qu'il n'a
+      // pas cliqué le lien reçu par email. Sans session, `auth.uid()` est NULL
+      // et les policies RLS ("id = auth.uid()") bloqueraient silencieusement
+      // toute tentative de créer le profil/l'organisation ci-dessous — inutile
+      // donc de tenter cette écriture ici : `createUserFromSupabase` s'en
+      // chargera automatiquement (avec les infos sauvegardées dans
+      // `user_metadata`) dès qu'une vraie session existera, juste après la
+      // confirmation. On retourne `requiresConfirmation` pour que la page
+      // d'inscription affiche le bon message au lieu de ne rien faire.
+      if (data.user && !data.session) {
+        sendWelcomeEmail(email, name).catch(() => {});
+        return { user: null, session: null, requiresConfirmation: true };
       }
 
       if (data.user) {
