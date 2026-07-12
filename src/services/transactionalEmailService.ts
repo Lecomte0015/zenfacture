@@ -1,7 +1,8 @@
 /**
  * Service d'envoi d'emails transactionnels / marketing via l'Edge Function
- * `send-email` (Resend). Voir supabase/functions/send-email/index.ts pour les
- * templates et le détail des types supportés.
+ * `resend-email` (Resend). Voir supabase/functions/send-email/index.ts pour les
+ * templates et le détail des types supportés (le nom du dossier local diffère
+ * du nom déployé sur Supabase, qui est `resend-email`).
  *
  * Ce service est volontairement "fire and forget" côté appelant pour les
  * emails non-critiques (bienvenue, marketing) : un échec d'envoi ne doit
@@ -21,7 +22,7 @@ interface SendEmailResult {
  */
 export const sendWelcomeEmail = async (to: string, recipientName?: string): Promise<SendEmailResult> => {
   try {
-    const { error } = await supabase.functions.invoke('send-email', {
+    const { error } = await supabase.functions.invoke('resend-email', {
       body: { type: 'welcome', to, recipientName },
     });
     if (error) {
@@ -53,7 +54,7 @@ export interface MarketingEmailParams {
 export const sendMarketingEmail = async (params: MarketingEmailParams): Promise<SendEmailResult> => {
   try {
     const { to, recipientName, subject, heading, bodyHtml, ctaLabel, ctaUrl } = params;
-    const { error } = await supabase.functions.invoke('send-email', {
+    const { error } = await supabase.functions.invoke('resend-email', {
       body: {
         type: 'marketing',
         to,

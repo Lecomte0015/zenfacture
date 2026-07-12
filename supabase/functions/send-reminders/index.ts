@@ -58,7 +58,7 @@ serve(async (req) => {
     // Envoyer les emails de rappel
     for (const reminder of reminders) {
       try {
-        const { error: emailError } = await supabaseAdminClient.functions.invoke('send-email', {
+        const { error: emailError } = await supabaseAdminClient.functions.invoke('resend-email', {
           body: {
             to: reminder.user.email,
             subject: `Rappel: ${reminder.title}`,

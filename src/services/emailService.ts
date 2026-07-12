@@ -54,7 +54,7 @@ export interface EmailResult {
 
 async function invokeEmailFunction(body: Record<string, unknown>): Promise<EmailResult> {
   try {
-    const { data, error } = await supabase.functions.invoke('send-email', { body });
+    const { data, error } = await supabase.functions.invoke('resend-email', { body });
 
     if (error) {
       return { success: false, error: error.message || 'Erreur lors de l\'appel à la fonction email' };

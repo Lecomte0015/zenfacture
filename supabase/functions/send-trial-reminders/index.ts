@@ -127,7 +127,7 @@ async function sendTrialReminderEmail(supabaseClient: any, user: any, daysRemain
     <p>À bientôt,<br>L'équipe Zenfacture</p>
   `;
 
-  const { data, error } = await supabaseClient.functions.invoke('send-email', {
+  const { data, error } = await supabaseClient.functions.invoke('resend-email', {
     body: {
       to: user.email,
       subject,
@@ -166,7 +166,7 @@ async function sendTrialEndedEmail(supabaseClient: any, user: any) {
     <p>Cordialement,<br>L'équipe Zenfacture</p>
   `;
 
-  const { data, error } = await supabaseClient.functions.invoke('send-email', {
+  const { data, error } = await supabaseClient.functions.invoke('resend-email', {
     body: {
       to: user.email,
       subject,
