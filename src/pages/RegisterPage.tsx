@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
@@ -11,30 +11,30 @@ const RegisterPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  // Affiche une page de confirmation dédiée à la place du formulaire, au lieu
+  // d'une alert() navigateur suivie d'une redirection — plus cohérent avec le
+  // reste de l'app et plus clair pour l'utilisateur.
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const { register } = useAuth();
-  const navigate = useNavigate();
   const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       return setError(t('auth.passwordMismatch'));
     }
-    
+
     setError('');
     setIsLoading(true);
-    
+
     try {
       const result = await register(name, email, password, organisationName);
 
       // Si l'inscription nécessite une confirmation par email
       if (result && 'requiresConfirmation' in result && result.requiresConfirmation) {
-        // Afficher un message de succès avec des instructions
         setError('');
-        alert('Un email de confirmation a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception et cliquer sur le lien pour activer votre compte.');
-        // Rediriger vers la page de connexion
-        navigate('/login', { state: { email, message: 'Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.' } });
+        setRegistrationSuccess(true);
       }
       // Si l'utilisateur est connecté directement, ne pas naviguer manuellement
       // La redirection se fera automatiquement via PublicOnlyRoute
@@ -46,6 +46,39 @@ const RegisterPage = () => {
       setIsLoading(false);
     }
   };
+
+  if (registrationSuccess) {
+    return (
+      <div className="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-10 px-6 shadow sm:rounded-lg sm:px-10 text-center">
+            <div className="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-primary-100">
+              <svg className="h-7 w-7 text-primary-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <path d="m22 6-10 7L2 6" />
+              </svg>
+            </div>
+            <h2 className="mt-6 text-2xl font-bold text-gray-900">Vérifiez votre boîte de réception</h2>
+            <p className="mt-3 text-sm text-gray-600">
+              Un email de confirmation a été envoyé à <strong>{email}</strong>.
+              Cliquez sur le lien qu'il contient pour activer votre compte.
+            </p>
+            <p className="mt-4 text-xs text-gray-400">
+              Vous ne l'avez pas reçu ? Pensez à vérifier vos courriers indésirables.
+            </p>
+            <div className="mt-8">
+              <Link
+                to="/login"
+                className="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
+              >
+                Retour à la connexion
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
