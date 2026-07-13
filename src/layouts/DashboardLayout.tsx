@@ -5,6 +5,7 @@ import ProfilMetierModal from '@/components/dashboard/ProfilMetierModal';
 import NotificationsDropdown from '@/components/dashboard/NotificationsDropdown';
 import UserMenu from '@/components/dashboard/UserMenu';
 import AnnouncementBanner from '@/components/common/AnnouncementBanner';
+import TrialBanner from '@/components/dashboard/TrialBanner';
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard':                          'Tableau de bord',
@@ -63,6 +64,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       {/* ── Main area ─────────────────────────────────────────────── */}
       <div className="flex flex-col flex-1 overflow-hidden">
+        <TrialBanner />
         <AnnouncementBanner />
 
         {/* Top header bar */}
