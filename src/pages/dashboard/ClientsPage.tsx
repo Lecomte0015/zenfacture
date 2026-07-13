@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Download, Pencil, Trash2, Eye, X, Users } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Plus, Search, Download, Pencil, Trash2, Eye, X, Users, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useClients } from '../../hooks/useClients';
+import { useTrial } from '../../hooks/useTrial';
 import { ClientData, exportClientsCSV } from '../../services/clientService';
 import ClientForm, { ClientFormData } from '../../components/clients/ClientForm';
 
@@ -21,6 +22,13 @@ const ClientsPage: React.FC<ClientsPageProps> = ({ newClient = false }) => {
   const { clients, loading, error, total, addClient, editClient, removeClient } = useClients({
     search: searchTerm,
   });
+  const { canAccessFeature } = useTrial();
+
+  // Limite "20 clients" du plan Essentiel — voir useTrial.ts PLANS.essentiel.clients.
+  // Professionnel/Entreprise sont illimités (canAccessFeature renvoie toujours true).
+  const quotaReached = !canAccessFeature('clients', { currentUsage: total });
+  // Export CSV réservé Professionnel/Entreprise (useTrial.ts PLANS.*.export).
+  const canExport = canAccessFeature('export');
 
   const handleAddClient = async (formData: ClientFormData) => {
     await addClient({
@@ -78,10 +86,39 @@ const ClientsPage: React.FC<ClientsPageProps> = ({ newClient = false }) => {
     <div className="p-6">
       {/* Modal formulaire nouveau client */}
       {showForm && (
-        <ClientForm
-          onClose={() => setShowForm(false)}
-          onSubmit={handleAddClient}
-        />
+        quotaReached ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-orange-50 mb-4">
+                <Lock className="h-6 w-6 text-orange-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Limite de clients atteinte</h3>
+              <p className="mt-2 text-sm text-gray-500">
+                Le forfait Essentiel est limité à 20 clients. Passez au forfait Professionnel
+                pour ajouter des clients illimités.
+              </p>
+              <div className="mt-5 flex justify-center gap-3">
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50"
+                >
+                  Fermer
+                </button>
+                <Link
+                  to="/dashboard/billing"
+                  className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-lg"
+                >
+                  Voir les forfaits
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <ClientForm
+            onClose={() => setShowForm(false)}
+            onSubmit={handleAddClient}
+          />
+        )
       )}
 
       {/* Modal formulaire édition client */}
@@ -113,21 +150,42 @@ const ClientsPage: React.FC<ClientsPageProps> = ({ newClient = false }) => {
           </p>
         </div>
         <div className="flex space-x-3">
-          <button
-            onClick={handleExportCSV}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-            disabled={clients.length === 0}
-          >
-            <Download className="-ml-1 mr-2 h-4 w-4" />
-            CSV
-          </button>
-          <button
-            onClick={() => setShowForm(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="-ml-1 mr-2 h-5 w-5" />
-            {t('client.new')}
-          </button>
+          {canExport ? (
+            <button
+              onClick={handleExportCSV}
+              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              disabled={clients.length === 0}
+            >
+              <Download className="-ml-1 mr-2 h-4 w-4" />
+              CSV
+            </button>
+          ) : (
+            <Link
+              to="/dashboard/billing"
+              title="Export CSV réservé aux forfaits Professionnel et Entreprise"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-400 bg-gray-50 hover:bg-gray-100 transition-colors"
+            >
+              <Lock className="-ml-1 mr-2 h-4 w-4" />
+              CSV
+            </Link>
+          )}
+          {quotaReached ? (
+            <Link
+              to="/dashboard/billing"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-orange-600 hover:bg-orange-700 transition-colors"
+            >
+              <Lock className="-ml-1 mr-2 h-4 w-4" />
+              Voir les forfaits
+            </Link>
+          ) : (
+            <button
+              onClick={() => setShowForm(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="-ml-1 mr-2 h-5 w-5" />
+              {t('client.new')}
+            </button>
+          )}
         </div>
       </div>
 

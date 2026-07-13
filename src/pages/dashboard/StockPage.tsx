@@ -1,11 +1,13 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Package, Plus, Search, Download, TrendingDown, TrendingUp,
   AlertTriangle, BarChart2, ArrowUp, ArrowDown, SlidersHorizontal,
-  Pencil, Trash2, X, Check, Loader2, History, ChevronDown, MapPin,
+  Pencil, Trash2, X, Check, Loader2, History, ChevronDown, MapPin, Lock,
 } from 'lucide-react';
 import { useStock } from '@/hooks/useStock';
 import { useOrganisation } from '@/context/OrganisationContext';
+import { useTrial } from '@/hooks/useTrial';
 import { StockArticle, MouvementType, exportStockCSV } from '@/services/stockService';
 
 type Tab = 'articles' | 'mouvements' | 'alertes';
@@ -46,6 +48,9 @@ interface MouvementFormData {
 export default function StockPage() {
   const { organisation } = useOrganisation();
   const { articles, mouvements, stats, loading, createArticle, updateArticle, removeArticle, addMouvement } = useStock();
+  const { canAccessFeature } = useTrial();
+  // Export réservé Professionnel/Entreprise (useTrial.ts PLANS.*.export).
+  const canExport = canAccessFeature('export');
 
   const [tab, setTab] = useState<Tab>('articles');
   const [search, setSearch] = useState('');
@@ -143,13 +148,24 @@ export default function StockPage() {
           <p className="text-gray-500 mt-1">Gardez un œil sur vos articles, vos mouvements et les réapprovisionnements à prévoir.</p>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => exportStockCSV(articles)}
-            className="flex items-center gap-2 px-3 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Exporter CSV
-          </button>
+          {canExport ? (
+            <button
+              onClick={() => exportStockCSV(articles)}
+              className="flex items-center gap-2 px-3 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Exporter CSV
+            </button>
+          ) : (
+            <Link
+              to="/dashboard/billing"
+              title="Export CSV réservé aux forfaits Professionnel et Entreprise"
+              className="flex items-center gap-2 px-3 py-2 border border-gray-200 text-gray-400 bg-gray-50 rounded-lg text-sm hover:bg-gray-100 transition-colors"
+            >
+              <Lock className="w-4 h-4" />
+              Exporter CSV
+            </Link>
+          )}
           <button
             onClick={() => openForm()}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"

@@ -21,13 +21,16 @@ export const FeatureGuard = ({
   // Vérifier si l'utilisateur a accès à la fonctionnalité
   const hasAccess = () => {
     // Si l'utilisateur est admin, il a accès à tout
-    if (user?.role === 'admin') return true;
-    
+    if ((user as any)?.role === 'admin') return true;
+
+    // Pendant un essai gratuit actif, accès complet (comme pour le FeatureGuard réellement utilisé)
+    if (isOnTrial && !isTrialExpired) return true;
+
     // Si une fonctionnalité spécifique est requise, vérifier si l'utilisateur l'a
     if (requiredFeature) {
-      return user?.fonctionnalites?.[requiredFeature] === true;
+      return (user as any)?.fonctionnalites?.[requiredFeature] === true;
     }
-    
+
     // Par défaut, l'accès est accordé si l'utilisateur est connecté
     return !!user;
   };

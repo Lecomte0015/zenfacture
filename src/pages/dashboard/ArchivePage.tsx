@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Archive,
   Shield,
@@ -11,10 +12,12 @@ import {
   CreditCard,
   RotateCcw,
   FileCheck,
+  Lock,
 } from 'lucide-react';
 import { useArchives } from '../../hooks/useArchives';
 import { exportArchivesAsJson, verifyArchiveIntegrity, Archive as ArchiveType, DocumentType } from '../../services/archiveService';
 import { formatCurrency } from '../../utils/format';
+import { useTrial } from '../../hooks/useTrial';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -64,6 +67,10 @@ const ArchivePage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [integrityStatus, setIntegrityStatus] = useState<Record<string, boolean | null>>({});
   const [verifying, setVerifying] = useState<string | null>(null);
+
+  const { canAccessFeature } = useTrial();
+  // Export réservé Professionnel/Entreprise (useTrial.ts PLANS.*.export).
+  const canExport = canAccessFeature('export');
 
   // ── Filtrage ────────────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -124,14 +131,25 @@ const ArchivePage: React.FC = () => {
             <p className="text-sm text-gray-500">Documents comptables archivés conformément à la loi suisse</p>
           </div>
         </div>
-        <button
-          onClick={handleExportJson}
-          disabled={archives.length === 0}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <Download className="w-4 h-4" />
-          Exporter JSON
-        </button>
+        {canExport ? (
+          <button
+            onClick={handleExportJson}
+            disabled={archives.length === 0}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Exporter JSON
+          </button>
+        ) : (
+          <Link
+            to="/dashboard/billing"
+            title="Export JSON réservé aux forfaits Professionnel et Entreprise"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-400 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            <Lock className="w-4 h-4" />
+            Exporter JSON
+          </Link>
+        )}
       </div>
 
       {/* Bannière info nLPD */}

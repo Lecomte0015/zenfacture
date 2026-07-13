@@ -176,11 +176,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 // Public Only Route Component
 const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
-  
+
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   return <>{children}</>;
 };
 
@@ -291,14 +291,18 @@ function App() {
         <Route path="/dashboard/time-tracking" element={<LazyLoad><TimeTrackingPage /></LazyLoad>} />
         <Route path="/dashboard/payroll" element={<LazyLoad><PayrollPage /></LazyLoad>} />
         <Route path="/dashboard/team" element={
-          <LazyLoad>
-            <TeamPage />
-          </LazyLoad>
+          <FeatureGuard requiredFeature="multiUtilisateurs">
+            <LazyLoad>
+              <TeamPage />
+            </LazyLoad>
+          </FeatureGuard>
         } />
         <Route path="/dashboard/team/invite" element={
-          <LazyLoad>
-            <TeamInvitePage />
-          </LazyLoad>
+          <FeatureGuard requiredFeature="multiUtilisateurs">
+            <LazyLoad>
+              <TeamInvitePage />
+            </LazyLoad>
+          </FeatureGuard>
         } />
         <Route path="/dashboard/expenses" element={
           <FeatureGuard requiredFeature="expenses">
@@ -310,12 +314,12 @@ function App() {
             <LazyLoad><ReportsPage /></LazyLoad>
           </FeatureGuard>
         } />
-        <Route path="/dashboard/api" 
+        <Route path="/dashboard/api"
           element={
             <FeatureGuard requiredFeature="api">
               <LazyLoad><ApiPage /></LazyLoad>
             </FeatureGuard>
-          } 
+          }
         />
         <Route path="/dashboard/billing" element={<LazyLoad><BillingPage /></LazyLoad>} />
         <Route path="/dashboard/billing/success" element={<LazyLoad><BillingSuccessPage /></LazyLoad>} />
@@ -366,7 +370,7 @@ function App() {
       {/* Redirect old routes to new ones */}
       <Route path="/login" element={<Navigate to="/auth/login" replace />} />
       <Route path="/register" element={<Navigate to="/auth/register" replace />} />
-      
+
       {/* 404 Route - Must be the last route */}
       <Route path="*" element={<LazyLoad><NotFoundPage /></LazyLoad>} />
     </Routes>

@@ -2,6 +2,7 @@ import { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useOrganisation } from '@/context/OrganisationContext';
+import { useTrial } from '@/hooks/useTrial';
 import { profileHasFeature, type ProfileFeatures } from '@/config/businessProfiles';
 import UserMenu from '@/components/dashboard/UserMenu';
 import {
@@ -121,7 +122,7 @@ const navGroups: NavGroup[] = [
       { name: 'Suivi du temps', href: '/dashboard/time-tracking', icon: Timer,     profileKey: 'timeTracking' },
       { name: 'Salaires',       href: '/dashboard/payroll',       icon: Wallet,    profileKey: 'payroll' },
       { name: 'Multi-marques',  href: '/dashboard/marques',       icon: Layers,    profileKey: 'marques' },
-      { name: 'Équipe',         href: '/dashboard/team',          icon: Users },
+      { name: 'Équipe',         href: '/dashboard/team',          icon: Users,     feature: 'multiUtilisateurs' },
       { name: 'API',            href: '/dashboard/api',           icon: Code,      feature: 'api' },
       { name: 'Support',        href: '/dashboard/support',       icon: HelpCircle },
     ],
@@ -134,6 +135,7 @@ export const Sidebar = ({ children }: SidebarProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useAuth();
   const { profilMetier } = useOrganisation();
+  const { isOnTrial, isTrialExpired } = useTrial();
   const location = useLocation();
 
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
@@ -166,9 +168,16 @@ export const Sidebar = ({ children }: SidebarProps) => {
     }
   })();
 
-  /** Filtre par fonctionnalité plan */
+  /**
+   * Filtre par fonctionnalité plan. Pendant une période d'essai active,
+   * `user.fonctionnalites` ne reflète que le plan de base (essentiel) —
+   * sans ce court-circuit, les liens réservés aux plans payants (API,
+   * Équipe...) resteraient invisibles pendant l'essai alors que
+   * useTrial.canAccessFeature les autorise déjà au niveau des routes.
+   */
   const hasPlanFeature = (feature?: string) => {
     if (!feature) return true;
+    if (isOnTrial && !isTrialExpired) return true;
     return (user as any)?.fonctionnalites?.[feature] === true;
   };
 

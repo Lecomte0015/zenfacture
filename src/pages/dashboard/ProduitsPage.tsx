@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Plus, Search, Download, Pencil, Trash2, Package } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Plus, Search, Download, Pencil, Trash2, Package, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useProduits } from '../../hooks/useProduits';
 import { ProduitData, exportProduitsCSV } from '../../services/produitService';
 import ProduitForm, { ProduitFormData } from '../../components/produits/ProduitForm';
+import { useTrial } from '../../hooks/useTrial';
 
 const ProduitsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -14,6 +16,10 @@ const ProduitsPage: React.FC = () => {
   const { produits, loading, error, total, addProduit, editProduit, removeProduit } = useProduits({
     search: searchTerm,
   });
+
+  const { canAccessFeature } = useTrial();
+  // Export réservé Professionnel/Entreprise (useTrial.ts PLANS.*.export).
+  const canExport = canAccessFeature('export');
 
   const handleAddProduit = async (formData: ProduitFormData) => {
     await addProduit({
@@ -81,14 +87,25 @@ const ProduitsPage: React.FC = () => {
           </p>
         </div>
         <div className="flex space-x-3">
-          <button
-            onClick={handleExportCSV}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-            disabled={produits.length === 0}
-          >
-            <Download className="-ml-1 mr-2 h-4 w-4" />
-            CSV
-          </button>
+          {canExport ? (
+            <button
+              onClick={handleExportCSV}
+              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              disabled={produits.length === 0}
+            >
+              <Download className="-ml-1 mr-2 h-4 w-4" />
+              CSV
+            </button>
+          ) : (
+            <Link
+              to="/dashboard/billing"
+              title="Export CSV réservé aux forfaits Professionnel et Entreprise"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-400 bg-gray-50 hover:bg-gray-100 transition-colors"
+            >
+              <Lock className="-ml-1 mr-2 h-4 w-4" />
+              CSV
+            </Link>
+          )}
           <button
             onClick={() => setShowForm(true)}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors"
