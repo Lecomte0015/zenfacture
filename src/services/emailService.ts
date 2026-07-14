@@ -223,61 +223,63 @@ export async function generatePdfBase64(invoiceData: {
     const docLabel = invoiceData.documentLabel || 'FACTURE';
     const isDevis = docLabel === 'DEVIS';
 
-    // Bandeau d'en-tête coloré (identité visuelle, pleine largeur)
-    doc.setFillColor(...headerBandRgb);
-    doc.rect(0, 0, pageW, 46, 'F');
-
-    // Logo
+    // ── En-tête : deux colonnes indépendantes (émetteur à gauche, logo +
+    // titre + référence à droite) avec leur propre curseur vertical. Un bug
+    // précédent plaçait le logo à une taille fixe (50×20, sans respecter ses
+    // proportions d'origine — l'image était donc déformée) à une position qui
+    // chevauchait systématiquement le titre "DEVIS/FACTURE" et le numéro/les
+    // dates, car ces derniers étaient dessinés à une position fixe qui ne
+    // tenait pas compte de la hauteur réelle du logo. On calcule maintenant
+    // le logo en premier (avec `getImageProperties` pour connaître son ratio
+    // largeur/hauteur réel), puis on empile titre et méta-données SOUS lui.
+    const maxLogoW = 42, maxLogoH = 18;
+    let rightY = 12;
+    let logoDataUrl: string | null = null;
+    let logoW = 0, logoH = 0;
     if (invoiceData.company_logo_url) {
       try {
-        const logoDataUrl = await loadImageAsDataUrl(invoiceData.company_logo_url);
-        doc.addImage(logoDataUrl, 'PNG', pageW - marginR - 50, y - 5, 50, 20);
-      } catch { /* logo indisponible */ }
+        logoDataUrl = await loadImageAsDataUrl(invoiceData.company_logo_url);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const props = (doc as any).getImageProperties(logoDataUrl);
+        const ratio = (props.width && props.height) ? props.width / props.height : 1;
+        logoW = maxLogoW; logoH = maxLogoW / ratio;
+        if (logoH > maxLogoH) { logoH = maxLogoH; logoW = maxLogoH * ratio; }
+        rightY = 12 + logoH + 6;
+      } catch { logoDataUrl = null; /* logo indisponible */ }
+    }
+    const logoDrawn = !!logoDataUrl;
+
+    // Bandeau d'en-tête coloré — dimensionné pour englober confortablement le
+    // logo s'il y en a un (calculé juste au-dessus, avant de dessiner quoi
+    // que ce soit), sinon la hauteur par défaut.
+    const headerBandH = logoDrawn ? Math.max(46, rightY + 34) : 46;
+    doc.setFillColor(...headerBandRgb);
+    doc.rect(0, 0, pageW, headerBandH, 'F');
+    if (logoDataUrl) {
+      // Logo dessiné en conservant ses proportions d'origine — un bug
+      // précédent l'étirait dans une case fixe de 50×20mm sans respecter son
+      // ratio largeur/hauteur, ce qui le déformait visiblement.
+      doc.addImage(logoDataUrl, 'PNG', pageW - marginR - logoW, 12, logoW, logoH);
     }
 
-    // Libellé "ÉMETTEUR" — repère standard pour identifier sans ambiguïté
-    // qui envoie le document (au-dessus du nom de la société).
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
-    doc.setTextColor(140, 140, 140);
-    doc.text('ÉMETTEUR', marginL, y - 4);
-    doc.setTextColor(0, 0, 0);
-
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-    doc.text(invoiceData.company_name || '', marginL, y);
-    doc.setFontSize(invoiceData.company_logo_url ? 14 : 22);
+    // Titre du document, sous le logo s'il y en a un
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(logoDrawn ? 15 : 22);
     doc.setTextColor(...primaryRgb);
-    doc.text(docLabel, pageW - marginR, invoiceData.company_logo_url ? y + 17 : y, { align: 'right' });
+    const titleBaselineY = rightY + (logoDrawn ? 6 : 8);
+    doc.text(docLabel, pageW - marginR, titleBaselineY, { align: 'right' });
     doc.setTextColor(0, 0, 0);
+    rightY = titleBaselineY + 8;
 
-    // Bloc adresse société construit dynamiquement : n'affiche jamais une
-    // ligne "pays" orpheline quand aucune adresse n'est renseignée dans
-    // Réglages > Organisation (auparavant company_country s'affichait toujours,
-    // même seul, produisant une ligne "CH" flottante sans contexte).
-    const companyLines: string[] = [];
-    if (invoiceData.company_address) companyLines.push(invoiceData.company_address);
-    const companyCityLine = `${invoiceData.company_postal_code || ''} ${invoiceData.company_city || ''}`.trim();
-    if (companyCityLine) companyLines.push(companyCityLine);
-    if (companyLines.length > 0) companyLines.push(countryName(invoiceData.company_country));
-
-    const rightLines = [
+    // Numéro, date d'émission, date de validité/échéance — sous le titre
+    const metaLines = [
       `N° ${invoiceData.invoice_number}`,
       `Date : ${fmt(invoiceData.date)}`,
       `${isDevis ? 'Valable jusqu\'au' : 'Échéance'} : ${fmt(invoiceData.due_date)}`,
     ];
-
-    ln(6); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    const headerLineCount = Math.max(companyLines.length, rightLines.length);
-    for (let i = 0; i < headerLineCount; i++) {
-      if (companyLines[i]) doc.text(companyLines[i], marginL, y);
-      if (rightLines[i]) doc.text(rightLines[i], pageW - marginR, y, { align: 'right' });
-      if (i < headerLineCount - 1) ln(4);
-    }
-    if (invoiceData.company_vat) { ln(4); doc.text(`IDE: CHE-${invoiceData.company_vat}`, marginL, y); }
-    if (invoiceData.company_email || invoiceData.company_phone) {
-      ln(4);
-      doc.setTextColor(110, 110, 110);
-      doc.text([invoiceData.company_email, invoiceData.company_phone].filter(Boolean).join('  •  '), marginL, y);
-      doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    for (const line of metaLines) {
+      doc.text(line, pageW - marginR, rightY, { align: 'right' });
+      rightY += 4;
     }
 
     // Devis : badge de validité mettant en avant le nombre de jours restants,
@@ -291,16 +293,49 @@ export async function generatePdfBase64(invoiceData: {
       const pillW = doc.getTextWidth(pillText) + 8;
       const pillH = 6;
       const pillX = pageW - marginR - pillW;
-      ln(6);
+      rightY += 2;
       doc.setFillColor(...lightPrimary);
-      doc.roundedRect(pillX, y - 4, pillW, pillH, pillH / 2, pillH / 2, 'F');
+      doc.roundedRect(pillX, rightY - 4, pillW, pillH, pillH / 2, pillH / 2, 'F');
       doc.setTextColor(...primaryRgb);
-      doc.text(pillText, pillX + pillW / 2, y, { align: 'center' });
+      doc.text(pillText, pillX + pillW / 2, rightY, { align: 'center' });
       doc.setTextColor(0, 0, 0);
       doc.setFont('helvetica', 'normal');
+      rightY += pillH;
     }
 
-    ln(12);
+    // ── Colonne gauche : émetteur (indépendante du logo, qui est à droite) ──
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
+    doc.setTextColor(140, 140, 140);
+    doc.text('ÉMETTEUR', marginL, y - 4);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+    doc.text(invoiceData.company_name || '', marginL, y);
+
+    // Bloc adresse société construit dynamiquement : n'affiche jamais une
+    // ligne "pays" orpheline quand aucune adresse n'est renseignée dans
+    // Réglages > Organisation (auparavant company_country s'affichait toujours,
+    // même seul, produisant une ligne "CH" flottante sans contexte).
+    const companyLines: string[] = [];
+    if (invoiceData.company_address) companyLines.push(invoiceData.company_address);
+    const companyCityLine = `${invoiceData.company_postal_code || ''} ${invoiceData.company_city || ''}`.trim();
+    if (companyCityLine) companyLines.push(companyCityLine);
+    if (companyLines.length > 0) companyLines.push(countryName(invoiceData.company_country));
+
+    let leftY = y + 6;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    for (const line of companyLines) { doc.text(line, marginL, leftY); leftY += 4; }
+    if (invoiceData.company_vat) { doc.text(`IDE: CHE-${invoiceData.company_vat}`, marginL, leftY); leftY += 4; }
+    if (invoiceData.company_email || invoiceData.company_phone) {
+      doc.setTextColor(110, 110, 110);
+      doc.text([invoiceData.company_email, invoiceData.company_phone].filter(Boolean).join('  •  '), marginL, leftY);
+      doc.setTextColor(0, 0, 0);
+      leftY += 4;
+    }
+
+    // Les deux colonnes convergent : on repart du curseur le plus bas des
+    // deux pour la suite du document, avec une marge de respiration.
+    y = Math.max(leftY, rightY) + 10;
+
     doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
     doc.setTextColor(140, 140, 140);
     doc.text('CLIENT', marginL + 3, y - 3);
