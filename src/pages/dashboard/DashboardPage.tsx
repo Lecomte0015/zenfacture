@@ -8,7 +8,8 @@ import { motion } from 'framer-motion';
 import {
   FileText, CheckCircle2, Clock, TrendingUp,
   ArrowUpRight, ArrowDownRight, RefreshCw, Plus, Settings2,
-  ClipboardList, Users, Calculator,
+  ClipboardList, Users, Calculator, ShoppingCart, Boxes, Truck,
+  Timer, PenSquare, Wallet, Target, BarChart2,
 } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import {
@@ -77,7 +78,9 @@ const ProfileBanner = ({ profilMetier }: { profilMetier: ProfilMetier }) => {
       className="flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm mb-6"
     >
       <div className="flex items-center gap-2.5">
-        <span className="text-xl leading-none">{profile.emoji}</span>
+        <div className="p-1.5 bg-gray-100 rounded-lg">
+          <profile.icon className="w-4 h-4 text-gray-600" />
+        </div>
         <div>
           <p className="text-xs text-gray-400 leading-none mb-0.5">Profil actif</p>
           <p className="text-sm font-semibold text-gray-800">{profile.label}</p>
@@ -95,14 +98,33 @@ const ProfileBanner = ({ profilMetier }: { profilMetier: ProfilMetier }) => {
 };
 
 // ─── QuickActions ────────────────────────────────────────────────────────────
+
+// Icônes des raccourcis rapides, résolues par route plutôt que dupliquées
+// (et incohérentes en emoji) dans chaque profil métier de businessProfiles.ts.
+// Une seule source de vérité, alignée sur les icônes déjà utilisées dans la
+// Sidebar — évite l'effet "prototype généré" des émojis en grand format.
+const QUICK_ACTION_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  '/dashboard/pos': ShoppingCart,
+  '/dashboard/stock': Boxes,
+  '/dashboard/commandes-fournisseurs': Truck,
+  '/dashboard/invoices': FileText,
+  '/dashboard/devis': ClipboardList,
+  '/dashboard/time-tracking': Timer,
+  '/dashboard/clients': Users,
+  '/dashboard/signatures': PenSquare,
+  '/dashboard/tva': Calculator,
+  '/dashboard/payroll': Wallet,
+  '/dashboard/crm': Target,
+  '/dashboard/reports': BarChart2,
+};
+
 /** Raccourcis rapides adaptés au profil métier */
 const QuickActions = ({ profilMetier }: { profilMetier: ProfilMetier | null }) => {
-  const usingProfileActions = Boolean(profilMetier);
   const fallbackActions = [
-    { label: 'Nouvelle facture', href: '/dashboard/invoices', icon: FileText,      color: 'bg-blue-600',    textColor: 'text-white' },
-    { label: 'Nouveau devis',    href: '/dashboard/devis',    icon: ClipboardList, color: 'bg-violet-600',  textColor: 'text-white' },
-    { label: 'Clients',          href: '/dashboard/clients',  icon: Users,         color: 'bg-emerald-600', textColor: 'text-white' },
-    { label: 'TVA',              href: '/dashboard/tva',      icon: Calculator,    color: 'bg-amber-500',   textColor: 'text-white' },
+    { label: 'Nouvelle facture', href: '/dashboard/invoices', color: 'bg-blue-600',    textColor: 'text-white' },
+    { label: 'Nouveau devis',    href: '/dashboard/devis',    color: 'bg-violet-600',  textColor: 'text-white' },
+    { label: 'Clients',          href: '/dashboard/clients',  color: 'bg-emerald-600', textColor: 'text-white' },
+    { label: 'TVA',              href: '/dashboard/tva',      color: 'bg-amber-500',   textColor: 'text-white' },
   ];
   const actions = profilMetier ? BUSINESS_PROFILES[profilMetier].quickActions : fallbackActions;
 
@@ -117,25 +139,23 @@ const QuickActions = ({ profilMetier }: { profilMetier: ProfilMetier | null }) =
         Vos raccourcis
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {actions.map((action) => (
-          <Link
-            key={action.href}
-            to={action.href}
-            className={`${action.color} ${action.textColor} rounded-2xl p-4 flex flex-col items-start gap-2 shadow-sm hover:opacity-90 hover:shadow-md transition-all duration-150 group`}
-          >
-            {usingProfileActions ? (
-              <span className="text-2xl leading-none">{(action as { emoji: string }).emoji}</span>
-            ) : (
-              (() => {
-                const Icon = (action as { icon: React.ComponentType<{ className?: string }> }).icon;
-                return <Icon className="w-6 h-6" />;
-              })()
-            )}
-            <span className="text-sm font-semibold leading-tight group-hover:underline">
-              {action.label}
-            </span>
-          </Link>
-        ))}
+        {actions.map((action) => {
+          const Icon = QUICK_ACTION_ICONS[action.href] || FileText;
+          return (
+            <Link
+              key={action.href}
+              to={action.href}
+              className={`${action.color} ${action.textColor} rounded-2xl p-4 flex flex-col items-start gap-2.5 shadow-sm hover:opacity-90 hover:shadow-md transition-all duration-150 group`}
+            >
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Icon className="w-5 h-5" />
+              </div>
+              <span className="text-sm font-semibold leading-tight group-hover:underline">
+                {action.label}
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </motion.div>
   );

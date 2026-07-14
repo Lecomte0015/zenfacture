@@ -79,10 +79,10 @@ const ProfilMetierModal: React.FC = () => {
                       : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                   }`}
                 >
-                  {/* Emoji */}
-                  <span className="text-3xl leading-none flex-shrink-0 mt-0.5">
-                    {profile.emoji}
-                  </span>
+                  {/* Icône */}
+                  <div className={`p-2.5 rounded-xl shrink-0 ${isSelected ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                    <profile.icon className={`w-5 h-5 ${isSelected ? 'text-blue-600' : 'text-gray-500'}`} />
+                  </div>
 
                   {/* Texte */}
                   <div className="flex-1 min-w-0">

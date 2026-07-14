@@ -110,7 +110,9 @@ export default function CRMPage() {
                   {/* En-tête colonne */}
                   <div className={`rounded-xl border ${cfg.border} ${cfg.bg} px-3 py-2.5 mb-2 flex items-center justify-between`}>
                     <div className="flex items-center gap-2">
-                      <span className="text-base">{cfg.emoji}</span>
+                      <div className="p-1.5 rounded-lg bg-white/60">
+                        <cfg.icon className={`w-3.5 h-3.5 ${cfg.couleur}`} />
+                      </div>
                       <div>
                         <p className={`text-sm font-semibold ${cfg.couleur}`}>{cfg.label}</p>
                         <p className="text-xs text-gray-400">{opps.length} opp. • {formatCurrency(total, 'CHF')}</p>
@@ -167,7 +169,9 @@ export default function CRMPage() {
               const cfg = STADES_CONFIG[opp.stade];
               return (
                 <div key={opp.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer" onClick={() => setDetailOpp(opp)}>
-                  <span className="text-lg">{cfg.emoji}</span>
+                  <div className={`p-1.5 rounded-lg ${cfg.bg}`}>
+                    <cfg.icon className={`w-4 h-4 ${cfg.couleur}`} />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-800 truncate">{opp.nom}</p>
                     <p className="text-xs text-gray-400">{opp.client_nom || opp.client_email || '—'}</p>
@@ -348,7 +352,9 @@ function DetailModal({ opp, organisationId, onClose, onRefresh, onEdit }: {
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">{cfg.emoji}</span>
+                  <div className="p-1.5 rounded-lg bg-white/60">
+                    <cfg.icon className={`w-4 h-4 ${cfg.couleur}`} />
+                  </div>
                   <span className={`text-xs font-semibold ${cfg.couleur}`}>{cfg.label}</span>
                 </div>
                 <h2 className="text-lg font-bold text-gray-900 mt-0.5">{opp.nom}</h2>
@@ -386,8 +392,8 @@ function DetailModal({ opp, organisationId, onClose, onRefresh, onEdit }: {
                   const c = STADES_CONFIG[s];
                   return (
                     <button key={s} onClick={async () => { await changerStade(opp.id, s); onRefresh(); onClose(); }}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${c.bg} ${c.border} ${c.couleur}`}>
-                      {c.emoji} {c.label}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border ${c.bg} ${c.border} ${c.couleur}`}>
+                      <c.icon className="w-3 h-3" /> {c.label}
                     </button>
                   );
                 })}
@@ -400,7 +406,7 @@ function DetailModal({ opp, organisationId, onClose, onRefresh, onEdit }: {
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {activites.map(a => (
                   <div key={a.id} className="flex items-start gap-2 text-xs">
-                    <span>{TYPES_ACTIVITE[a.type].emoji}</span>
+                    <TYPES_ACTIVITE[a.type].icon className="w-3.5 h-3.5 text-gray-400 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-gray-700 font-medium">{a.titre}</p>
                       <p className="text-gray-400">{new Date(a.date_activite).toLocaleString('fr-CH', { dateStyle: 'short', timeStyle: 'short' })}</p>
@@ -415,7 +421,7 @@ function DetailModal({ opp, organisationId, onClose, onRefresh, onEdit }: {
                 <select value={typeActivite} onChange={e => setTypeActivite(e.target.value as CRMActivite['type'])}
                   className="px-2 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                   {(Object.entries(TYPES_ACTIVITE) as [CRMActivite['type'], typeof TYPES_ACTIVITE[CRMActivite['type']]][]).map(([k, v]) => (
-                    <option key={k} value={k}>{v.emoji} {v.label}</option>
+                    <option key={k} value={k}>{v.label}</option>
                   ))}
                 </select>
                 <input type="text" value={titreActivite} onChange={e => setTitreActivite(e.target.value)}
@@ -548,7 +554,7 @@ function OpportuniteModal({ opp, organisationId, onClose, onSave }: {
                 <select value={stade} onChange={e => { const s = e.target.value as StadeCRM; setStade(s); setProbabilite(String(STADES_CONFIG[s].probabilite_defaut)); }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                   {STADES_ORDRE.map(s => (
-                    <option key={s} value={s}>{STADES_CONFIG[s].emoji} {STADES_CONFIG[s].label}</option>
+                    <option key={s} value={s}>{STADES_CONFIG[s].label}</option>
                   ))}
                 </select>
               </Field>

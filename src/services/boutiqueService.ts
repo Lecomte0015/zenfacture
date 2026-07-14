@@ -15,6 +15,8 @@
  * - Webhooks pour sync en temps réel
  */
 
+import type { ComponentType } from 'react';
+import { ShoppingBag, Store, ShoppingCart, Boxes, Settings2 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
@@ -101,7 +103,7 @@ export interface ResultatSynchro {
 
 export const PLATEFORMES_CONFIG: Record<PlateformeBoutique, {
   nom: string;
-  logo: string;
+  icon: ComponentType<{ className?: string }>;
   couleur: string;
   champs: { key: string; label: string; type: string; requis: boolean; aide?: string }[];
   doc_url: string;
@@ -109,7 +111,7 @@ export const PLATEFORMES_CONFIG: Record<PlateformeBoutique, {
 }> = {
   shopify: {
     nom: 'Shopify',
-    logo: '🛍️',
+    icon: ShoppingBag,
     couleur: '#96BF48',
     champs: [
       { key: 'url_boutique', label: 'URL de votre boutique', type: 'url', requis: true, aide: 'ex: https://ma-boutique.myshopify.com' },
@@ -121,7 +123,7 @@ export const PLATEFORMES_CONFIG: Record<PlateformeBoutique, {
   },
   woocommerce: {
     nom: 'WooCommerce',
-    logo: '🔵',
+    icon: Store,
     couleur: '#7F54B3',
     champs: [
       { key: 'url_boutique', label: 'URL WordPress', type: 'url', requis: true, aide: 'ex: https://mon-site.ch' },
@@ -133,7 +135,7 @@ export const PLATEFORMES_CONFIG: Record<PlateformeBoutique, {
   },
   prestashop: {
     nom: 'PrestaShop',
-    logo: '🟣',
+    icon: ShoppingCart,
     couleur: '#DF0067',
     champs: [
       { key: 'url_boutique', label: 'URL PrestaShop', type: 'url', requis: true, aide: 'ex: https://ma-boutique.ch' },
@@ -144,7 +146,7 @@ export const PLATEFORMES_CONFIG: Record<PlateformeBoutique, {
   },
   magento: {
     nom: 'Magento 2',
-    logo: '🟠',
+    icon: Boxes,
     couleur: '#F46F25',
     champs: [
       { key: 'url_boutique', label: 'URL Magento', type: 'url', requis: true, aide: 'ex: https://boutique.ch' },
@@ -155,7 +157,7 @@ export const PLATEFORMES_CONFIG: Record<PlateformeBoutique, {
   },
   custom: {
     nom: 'API personnalisée',
-    logo: '⚙️',
+    icon: Settings2,
     couleur: '#6B7280',
     champs: [
       { key: 'url_boutique', label: 'URL de base de l\'API', type: 'url', requis: true, aide: 'ex: https://api.ma-boutique.ch/v1' },

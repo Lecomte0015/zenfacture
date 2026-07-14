@@ -140,7 +140,9 @@ const ProfilMetierSection: React.FC<{
                   : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
               }`}
             >
-              <span className="text-2xl leading-none">{profile.emoji}</span>
+              <div className={`p-2 rounded-lg shrink-0 ${isSelected ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                <profile.icon className={`w-5 h-5 ${isSelected ? 'text-blue-600' : 'text-gray-500'}`} />
+              </div>
               <div>
                 <p className={`text-sm font-semibold ${isSelected ? 'text-blue-700' : 'text-gray-800'}`}>
                   {profile.label}

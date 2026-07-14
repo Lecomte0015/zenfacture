@@ -12,6 +12,8 @@
  * - KPI (CA potentiel, CA gagné, taux conversion, durée moyenne)
  */
 
+import type { ComponentType } from 'react';
+import { UserPlus, Phone, FileText, Handshake, Trophy, XCircle, Mail, StickyNote, Bell, Circle } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
@@ -67,7 +69,7 @@ export const STADES_CONFIG: Record<StadeCRM, {
   bg: string;
   border: string;
   probabilite_defaut: number;
-  emoji: string;
+  icon: ComponentType<{ className?: string }>;
 }> = {
   prospect: {
     label: 'Prospect',
@@ -75,7 +77,7 @@ export const STADES_CONFIG: Record<StadeCRM, {
     bg: 'bg-gray-50',
     border: 'border-gray-200',
     probabilite_defaut: 10,
-    emoji: '👋',
+    icon: UserPlus,
   },
   contact: {
     label: 'Contact établi',
@@ -83,7 +85,7 @@ export const STADES_CONFIG: Record<StadeCRM, {
     bg: 'bg-blue-50',
     border: 'border-blue-200',
     probabilite_defaut: 25,
-    emoji: '📞',
+    icon: Phone,
   },
   devis_envoye: {
     label: 'Devis envoyé',
@@ -91,7 +93,7 @@ export const STADES_CONFIG: Record<StadeCRM, {
     bg: 'bg-indigo-50',
     border: 'border-indigo-200',
     probabilite_defaut: 50,
-    emoji: '📄',
+    icon: FileText,
   },
   negociation: {
     label: 'Négociation',
@@ -99,7 +101,7 @@ export const STADES_CONFIG: Record<StadeCRM, {
     bg: 'bg-orange-50',
     border: 'border-orange-200',
     probabilite_defaut: 75,
-    emoji: '🤝',
+    icon: Handshake,
   },
   gagne: {
     label: 'Gagné',
@@ -107,7 +109,7 @@ export const STADES_CONFIG: Record<StadeCRM, {
     bg: 'bg-green-50',
     border: 'border-green-200',
     probabilite_defaut: 100,
-    emoji: '🏆',
+    icon: Trophy,
   },
   perdu: {
     label: 'Perdu',
@@ -115,7 +117,7 @@ export const STADES_CONFIG: Record<StadeCRM, {
     bg: 'bg-red-50',
     border: 'border-red-200',
     probabilite_defaut: 0,
-    emoji: '❌',
+    icon: XCircle,
   },
 };
 
@@ -334,12 +336,12 @@ export function getOpportunitesByStade(
   return result;
 }
 
-export const TYPES_ACTIVITE: Record<CRMActivite['type'], { label: string; emoji: string }> = {
-  appel:   { label: 'Appel téléphonique', emoji: '📞' },
-  email:   { label: 'Email envoyé', emoji: '✉️' },
-  reunion: { label: 'Réunion', emoji: '🤝' },
-  note:    { label: 'Note interne', emoji: '📝' },
-  devis:   { label: 'Devis', emoji: '📄' },
-  relance: { label: 'Relance', emoji: '🔔' },
-  autre:   { label: 'Autre', emoji: '•' },
+export const TYPES_ACTIVITE: Record<CRMActivite['type'], { label: string; icon: ComponentType<{ className?: string }> }> = {
+  appel:   { label: 'Appel téléphonique', icon: Phone },
+  email:   { label: 'Email envoyé', icon: Mail },
+  reunion: { label: 'Réunion', icon: Handshake },
+  note:    { label: 'Note interne', icon: StickyNote },
+  devis:   { label: 'Devis', icon: FileText },
+  relance: { label: 'Relance', icon: Bell },
+  autre:   { label: 'Autre', icon: Circle },
 };

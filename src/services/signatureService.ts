@@ -13,6 +13,8 @@
  * - Historique des signatures (preuve légale)
  */
 
+import type { ComponentType } from 'react';
+import { Clock, Eye, CheckCircle2, XCircle, Hourglass } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
@@ -63,13 +65,13 @@ export interface SignaturePublicData {
 // ─── STATUTS ──────────────────────────────────────────────────────────────────
 
 export const STATUTS_SIGNATURE: Record<StatutSignature, {
-  label: string; couleur: string; bg: string; emoji: string;
+  label: string; couleur: string; bg: string; icon: ComponentType<{ className?: string }>;
 }> = {
-  en_attente: { label: 'En attente',  couleur: 'text-yellow-600', bg: 'bg-yellow-100', emoji: '⏳' },
-  vu:         { label: 'Vu',          couleur: 'text-blue-600',   bg: 'bg-blue-100',   emoji: '👁' },
-  signe:      { label: 'Signé',       couleur: 'text-green-600',  bg: 'bg-green-100',  emoji: '✅' },
-  refuse:     { label: 'Refusé',      couleur: 'text-red-600',    bg: 'bg-red-100',    emoji: '❌' },
-  expire:     { label: 'Expiré',      couleur: 'text-gray-600',   bg: 'bg-gray-100',   emoji: '🕐' },
+  en_attente: { label: 'En attente',  couleur: 'text-yellow-600', bg: 'bg-yellow-100', icon: Clock },
+  vu:         { label: 'Vu',          couleur: 'text-blue-600',   bg: 'bg-blue-100',   icon: Eye },
+  signe:      { label: 'Signé',       couleur: 'text-green-600',  bg: 'bg-green-100',  icon: CheckCircle2 },
+  refuse:     { label: 'Refusé',      couleur: 'text-red-600',    bg: 'bg-red-100',    icon: XCircle },
+  expire:     { label: 'Expiré',      couleur: 'text-gray-600',   bg: 'bg-gray-100',   icon: Hourglass },
 };
 
 // ─── GESTION DEMANDES (ADMIN) ─────────────────────────────────────────────────

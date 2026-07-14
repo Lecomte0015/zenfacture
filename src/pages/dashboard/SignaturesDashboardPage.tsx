@@ -156,7 +156,9 @@ function DemandeRow({ demande, copied, onCopier, onAnnuler }: {
     <div className="flex items-center gap-3 px-4 py-3">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-lg">{sc.emoji}</span>
+          <div className={`p-1 rounded-md ${sc.bg}`}>
+            <sc.icon className={`w-3.5 h-3.5 ${sc.couleur}`} />
+          </div>
           <span className="font-medium text-gray-800 text-sm truncate">{demande.document_titre}</span>
           <span className="text-xs text-gray-400">{typeLabels[demande.document_type]}</span>
           <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${sc.bg} ${sc.couleur}`}>{sc.label}</span>

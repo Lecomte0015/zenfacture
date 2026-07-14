@@ -12,7 +12,7 @@ import {
   BookOpen, Zap, Shield, Archive,
   Timer, Wallet, Send, Boxes, PieChart, Layers,
   Mail, ShoppingCart, Link2, AlertOctagon, Globe,
-  Target, Truck, PenSquare, Bell,
+  Target, Truck, PenSquare, Bell, Settings2,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -22,7 +22,7 @@ interface SidebarProps {
 interface NavGroup {
   id: string;
   label: string;
-  emoji: string;
+  icon: React.ElementType;
   items: NavItem[];
 }
 
@@ -40,7 +40,7 @@ const navGroups: NavGroup[] = [
   {
     id: 'facturation',
     label: 'Facturation',
-    emoji: '📋',
+    icon: FileText,
     items: [
       { name: 'Factures',               href: '/dashboard/invoices',      icon: FileText },
       { name: 'Devis',                  href: '/dashboard/devis',         icon: ClipboardList, profileKey: 'devis' },
@@ -53,7 +53,7 @@ const navGroups: NavGroup[] = [
   {
     id: 'clients',
     label: 'Clients & Produits',
-    emoji: '👥',
+    icon: Users,
     items: [
       { name: 'Clients',  href: '/dashboard/clients',  icon: Users },
       { name: 'Produits', href: '/dashboard/produits', icon: Package, profileKey: 'produits' },
@@ -63,7 +63,7 @@ const navGroups: NavGroup[] = [
   {
     id: 'depenses',
     label: 'Dépenses',
-    emoji: '💸',
+    icon: Wallet,
     items: [
       { name: 'Dépenses', href: '/dashboard/expenses', icon: FileText, feature: 'expenses' },
     ],
@@ -71,7 +71,7 @@ const navGroups: NavGroup[] = [
   {
     id: 'finance',
     label: 'Finance',
-    emoji: '🏦',
+    icon: Building2,
     items: [
       { name: 'E-banking',        href: '/dashboard/banking',       icon: Building2 },
       { name: 'Comptabilité',     href: '/dashboard/comptabilite',  icon: BookOpen, feature: 'comptabilite' },
@@ -88,7 +88,7 @@ const navGroups: NavGroup[] = [
   {
     id: 'rapports',
     label: 'Rapports',
-    emoji: '📊',
+    icon: BarChart2,
     items: [
       { name: 'Rapports',         href: '/dashboard/reports',          icon: BarChart2, feature: 'reports' },
       { name: 'Détection fraude', href: '/dashboard/fraud-detection',  icon: AlertOctagon, profileKey: 'fraud' },
@@ -98,7 +98,7 @@ const navGroups: NavGroup[] = [
   {
     id: 'ventes',
     label: 'Ventes & CRM',
-    emoji: '🛒',
+    icon: ShoppingCart,
     items: [
       { name: 'CRM Pipeline',          href: '/dashboard/crm',            icon: Target,       profileKey: 'crm' },
       { name: 'Point de vente (POS)',  href: '/dashboard/pos',            icon: ShoppingCart, profileKey: 'pos' },
@@ -109,7 +109,7 @@ const navGroups: NavGroup[] = [
   {
     id: 'achats',
     label: 'Achats',
-    emoji: '📦',
+    icon: Package,
     items: [
       { name: 'Commandes fournisseurs', href: '/dashboard/commandes-fournisseurs', icon: Truck, profileKey: 'commandes' },
     ],
@@ -117,7 +117,7 @@ const navGroups: NavGroup[] = [
   {
     id: 'administration',
     label: 'Administration',
-    emoji: '⚙️',
+    icon: Settings2,
     items: [
       { name: 'Suivi du temps', href: '/dashboard/time-tracking', icon: Timer,     profileKey: 'timeTracking' },
       { name: 'Salaires',       href: '/dashboard/payroll',       icon: Wallet,    profileKey: 'payroll' },
@@ -236,7 +236,7 @@ export const Sidebar = ({ children }: SidebarProps) => {
                 className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors rounded-md hover:bg-white/5"
               >
                 <span className="flex items-center gap-1.5">
-                  <span>{group.emoji}</span>
+                  <group.icon className="w-3.5 h-3.5" />
                   <span>{group.label}</span>
                 </span>
                 {isCollapsed

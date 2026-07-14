@@ -5,6 +5,9 @@
 //   • les actions rapides affichées sur le dashboard
 // ─────────────────────────────────────────────────────────────────────────────
 
+import type { ComponentType } from 'react';
+import { ShoppingBag, Wrench, Laptop, UtensilsCrossed, HardHat, Stethoscope, Briefcase } from 'lucide-react';
+
 export type ProfilMetier =
   | 'commerce'
   | 'services'
@@ -69,7 +72,7 @@ export interface ProfileFeatures {
 export interface BusinessProfile {
   id: ProfilMetier;
   label: string;
-  emoji: string;
+  icon: ComponentType<{ className?: string }>;
   description: string;
   /** Couleur Tailwind principale (sans le `bg-` ou `text-`) */
   accentColor: string;
@@ -86,7 +89,7 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
   commerce: {
     id: 'commerce',
     label: 'Commerce / Boutique',
-    emoji: '🛍️',
+    icon: ShoppingBag,
     description: 'Vente au détail, boutique physique ou en ligne',
     accentColor: 'blue',
     features: {
@@ -109,7 +112,7 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
   services: {
     id: 'services',
     label: 'Services / Artisan',
-    emoji: '🧹',
+    icon: Wrench,
     description: 'Ménage, jardinage, artisans, services à domicile',
     accentColor: 'emerald',
     features: {
@@ -132,7 +135,7 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
   freelance: {
     id: 'freelance',
     label: 'Freelance / Consultant',
-    emoji: '💻',
+    icon: Laptop,
     description: 'Développeur, designer, consultant indépendant',
     accentColor: 'violet',
     features: {
@@ -155,7 +158,7 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
   restauration: {
     id: 'restauration',
     label: 'Restauration / Food',
-    emoji: '🍽️',
+    icon: UtensilsCrossed,
     description: 'Restaurant, café, food truck, traiteur',
     accentColor: 'orange',
     features: {
@@ -178,7 +181,7 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
   construction: {
     id: 'construction',
     label: 'Construction / BTP',
-    emoji: '🏗️',
+    icon: HardHat,
     description: 'Maçon, électricien, plombier, menuisier',
     accentColor: 'amber',
     features: {
@@ -201,7 +204,7 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
   sante: {
     id: 'sante',
     label: 'Santé / Bien-être',
-    emoji: '🏥',
+    icon: Stethoscope,
     description: 'Médecin, thérapeute, coach, kinésithérapeute',
     accentColor: 'teal',
     features: {
@@ -223,7 +226,7 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
   pme: {
     id: 'pme',
     label: 'PME / Entreprise',
-    emoji: '🏢',
+    icon: Briefcase,
     description: 'Petite ou moyenne entreprise, toutes activités',
     accentColor: 'gray',
     features: {

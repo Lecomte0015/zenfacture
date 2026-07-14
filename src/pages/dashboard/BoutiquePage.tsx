@@ -145,7 +145,7 @@ export default function BoutiquePage() {
         <div className="flex flex-wrap gap-3">
           {(Object.entries(PLATEFORMES_CONFIG) as [PlateformeBoutique, typeof PLATEFORMES_CONFIG[PlateformeBoutique]][]).map(([key, cfg]) => (
             <div key={key} className="flex items-center gap-1.5 bg-white rounded-lg px-3 py-1.5 border border-blue-100 shadow-sm text-sm font-medium text-gray-700">
-              <span>{cfg.logo}</span>
+              <cfg.icon className="w-3.5 h-3.5" style={{ color: cfg.couleur }} />
               <span>{cfg.nom}</span>
             </div>
           ))}
@@ -267,10 +267,10 @@ function ConnexionsList({
                 {/* Info boutique */}
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ backgroundColor: cfg.couleur + '20' }}
                   >
-                    {cfg.logo}
+                    <cfg.icon className="w-5 h-5" style={{ color: cfg.couleur }} />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
@@ -417,7 +417,7 @@ function CommandesList({ commandes, connexions }: {
               className="flex items-center gap-3 cursor-pointer"
               onClick={() => setExpandedId(isExpanded ? null : cmd.id)}
             >
-              {cfg && <span className="text-lg">{cfg.logo}</span>}
+              {cfg && <cfg.icon className="w-4 h-4" style={{ color: cfg.couleur }} />}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-gray-800 text-sm">{cmd.numero_commande}</span>
@@ -572,7 +572,7 @@ function ConnexionModal({
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <div className="text-2xl mb-1">{c.logo}</div>
+                      <c.icon className="w-5 h-5 mb-1 mx-auto" style={{ color: c.couleur }} />
                       <div className="text-xs font-medium text-gray-700 truncate">{c.nom}</div>
                     </button>
                   ))}
