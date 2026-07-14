@@ -434,7 +434,7 @@ export async function generatePdfBase64(invoiceData: {
     // réellement, pour ne jamais provoquer un saut de page inutile.
     doc.setFontSize(7.5);
     const cgvText = isDevis
-      ? "Ce devis est valable jusqu'à la date indiquée ci-dessus et ne constitue pas une facture. Il devient caduc passé ce délai. Pour toute question ou pour valider cette offre, merci de nous contacter aux coordonnées ci-dessous."
+      ? "Ce devis est valable jusqu'à la date indiquée ci-dessus et ne constitue pas une facture. Il devient caduc passé ce délai. Pour valider cette offre, merci de nous retourner ce document signé ci-dessous ou de nous contacter aux coordonnées ci-dessous."
       : "Conditions générales : sauf accord contraire écrit, le montant de cette facture est dû net dans le délai indiqué ci-dessus. Passé ce délai, des intérêts moratoires de 5% l'an pourront être appliqués de plein droit, sans mise en demeure préalable. Pour toute question relative à cette facture, merci de nous contacter aux coordonnées ci-dessous.";
     const cgvLines = doc.splitTextToSize(cgvText, contentW);
     const cgvBlockHeight = 4 + cgvLines.length * 3.6;
@@ -446,6 +446,46 @@ export async function generatePdfBase64(invoiceData: {
     }
     doc.setTextColor(0, 0, 0);
     y += 6;
+
+    // Devis : bloc "bon pour accord" avec espace de signature — c'est ce qui
+    // transforme concrètement un devis en document que le client peut valider
+    // et retourner directement, au lieu d'un simple récapitulatif informatif.
+    // Uniquement si la place le permet (même logique défensive que les CGV
+    // ci-dessus) ; jamais affiché sur une facture.
+    if (isDevis) {
+      const sigBoxH = 24;
+      if (y + sigBoxH + 6 < availableBottom - 4) {
+        y += 2;
+        doc.setDrawColor(215, 215, 215); doc.setLineWidth(0.3);
+        doc.roundedRect(marginL, y, contentW, sigBoxH, 1.5, 1.5, 'S');
+        doc.setDrawColor(0, 0, 0);
+
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+        doc.setTextColor(90, 90, 90);
+        doc.text('BON POUR ACCORD', marginL + 4, y + 6);
+
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
+        doc.setTextColor(140, 140, 140);
+        const acceptLines = doc.splitTextToSize(
+          'Ce devis est accepté tel quel. Merci de dater, signer et nous retourner ce document pour valider la commande.',
+          contentW - 8
+        );
+        doc.text(acceptLines, marginL + 4, y + 10.5);
+
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        const sigLineY = y + sigBoxH - 5;
+        doc.text('Date :', marginL + 4, sigLineY);
+        doc.setDrawColor(180, 180, 180);
+        doc.line(marginL + 16, sigLineY + 0.5, marginL + 65, sigLineY + 0.5);
+        doc.text('Signature :', marginL + 75, sigLineY);
+        doc.line(marginL + 95, sigLineY + 0.5, marginL + contentW - 4, sigLineY + 0.5);
+        doc.setDrawColor(0, 0, 0);
+        doc.setTextColor(0, 0, 0);
+
+        y += sigBoxH + 6;
+      }
+    }
 
     // Sans bulletin QR (devis, ou facture sans IBAN configuré), le pied de
     // page suit directement le contenu au lieu d'être plaqué en bas d'une
