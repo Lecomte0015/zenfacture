@@ -178,6 +178,26 @@ export async function generatePdfBase64(invoiceData: {
         img.src = url;
       });
 
+    // Traduit un code pays (CH, FR...) en nom complet — évite d'afficher un
+    // code brut orphelin quand company_country/client_country ne contient
+    // qu'un code ISO. Liste alignée sur i18n/locales/fr.json > countries.
+    const countryMap: Record<string, string> = {
+      CH: 'Suisse', FR: 'France', BE: 'Belgique', LU: 'Luxembourg',
+      CA: 'Canada', DE: 'Allemagne', AT: 'Autriche', IT: 'Italie',
+    };
+    const countryName = (code?: string) => (code && countryMap[code]) || code || 'Suisse';
+
+    // Format suisse : apostrophe comme séparateur de milliers (ex: 1'234.50).
+    // Utilise une apostrophe ASCII simple (') plutôt que la typographique (')
+    // — le jeu de caractères WinAnsi des polices standard de jsPDF ne rend
+    // pas cette dernière correctement.
+    const fmtAmt = (n: number): string => {
+      const fixed = (n || 0).toFixed(2);
+      const [intPart, decPart] = fixed.split('.');
+      const withSep = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+      return `${withSep}.${decPart}`;
+    };
+
     const primaryRgb = hexToRgb(invoiceData.primary_color || '#2563EB');
     const headerBgRgb = hexToRgb(invoiceData.header_bg_color || '#F3F4F6');
     const lightPrimary: [number, number, number] = [
@@ -215,6 +235,13 @@ export async function generatePdfBase64(invoiceData: {
       } catch { /* logo indisponible */ }
     }
 
+    // Libellé "ÉMETTEUR" — repère standard pour identifier sans ambiguïté
+    // qui envoie le document (au-dessus du nom de la société).
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
+    doc.setTextColor(140, 140, 140);
+    doc.text('ÉMETTEUR', marginL, y - 4);
+    doc.setTextColor(0, 0, 0);
+
     doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
     doc.text(invoiceData.company_name || '', marginL, y);
     doc.setFontSize(invoiceData.company_logo_url ? 14 : 22);
@@ -222,18 +249,62 @@ export async function generatePdfBase64(invoiceData: {
     doc.text(docLabel, pageW - marginR, invoiceData.company_logo_url ? y + 17 : y, { align: 'right' });
     doc.setTextColor(0, 0, 0);
 
+    // Bloc adresse société construit dynamiquement : n'affiche jamais une
+    // ligne "pays" orpheline quand aucune adresse n'est renseignée dans
+    // Réglages > Organisation (auparavant company_country s'affichait toujours,
+    // même seul, produisant une ligne "CH" flottante sans contexte).
+    const companyLines: string[] = [];
+    if (invoiceData.company_address) companyLines.push(invoiceData.company_address);
+    const companyCityLine = `${invoiceData.company_postal_code || ''} ${invoiceData.company_city || ''}`.trim();
+    if (companyCityLine) companyLines.push(companyCityLine);
+    if (companyLines.length > 0) companyLines.push(countryName(invoiceData.company_country));
+
+    const rightLines = [
+      `N° ${invoiceData.invoice_number}`,
+      `Date : ${fmt(invoiceData.date)}`,
+      `${isDevis ? 'Valable jusqu\'au' : 'Échéance'} : ${fmt(invoiceData.due_date)}`,
+    ];
+
     ln(6); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    if (invoiceData.company_address) doc.text(invoiceData.company_address, marginL, y);
-    doc.text(`N° ${invoiceData.invoice_number}`, pageW - marginR, y, { align: 'right' });
-    ln(4);
-    doc.text(`${invoiceData.company_postal_code || ''} ${invoiceData.company_city || ''}`.trim(), marginL, y);
-    doc.text(`Date : ${fmt(invoiceData.date)}`, pageW - marginR, y, { align: 'right' });
-    ln(4);
-    doc.text(invoiceData.company_country || 'Suisse', marginL, y);
-    doc.text(`${isDevis ? 'Valable jusqu\'au' : 'Échéance'} : ${fmt(invoiceData.due_date)}`, pageW - marginR, y, { align: 'right' });
+    const headerLineCount = Math.max(companyLines.length, rightLines.length);
+    for (let i = 0; i < headerLineCount; i++) {
+      if (companyLines[i]) doc.text(companyLines[i], marginL, y);
+      if (rightLines[i]) doc.text(rightLines[i], pageW - marginR, y, { align: 'right' });
+      if (i < headerLineCount - 1) ln(4);
+    }
     if (invoiceData.company_vat) { ln(4); doc.text(`IDE: CHE-${invoiceData.company_vat}`, marginL, y); }
+    if (invoiceData.company_email || invoiceData.company_phone) {
+      ln(4);
+      doc.setTextColor(110, 110, 110);
+      doc.text([invoiceData.company_email, invoiceData.company_phone].filter(Boolean).join('  •  '), marginL, y);
+      doc.setTextColor(0, 0, 0);
+    }
+
+    // Devis : badge de validité mettant en avant le nombre de jours restants,
+    // pour inciter le client à se décider avant l'expiration de l'offre.
+    if (isDevis && invoiceData.due_date) {
+      const daysLeft = Math.max(0, Math.ceil((new Date(invoiceData.due_date).getTime() - Date.now()) / 86400000));
+      const pillText = daysLeft > 0
+        ? `Offre valable encore ${daysLeft} jour${daysLeft > 1 ? 's' : ''}`
+        : 'Offre arrivée à expiration';
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+      const pillW = doc.getTextWidth(pillText) + 8;
+      const pillH = 6;
+      const pillX = pageW - marginR - pillW;
+      ln(6);
+      doc.setFillColor(...lightPrimary);
+      doc.roundedRect(pillX, y - 4, pillW, pillH, pillH / 2, pillH / 2, 'F');
+      doc.setTextColor(...primaryRgb);
+      doc.text(pillText, pillX + pillW / 2, y, { align: 'center' });
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'normal');
+    }
 
     ln(12);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
+    doc.setTextColor(140, 140, 140);
+    doc.text('CLIENT', marginL + 3, y - 3);
+    doc.setTextColor(0, 0, 0);
     doc.setDrawColor(...primaryRgb); doc.setLineWidth(0.5);
     doc.line(marginL, y, marginL, y + 22);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
@@ -241,7 +312,7 @@ export async function generatePdfBase64(invoiceData: {
     doc.setFont('helvetica', 'normal');
     if (invoiceData.client_address) doc.text(invoiceData.client_address, marginL + 3, y + 9);
     doc.text(`${invoiceData.client_postal_code || ''} ${invoiceData.client_city || ''}`.trim(), marginL + 3, y + 14);
-    doc.text(invoiceData.client_country || 'Suisse', marginL + 3, y + 19);
+    doc.text(countryName(invoiceData.client_country), marginL + 3, y + 19);
     doc.setDrawColor(0, 0, 0);
     ln(30);
 
@@ -257,26 +328,33 @@ export async function generatePdfBase64(invoiceData: {
     ln(8);
 
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    for (const item of invoiceData.items) {
+    invoiceData.items.forEach((item, idx) => {
       if (y > 240) { doc.addPage(); y = 20; }
+      // Lignes zébrées — repère visuel pour les tableaux à plusieurs lignes,
+      // évite l'effet "trop plat" d'un tableau uniquement séparé par des
+      // filets fins.
+      if (idx % 2 === 1) {
+        doc.setFillColor(248, 248, 249);
+        doc.rect(marginL, y - 5, contentW, 7, 'F');
+      }
       doc.text(doc.splitTextToSize(item.description, 75), colX[0], y);
       doc.text(String(item.quantity), colX[1], y, { align: 'right' });
-      doc.text(`${(item.unitPrice || 0).toFixed(2)}`, colX[2], y, { align: 'right' });
+      doc.text(fmtAmt(item.unitPrice || 0), colX[2], y, { align: 'right' });
       doc.text(`${(item.vatRate || 0).toFixed(1)}%`, colX[3], y, { align: 'right' });
-      doc.text(`${(item.total || 0).toFixed(2)}`, colX[4] + 15, y, { align: 'right' });
+      doc.text(fmtAmt(item.total || 0), colX[4] + 15, y, { align: 'right' });
       doc.setDrawColor(220, 220, 220);
       doc.line(marginL, y + 2, marginL + contentW, y + 2);
       doc.setDrawColor(0, 0, 0);
       ln(7);
-    }
+    });
 
     ln(4);
     const totX = marginL + contentW - 60;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
     doc.text('Sous-total :', totX, y);
-    doc.text(`${(invoiceData.subtotal || 0).toFixed(2)} ${invoiceData.devise || 'CHF'}`, marginL + contentW, y, { align: 'right' });
+    doc.text(`${fmtAmt(invoiceData.subtotal || 0)} ${invoiceData.devise || 'CHF'}`, marginL + contentW, y, { align: 'right' });
     ln(5); doc.text('TVA :', totX, y);
-    doc.text(`${(invoiceData.tax_amount || 0).toFixed(2)} ${invoiceData.devise || 'CHF'}`, marginL + contentW, y, { align: 'right' });
+    doc.text(`${fmtAmt(invoiceData.tax_amount || 0)} ${invoiceData.devise || 'CHF'}`, marginL + contentW, y, { align: 'right' });
     ln(5);
 
     // Total mis en valeur dans un encadré teinté
@@ -286,7 +364,7 @@ export async function generatePdfBase64(invoiceData: {
     doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
     doc.setTextColor(...primaryRgb);
     doc.text('Total', totX, y + 8.5);
-    doc.text(`${(invoiceData.total || 0).toFixed(2)} ${invoiceData.devise || 'CHF'}`, marginL + contentW, y + 8.5, { align: 'right' });
+    doc.text(`${fmtAmt(invoiceData.total || 0)} ${invoiceData.devise || 'CHF'}`, marginL + contentW, y + 8.5, { align: 'right' });
     doc.setTextColor(0, 0, 0);
     y += totBoxH + 6;
 
