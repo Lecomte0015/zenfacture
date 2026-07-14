@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   CheckCircle, XCircle, Loader2, PenLine, Type,
-  Eraser, Building2, FileText, AlertTriangle,
+  Eraser, Building2, FileText, AlertTriangle, Lock,
 } from 'lucide-react';
 import {
   SignaturePublicData,
@@ -339,8 +339,8 @@ export default function SignaturePage() {
               </button>
             </div>
 
-            <p className="text-xs text-gray-400 text-center">
-              🔒 Connexion sécurisée · Ce lien expire le {new Date(demande.expires_at).toLocaleDateString('fr-CH')}
+            <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-1">
+              <Lock className="w-3 h-3" />Connexion sécurisée · Ce lien expire le {new Date(demande.expires_at).toLocaleDateString('fr-CH')}
             </p>
           </div>
         )}

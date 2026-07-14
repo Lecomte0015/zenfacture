@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2, Settings2, AlertTriangle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useOrganisation } from '../../context/OrganisationContext';
 import { generateInvoiceQrCode } from '../../services/swissQrService';
@@ -432,7 +432,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onClose, onInvoiceAdded }) =>
                       target="_blank"
                       rel="noreferrer"
                     >
-                      ⚙️ Configurer logo &amp; couleurs →
+                      <Settings2 className="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" />Configurer logo &amp; couleurs →
                     </a>
                   )}
                 </div>
@@ -640,8 +640,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onClose, onInvoiceAdded }) =>
                 
                 {qrError && (
                   <div className="mt-4 pt-4 border-t border-gray-200">
-                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
-                      ⚠️ {qrError}
+                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 flex items-start gap-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />{qrError}
                     </p>
                   </div>
                 )}

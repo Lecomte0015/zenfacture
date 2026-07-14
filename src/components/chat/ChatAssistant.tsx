@@ -21,7 +21,7 @@ const RESPONSES: Record<string, string> = {
   "prix": "ZenFacture propose 3 formules : **Starter** (9 CHF/mois) pour débuter, **Business** (29 CHF/mois, le plus populaire) avec toutes les fonctionnalités, et **Enterprise** (79 CHF/mois) avec support prioritaire et API. Tous les plans incluent un essai gratuit de 14 jours !",
   "tarif": "Nos tarifs commencent à **9 CHF/mois** pour le plan Starter. Le plan Business à 29 CHF/mois inclut les factures illimitées, la gestion multi-devises (CHF/EUR/USD), les devis et avoirs, ainsi que la déclaration TVA automatique.",
   "tva": "ZenFacture **calcule automatiquement votre TVA** avec les 3 taux suisses (8.1% normal, 2.6% réduit, 3.8% hébergement). Le module génère également le **formulaire AFC 200** prêt à envoyer et exporte en XML pour la soumission électronique.",
-  "fonctionnalité": "ZenFacture offre : ✅ Factures QR suisses, ✅ Gestion clients & produits, ✅ Devis & Avoirs, ✅ Factures récurrentes, ✅ Multi-devises (CHF/EUR/USD), ✅ Déclaration TVA automatique, ✅ Rappels de paiement, ✅ E-banking & comptabilité, ✅ Portail fiduciaire.",
+  "fonctionnalité": "ZenFacture offre : Factures QR suisses, Gestion clients & produits, Devis & Avoirs, Factures récurrentes, Multi-devises (CHF/EUR/USD), Déclaration TVA automatique, Rappels de paiement, E-banking & comptabilité, Portail fiduciaire.",
   "facture": "Créez une facture en 3 clics : 1) Sélectionnez un client, 2) Ajoutez vos produits/services, 3) ZenFacture génère automatiquement la **QR-facture** avec calcul TVA, numérotation séquentielle et QR-code. Envoyez par email ou téléchargez en PDF !",
   "client": "La gestion clients permet de stocker toutes les informations (nom, adresse, IBAN, TVA), d'organiser par tags, et de suivre l'historique complet des factures et paiements. Import possible depuis Excel/CSV.",
   "récurrent": "Les **factures récurrentes** automatisent vos abonnements : configurez la fréquence (mensuelle, trimestrielle, annuelle) et ZenFacture génère et envoie automatiquement vos factures aux dates définies.",
@@ -37,8 +37,8 @@ const RESPONSES: Record<string, string> = {
   "essai": "Oui ! ZenFacture offre un **essai gratuit de 14 jours sans carte bancaire** sur tous les plans. Testez toutes les fonctionnalités en conditions réelles avant de vous engager.",
   "support": "Notre support est disponible par **email** (tous les plans), avec réponse sous 24h. Le plan Enterprise bénéficie d'un **support prioritaire** avec réponse sous 4h et assistance téléphonique.",
   "sécurité": "Vos données sont **hébergées en Suisse** (conformité nLPD), chiffrées en transit (SSL/TLS) et au repos. Sauvegardes quotidiennes, accès sécurisé avec authentification 2FA disponible.",
-  "bonjour": "Bonjour ! 👋 Je suis l'assistant ZenFacture. Je peux vous aider à découvrir notre solution de facturation suisse. Que souhaitez-vous savoir ?",
-  "salut": "Salut ! 👋 Comment puis-je vous aider avec ZenFacture aujourd'hui ?",
+  "bonjour": "Bonjour ! Je suis l'assistant ZenFacture. Je peux vous aider à découvrir notre solution de facturation suisse. Que souhaitez-vous savoir ?",
+  "salut": "Salut ! Comment puis-je vous aider avec ZenFacture aujourd'hui ?",
   "inscription": "Pour vous inscrire, cliquez sur le bouton **S'inscrire** en haut à droite. Créez votre compte en 2 minutes, aucune carte bancaire requise pour l'essai gratuit de 14 jours !",
   "démo": "Vous pouvez tester ZenFacture gratuitement pendant **14 jours** sans engagement. Toutes les fonctionnalités sont débloquées pour que vous puissiez évaluer la solution en conditions réelles.",
   "aide": "Je peux vous renseigner sur les **fonctionnalités**, les **tarifs**, la **facturation QR**, la **TVA**, et toutes les questions sur ZenFacture. N'hésitez pas à poser votre question !",
@@ -56,7 +56,7 @@ const ChatAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([{
     id: 'welcome',
-    text: "👋 Bienvenue ! Je suis l'assistant ZenFacture. Je peux répondre à vos questions sur nos fonctionnalités, tarifs, QR-factures suisses, TVA et bien plus. Comment puis-je vous aider ?",
+    text: "Bienvenue ! Je suis l'assistant ZenFacture. Je peux répondre à vos questions sur nos fonctionnalités, tarifs, QR-factures suisses, TVA et bien plus. Comment puis-je vous aider ?",
     sender: 'assistant',
     timestamp: new Date()
   }]);

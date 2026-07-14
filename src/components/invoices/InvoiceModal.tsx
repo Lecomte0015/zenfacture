@@ -1,6 +1,6 @@
 import { Fragment, useRef, useState, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { FiX, FiPrinter, FiDownload, FiEdit2, FiSave, FiMail, FiCreditCard, FiExternalLink, FiAlertTriangle } from 'react-icons/fi';
+import { FiX, FiPrinter, FiDownload, FiEdit2, FiSave, FiMail, FiCreditCard, FiExternalLink, FiAlertTriangle, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import { getInvoice, updateInvoice } from '../../services/invoiceService';
 import { generateInvoiceQrCode, formatIbanDisplay } from '../../services/swissQrService';
 import { sendInvoiceEmail, generatePdfBase64 } from '../../services/emailService';
@@ -1013,9 +1013,10 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
                   </div>
                 )}
                 {paymentError && (
-                  <div className="px-6 py-2 bg-red-50 border-b border-red-100 text-sm text-red-700">
-                    ⚠️ {paymentError}
-                    <button onClick={() => setPaymentError(null)} className="ml-2 text-red-400 hover:text-red-600">✕</button>
+                  <div className="px-6 py-2 bg-red-50 border-b border-red-100 text-sm text-red-700 flex items-center gap-1.5">
+                    <FiAlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                    {paymentError}
+                    <button onClick={() => setPaymentError(null)} className="ml-2 text-red-400 hover:text-red-600"><FiX className="w-3.5 h-3.5" /></button>
                   </div>
                 )}
 
@@ -1273,8 +1274,8 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
 
                       {/* Erreur QR (IBAN manquant ou invalide) */}
                       {qrError && (
-                        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-800">
-                          ⚠️ {qrError}
+                        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-800 flex items-start gap-1.5">
+                          <FiAlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />{qrError}
                         </div>
                       )}
 
@@ -1394,8 +1395,9 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
               emailFeedback.type === 'success'
                 ? 'bg-green-50 text-green-800 border border-green-200'
                 : 'bg-red-50 text-red-800 border border-red-200'
-            }`}>
-              {emailFeedback.type === 'success' ? '✅' : '❌'} {emailFeedback.message}
+            } flex items-center gap-2`}>
+              {emailFeedback.type === 'success' ? <FiCheckCircle className="w-4 h-4 flex-shrink-0" /> : <FiXCircle className="w-4 h-4 flex-shrink-0" />}
+              {emailFeedback.message}
             </div>
           ) : (
             <>

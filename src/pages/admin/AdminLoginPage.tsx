@@ -151,9 +151,10 @@ const AdminLoginPage = () => {
         </form>
 
         {/* Security Notice */}
-        <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-yellow-700 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-yellow-800">
-            <strong>⚠️ Zone sécurisée :</strong> Toutes les actions effectuées dans le back-office sont tracées et enregistrées.
+            <strong>Zone sécurisée :</strong> Toutes les actions effectuées dans le back-office sont tracées et enregistrées.
           </p>
         </div>
       </div>

@@ -174,16 +174,16 @@ export async function analyserRisqueFraude(
 
   if (scoreClamp >= 70) {
     niveau = 'critique';
-    recommandation = '⛔ Vérification manuelle obligatoire avant tout paiement. Contactez le client pour confirmer.';
+    recommandation = 'Vérification manuelle obligatoire avant tout paiement. Contactez le client pour confirmer.';
   } else if (scoreClamp >= 45) {
     niveau = 'eleve';
-    recommandation = '⚠️ Vérification recommandée. Contactez le client ou votre responsable financier.';
+    recommandation = 'Vérification recommandée. Contactez le client ou votre responsable financier.';
   } else if (scoreClamp >= 20) {
     niveau = 'moyen';
-    recommandation = '🔍 Risque modéré. Vérifiez les détails avant validation.';
+    recommandation = 'Risque modéré. Vérifiez les détails avant validation.';
   } else {
     niveau = 'faible';
-    recommandation = '✅ Aucune anomalie détectée. Document conforme aux habitudes.';
+    recommandation = 'Aucune anomalie détectée. Document conforme aux habitudes.';
   }
 
   if (alertes.length === 0) {

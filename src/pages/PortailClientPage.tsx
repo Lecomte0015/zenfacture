@@ -91,7 +91,7 @@ export default function PortailClientPage() {
         {/* Bonjour */}
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
-            Bonjour{lien.client_nom ? ` ${lien.client_nom}` : ''} 👋
+            Bonjour{lien.client_nom ? ` ${lien.client_nom}` : ''}
           </h2>
           <p className="text-gray-500 text-sm mt-0.5">Retrouvez ici tous vos documents.</p>
         </div>

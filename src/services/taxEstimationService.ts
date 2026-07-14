@@ -344,7 +344,7 @@ export function verifierSeuilTVA(ca: number): {
     seuil: SEUIL,
     marge: SEUIL - ca,
     message: assujetti
-      ? `⚠️ Votre CA dépasse CHF 100'000. L'assujettissement à la TVA est obligatoire.`
-      : `✅ Votre CA est inférieur au seuil de CHF 100'000. Vous n'êtes pas encore obligé de vous soumettre à la TVA.`,
+      ? `Votre CA dépasse CHF 100'000. L'assujettissement à la TVA est obligatoire.`
+      : `Votre CA est inférieur au seuil de CHF 100'000. Vous n'êtes pas encore obligé de vous soumettre à la TVA.`,
   };
 }

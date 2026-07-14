@@ -20,7 +20,6 @@ export type ProfilMetier =
 export interface QuickAction {
   label: string;
   href: string;
-  emoji: string;
   color: string; // Tailwind bg class
   textColor: string;
 }
@@ -100,10 +99,10 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
       fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
-      { label: 'Caisse POS',       href: '/dashboard/pos',                   emoji: '🏪', color: 'bg-blue-600',    textColor: 'text-white' },
-      { label: 'Stock',            href: '/dashboard/stock',                  emoji: '📦', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'Fournisseurs',     href: '/dashboard/commandes-fournisseurs', emoji: '🚚', color: 'bg-amber-500',   textColor: 'text-white' },
-      { label: 'Nouvelle facture', href: '/dashboard/invoices',               emoji: '📄', color: 'bg-violet-600',  textColor: 'text-white' },
+      { label: 'Caisse POS',       href: '/dashboard/pos',                   color: 'bg-blue-600',    textColor: 'text-white' },
+      { label: 'Stock',            href: '/dashboard/stock',                  color: 'bg-emerald-600', textColor: 'text-white' },
+      { label: 'Fournisseurs',     href: '/dashboard/commandes-fournisseurs', color: 'bg-amber-500',   textColor: 'text-white' },
+      { label: 'Nouvelle facture', href: '/dashboard/invoices',               color: 'bg-violet-600',  textColor: 'text-white' },
     ],
   },
 
@@ -123,10 +122,10 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
       fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
-      { label: 'Nouveau devis',  href: '/dashboard/devis',         emoji: '📋', color: 'bg-blue-600',    textColor: 'text-white' },
-      { label: 'Suivi du temps', href: '/dashboard/time-tracking', emoji: '⏱️', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'Clients',        href: '/dashboard/clients',       emoji: '👥', color: 'bg-violet-600',  textColor: 'text-white' },
-      { label: 'Signatures',     href: '/dashboard/signatures',    emoji: '✍️', color: 'bg-amber-500',   textColor: 'text-white' },
+      { label: 'Nouveau devis',  href: '/dashboard/devis',         color: 'bg-blue-600',    textColor: 'text-white' },
+      { label: 'Suivi du temps', href: '/dashboard/time-tracking', color: 'bg-emerald-600', textColor: 'text-white' },
+      { label: 'Clients',        href: '/dashboard/clients',       color: 'bg-violet-600',  textColor: 'text-white' },
+      { label: 'Signatures',     href: '/dashboard/signatures',    color: 'bg-amber-500',   textColor: 'text-white' },
     ],
   },
 
@@ -146,10 +145,10 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
       fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
-      { label: 'Nouvelle facture', href: '/dashboard/invoices',      emoji: '📄', color: 'bg-blue-600',    textColor: 'text-white' },
-      { label: 'Nouveau devis',    href: '/dashboard/devis',         emoji: '📋', color: 'bg-violet-600',  textColor: 'text-white' },
-      { label: 'Suivi du temps',   href: '/dashboard/time-tracking', emoji: '⏱️', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'TVA',              href: '/dashboard/tva',           emoji: '🧮', color: 'bg-amber-500',   textColor: 'text-white' },
+      { label: 'Nouvelle facture', href: '/dashboard/invoices',      color: 'bg-blue-600',    textColor: 'text-white' },
+      { label: 'Nouveau devis',    href: '/dashboard/devis',         color: 'bg-violet-600',  textColor: 'text-white' },
+      { label: 'Suivi du temps',   href: '/dashboard/time-tracking', color: 'bg-emerald-600', textColor: 'text-white' },
+      { label: 'TVA',              href: '/dashboard/tva',           color: 'bg-amber-500',   textColor: 'text-white' },
     ],
   },
 
@@ -169,10 +168,10 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
       fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
-      { label: 'Caisse POS',   href: '/dashboard/pos',                   emoji: '🍴', color: 'bg-orange-500',  textColor: 'text-white' },
-      { label: 'Stock',        href: '/dashboard/stock',                  emoji: '📦', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'Fournisseurs', href: '/dashboard/commandes-fournisseurs', emoji: '🚚', color: 'bg-amber-500',   textColor: 'text-white' },
-      { label: 'Salaires',     href: '/dashboard/payroll',                emoji: '💶', color: 'bg-violet-600',  textColor: 'text-white' },
+      { label: 'Caisse POS',   href: '/dashboard/pos',                   color: 'bg-orange-500',  textColor: 'text-white' },
+      { label: 'Stock',        href: '/dashboard/stock',                  color: 'bg-emerald-600', textColor: 'text-white' },
+      { label: 'Fournisseurs', href: '/dashboard/commandes-fournisseurs', color: 'bg-amber-500',   textColor: 'text-white' },
+      { label: 'Salaires',     href: '/dashboard/payroll',                color: 'bg-violet-600',  textColor: 'text-white' },
     ],
   },
 
@@ -192,10 +191,10 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
       fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
-      { label: 'Nouveau devis',  href: '/dashboard/devis',                   emoji: '📋', color: 'bg-amber-500',   textColor: 'text-white' },
-      { label: 'Suivi du temps', href: '/dashboard/time-tracking',           emoji: '⏱️', color: 'bg-blue-600',    textColor: 'text-white' },
-      { label: 'Signatures',     href: '/dashboard/signatures',              emoji: '✍️', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'Fournisseurs',   href: '/dashboard/commandes-fournisseurs',  emoji: '🚚', color: 'bg-violet-600',  textColor: 'text-white' },
+      { label: 'Nouveau devis',  href: '/dashboard/devis',                   color: 'bg-amber-500',   textColor: 'text-white' },
+      { label: 'Suivi du temps', href: '/dashboard/time-tracking',           color: 'bg-blue-600',    textColor: 'text-white' },
+      { label: 'Signatures',     href: '/dashboard/signatures',              color: 'bg-emerald-600', textColor: 'text-white' },
+      { label: 'Fournisseurs',   href: '/dashboard/commandes-fournisseurs',  color: 'bg-violet-600',  textColor: 'text-white' },
     ],
   },
 
@@ -215,10 +214,10 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
       fraud: false, audit: false, postal: false, taxEstimation: true,
     },
     quickActions: [
-      { label: 'Nouvelle facture', href: '/dashboard/invoices',   emoji: '📄', color: 'bg-blue-600',    textColor: 'text-white' },
-      { label: 'Clients',          href: '/dashboard/clients',    emoji: '👤', color: 'bg-teal-600',    textColor: 'text-white' },
-      { label: 'Signatures',       href: '/dashboard/signatures', emoji: '✍️', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'TVA',              href: '/dashboard/tva',        emoji: '🧮', color: 'bg-amber-500',   textColor: 'text-white' },
+      { label: 'Nouvelle facture', href: '/dashboard/invoices',   color: 'bg-blue-600',    textColor: 'text-white' },
+      { label: 'Clients',          href: '/dashboard/clients',    color: 'bg-teal-600',    textColor: 'text-white' },
+      { label: 'Signatures',       href: '/dashboard/signatures', color: 'bg-emerald-600', textColor: 'text-white' },
+      { label: 'TVA',              href: '/dashboard/tva',        color: 'bg-amber-500',   textColor: 'text-white' },
     ],
   },
 
@@ -237,10 +236,10 @@ export const BUSINESS_PROFILES: Record<ProfilMetier, BusinessProfile> = {
       fraud: true,  audit: true,  postal: true,  taxEstimation: true,
     },
     quickActions: [
-      { label: 'Nouvelle facture', href: '/dashboard/invoices', emoji: '📄', color: 'bg-blue-600',    textColor: 'text-white' },
-      { label: 'Nouveau devis',    href: '/dashboard/devis',    emoji: '📋', color: 'bg-violet-600',  textColor: 'text-white' },
-      { label: 'CRM Pipeline',     href: '/dashboard/crm',      emoji: '🎯', color: 'bg-emerald-600', textColor: 'text-white' },
-      { label: 'Rapports',         href: '/dashboard/reports',  emoji: '📊', color: 'bg-amber-500',   textColor: 'text-white' },
+      { label: 'Nouvelle facture', href: '/dashboard/invoices', color: 'bg-blue-600',    textColor: 'text-white' },
+      { label: 'Nouveau devis',    href: '/dashboard/devis',    color: 'bg-violet-600',  textColor: 'text-white' },
+      { label: 'CRM Pipeline',     href: '/dashboard/crm',      color: 'bg-emerald-600', textColor: 'text-white' },
+      { label: 'Rapports',         href: '/dashboard/reports',  color: 'bg-amber-500',   textColor: 'text-white' },
     ],
   },
 };

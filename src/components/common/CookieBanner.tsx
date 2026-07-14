@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Cookie } from 'lucide-react';
 
 export const CookieBanner: React.FC = () => {
   const [showBanner, setShowBanner] = useState(false);
@@ -72,8 +72,8 @@ export const CookieBanner: React.FC = () => {
           // Vue principale
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                🍪 Nous utilisons des cookies
+              <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                <Cookie className="w-5 h-5 text-gray-500" />Nous utilisons des cookies
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed">
                 Nous utilisons des cookies essentiels pour assurer le bon fonctionnement de notre site,

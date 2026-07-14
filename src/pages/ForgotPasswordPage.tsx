@@ -33,7 +33,7 @@ const ForgotPasswordPage = () => {
 
       if (error) throw error;
       
-      setMessage('📩 Un lien de réinitialisation a été envoyé à votre adresse email.');
+      setMessage('Un lien de réinitialisation a été envoyé à votre adresse email.');
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue lors de l\'envoi de l\'email de réinitialisation.');
       console.error('Erreur de réinitialisation:', err);
