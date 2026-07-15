@@ -13,7 +13,7 @@
  */
 
 import type { ComponentType } from 'react';
-import { UserPlus, Phone, FileText, Handshake, Trophy, XCircle, Mail, StickyNote, Bell, Circle } from 'lucide-react';
+import { UserPlus, Phone, FileText, Users2, Trophy, XCircle, Mail, StickyNote, Bell, Circle, Calendar } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
@@ -101,7 +101,7 @@ export const STADES_CONFIG: Record<StadeCRM, {
     bg: 'bg-orange-50',
     border: 'border-orange-200',
     probabilite_defaut: 75,
-    icon: Handshake,
+    icon: Users2,
   },
   gagne: {
     label: 'Gagné',
@@ -339,7 +339,7 @@ export function getOpportunitesByStade(
 export const TYPES_ACTIVITE: Record<CRMActivite['type'], { label: string; icon: ComponentType<{ className?: string }> }> = {
   appel:   { label: 'Appel téléphonique', icon: Phone },
   email:   { label: 'Email envoyé', icon: Mail },
-  reunion: { label: 'Réunion', icon: Handshake },
+  reunion: { label: 'Réunion', icon: Calendar },
   note:    { label: 'Note interne', icon: StickyNote },
   devis:   { label: 'Devis', icon: FileText },
   relance: { label: 'Relance', icon: Bell },

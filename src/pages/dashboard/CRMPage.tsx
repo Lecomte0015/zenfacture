@@ -406,7 +406,7 @@ function DetailModal({ opp, organisationId, onClose, onRefresh, onEdit }: {
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {activites.map(a => (
                   <div key={a.id} className="flex items-start gap-2 text-xs">
-                    <TYPES_ACTIVITE[a.type].icon className="w-3.5 h-3.5 text-gray-400 mt-0.5" />
+                    {(() => { const ActIcon = TYPES_ACTIVITE[a.type].icon; return <ActIcon className="w-3.5 h-3.5 text-gray-400 mt-0.5" />; })()}
                     <div className="flex-1">
                       <p className="text-gray-700 font-medium">{a.titre}</p>
                       <p className="text-gray-400">{new Date(a.date_activite).toLocaleString('fr-CH', { dateStyle: 'short', timeStyle: 'short' })}</p>
