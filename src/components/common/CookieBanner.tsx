@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Cookie } from 'lucide-react';
+import { loadGoogleAnalytics, disableGoogleAnalytics } from '@/lib/analytics';
 
 export const CookieBanner: React.FC = () => {
   const [showBanner, setShowBanner] = useState(false);
@@ -36,7 +37,7 @@ export const CookieBanner: React.FC = () => {
     setPreferences(allAccepted);
     setShowBanner(false);
     setShowPreferences(false);
-    // Ici vous pourriez activer vos scripts analytics/marketing
+    loadGoogleAnalytics();
   };
 
   const handleAcceptEssential = () => {
@@ -50,6 +51,7 @@ export const CookieBanner: React.FC = () => {
     setPreferences(essentialOnly);
     setShowBanner(false);
     setShowPreferences(false);
+    disableGoogleAnalytics();
   };
 
   const handleSavePreferences = () => {
@@ -60,7 +62,11 @@ export const CookieBanner: React.FC = () => {
     localStorage.setItem('cookieConsent', JSON.stringify(savedPrefs));
     setShowBanner(false);
     setShowPreferences(false);
-    // Activer/désactiver les scripts en fonction des préférences
+    if (savedPrefs.analytics) {
+      loadGoogleAnalytics();
+    } else {
+      disableGoogleAnalytics();
+    }
   };
 
   if (!showBanner) return null;

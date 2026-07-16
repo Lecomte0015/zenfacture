@@ -1,5 +1,6 @@
-import React from 'react';
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { initAnalyticsFromStoredConsent, trackPageView } from '@/lib/analytics';
 import { useAuth } from './context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import MfaChallenge from '@/components/auth/MfaChallenge';
@@ -209,9 +210,27 @@ const LazyLoadDashboard = ({ children }: { children: React.ReactNode }) => (
   </React.Suspense>
 );
 
+// Envoie un page_view à Google Analytics à chaque changement de route —
+// nécessaire car dans une SPA, il n'y a qu'un seul vrai chargement de page ;
+// gtag.js seul ne verrait jamais les navigations suivantes (voir src/lib/analytics.ts).
+const AnalyticsRouteTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    initAnalyticsFromStoredConsent();
+  }, []);
+
+  useEffect(() => {
+    trackPageView(location.pathname + location.search);
+  }, [location.pathname, location.search]);
+
+  return null;
+};
+
 function App() {
   return (
     <>
+    <AnalyticsRouteTracker />
     <CookieBanner />
     <Routes>
       {/* Public Routes with PublicLayout */}
