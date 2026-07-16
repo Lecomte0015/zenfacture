@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaBook, FaFilePdf, FaVideo, FaCode } from 'react-icons/fa';
+import SEO from '../components/common/SEO';
 
 export const DocumentationPage = () => {
   const resources = [
@@ -35,6 +36,13 @@ export const DocumentationPage = () => {
   ];
 
   return (
+    <>
+      <SEO
+        title="Documentation"
+        description="Guides d'utilisation, documentation API et ressources pour prendre en main ZenFacture, le logiciel de facturation suisse pour PME et indépendants."
+        keywords="documentation ZenFacture, guide facturation suisse, API facturation, tutoriel logiciel facturation"
+        url="https://zenfacture.ch/documentation"
+      />
     <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-14">
         <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
@@ -102,6 +110,7 @@ export const DocumentationPage = () => {
         </Link>
       </div>
     </div>
+    </>
   );
 };
 

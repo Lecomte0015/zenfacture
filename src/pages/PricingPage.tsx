@@ -1,6 +1,44 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { CheckIcon } from '@heroicons/react/20/solid';
+import { Helmet } from 'react-helmet-async';
+import SEO from '../components/common/SEO';
+
+const pricingFaqs = [
+  {
+    question: "Puis-je changer de forfait à tout moment ?",
+    answer:
+      "Oui, vous pouvez passer d'un forfait à un autre à tout moment. Le changement prendra effet à la fin de votre période de facturation en cours.",
+  },
+  {
+    question: "Quels modes de paiement acceptez-vous ?",
+    answer:
+      "Nous acceptons les cartes de crédit (Visa, Mastercard, American Express) et les virements bancaires.",
+  },
+  {
+    question: "Puis-je annuler mon abonnement à tout moment ?",
+    answer:
+      "Oui, vous pouvez annuler votre abonnement à tout moment. Vous continuerez à avoir accès aux fonctionnalités jusqu'à la fin de votre période de facturation.",
+  },
+  {
+    question: "Offrez-vous des réductions pour les organisations à but non lucratif ?",
+    answer:
+      "Oui, nous offrons une réduction de 20% pour les organisations à but non lucratif enregistrées. Contactez notre équipe commerciale pour en savoir plus.",
+  },
+];
+
+const pricingFaqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: pricingFaqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: faq.answer,
+    },
+  })),
+};
 
 // Prix mensuels affichés tels quels ; prix "annually" = équivalent mensuel
 // une fois l'abonnement annuel payé en une fois (montant réel facturé :
@@ -61,6 +99,16 @@ export const PricingPage = () => {
   const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'annually'>('monthly');
   
   return (
+    <>
+      <SEO
+        title="Tarifs"
+        description="Des forfaits simples et transparents en francs suisses pour la facturation QR-facture, les devis et la TVA. 30 jours d'essai gratuit, sans carte bancaire."
+        keywords="prix logiciel facturation suisse, tarif facturation PME, abonnement facturation CHF, logiciel devis facture indépendant suisse gratuit"
+        url="https://zenfacture.ch/tarifs"
+      />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(pricingFaqSchema)}</script>
+      </Helmet>
     <div className="bg-white">
       <div className="mx-auto max-w-7xl py-24 px-4 sm:px-6 lg:px-8">
         <div className="sm:flex sm:flex-col sm:items-center">
@@ -171,28 +219,7 @@ export const PricingPage = () => {
           </h2>
           <div className="mt-12">
             <dl className="space-y-10 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-12 md:space-y-0">
-              {[
-                {
-                  question: "Puis-je changer de forfait à tout moment ?",
-                  answer:
-                    "Oui, vous pouvez passer d'un forfait à un autre à tout moment. Le changement prendra effet à la fin de votre période de facturation en cours.",
-                },
-                {
-                  question: "Quels modes de paiement acceptez-vous ?",
-                  answer:
-                    "Nous acceptons les cartes de crédit (Visa, Mastercard, American Express) et les virements bancaires.",
-                },
-                {
-                  question: "Puis-je annuler mon abonnement à tout moment ?",
-                  answer:
-                    "Oui, vous pouvez annuler votre abonnement à tout moment. Vous continuerez à avoir accès aux fonctionnalités jusqu'à la fin de votre période de facturation.",
-                },
-                {
-                  question: "Offrez-vous des réductions pour les organisations à but non lucratif ?",
-                  answer:
-                    "Oui, nous offrons une réduction de 20% pour les organisations à but non lucratif enregistrées. Contactez notre équipe commerciale pour en savoir plus.",
-                },
-              ].map((faq) => (
+              {pricingFaqs.map((faq) => (
                 <div key={faq.question}>
                   <dt className="text-lg font-medium leading-6 text-gray-900">
                     {faq.question}
@@ -205,6 +232,7 @@ export const PricingPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

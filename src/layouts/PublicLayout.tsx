@@ -152,6 +152,7 @@ const Footer = () => {
                 { label: 'Fonctionnalités', href: '/fonctionnalites' },
                 { label: 'Tarifs',          href: '/tarifs' },
                 { label: 'Documentation',   href: '/documentation' },
+                { label: 'Blog',            href: '/blog' },
               ],
             },
             {
@@ -203,7 +204,8 @@ const Footer = () => {
 export const PublicLayout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
   const isLanding = ['/', '/fonctionnalites', '/tarifs', '/aide', '/faq',
-    '/documentation', '/cgu', '/confidentialite'].includes(location.pathname);
+    '/documentation', '/cgu', '/confidentialite'].includes(location.pathname)
+    || location.pathname.startsWith('/blog');
 
   return (
     <div className="min-h-screen bg-white flex flex-col">

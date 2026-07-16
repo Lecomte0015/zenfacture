@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { Helmet } from 'react-helmet-async';
+import SEO from '../components/common/SEO';
 
 export const FaqPage = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -35,7 +37,30 @@ export const FaqPage = () => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+
   return (
+    <>
+      <SEO
+        title="FAQ"
+        description="Les réponses aux questions les plus fréquentes sur ZenFacture : création de facture, QR-facture, essai gratuit, paiements et personnalisation."
+        keywords="FAQ ZenFacture, questions facturation suisse, aide facture QR, essai gratuit facturation"
+        url="https://zenfacture.ch/faq"
+      />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+      </Helmet>
     <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-14">
         <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
@@ -92,6 +117,7 @@ export const FaqPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

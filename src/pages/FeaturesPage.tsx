@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { 
+import SEO from '../components/common/SEO';
+import {
   FiCode,
   FiPieChart, 
   FiBell, 
@@ -58,6 +59,13 @@ const features = [
 
 export const FeaturesPage = () => {
   return (
+    <>
+      <SEO
+        title="Fonctionnalités"
+        description="QR-facture suisse conforme, devis en ligne, calcul automatique de la TVA, rappels administratifs et assistant IA : découvrez toutes les fonctionnalités de ZenFacture."
+        keywords="fonctionnalités logiciel facturation suisse, QR-facture, devis en ligne, calcul TVA suisse, rappels AVS, assistant IA facturation"
+        url="https://zenfacture.ch/fonctionnalites"
+      />
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <div className="bg-white py-16 sm:py-24">
@@ -135,6 +143,7 @@ export const FeaturesPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

@@ -3,11 +3,35 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#2563eb" />
-    <meta name="description" content="ZenFacture - Facturation suisse simplifiée pour PME. QR-bill, TVA, comptabilité." />
+    <meta name="theme-color" content="#1a1a1a" />
+    <meta name="description" content="ZenFacture est le logiciel de facturation suisse pour indépendants et PME : QR-facture conforme, devis, TVA automatique, comptabilité et rappels de paiement. 30 jours d'essai gratuit." />
+    <meta name="keywords" content="logiciel facturation suisse, QR-facture, facture QR, facturation PME suisse, devis en ligne, TVA suisse, logiciel devis facture indépendant" />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="ZenFacture" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="ZenFacture" />
+
+    <!-- Canonical par défaut (surchargé par page via le composant SEO) -->
+    <link rel="canonical" href="https://zenfacture.ch/" />
+
+    <!-- Open Graph / réseaux sociaux — statique car les bots de partage (LinkedIn,
+         WhatsApp, Slack, Facebook…) n'exécutent pas le JS et ne verraient jamais
+         les balises injectées dynamiquement par react-helmet-async -->
+    <meta property="og:site_name" content="ZenFacture" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://zenfacture.ch/" />
+    <meta property="og:title" content="ZenFacture — Logiciel de facturation suisse pour PME et indépendants" />
+    <meta property="og:description" content="Créez des factures QR conformes, des devis professionnels et gérez votre TVA suisse depuis une seule interface. 30 jours d'essai gratuit, sans carte bancaire." />
+    <meta property="og:image" content="https://zenfacture.ch/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="fr_CH" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ZenFacture — Logiciel de facturation suisse pour PME et indépendants" />
+    <meta name="twitter:description" content="Créez des factures QR conformes, des devis professionnels et gérez votre TVA suisse depuis une seule interface." />
+    <meta name="twitter:image" content="https://zenfacture.ch/og-image.png" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -20,7 +44,38 @@
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 
-    <title>ZenFacture - Gestion de factures QR suisse</title>
+    <title>ZenFacture — Logiciel de facturation suisse pour PME et indépendants</title>
+
+    <!-- Données structurées Schema.org : aide Google à comprendre ce qu'est
+         ZenFacture (logiciel SaaS) et l'organisation qui l'édite -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "ZenFacture",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "url": "https://zenfacture.ch/",
+      "description": "Logiciel de facturation suisse pour indépendants et PME : QR-facture conforme, devis, TVA automatique, comptabilité.",
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "CHF",
+        "price": "9",
+        "priceValidUntil": "2026-12-31"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "ZenFacture",
+      "url": "https://zenfacture.ch/",
+      "logo": "https://zenfacture.ch/icons/icon-512.png",
+      "email": "contact@zenfacture.ch",
+      "areaServed": "CH"
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

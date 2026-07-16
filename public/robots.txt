@@ -1,0 +1,22 @@
+# ZenFacture — robots.txt
+
+User-agent: *
+Allow: /
+Allow: /fonctionnalites
+Allow: /tarifs
+Allow: /aide
+Allow: /documentation
+Allow: /faq
+Allow: /blog
+
+# Zones privées : aucune valeur SEO, ne doivent pas être explorées/indexées
+Disallow: /dashboard/
+Disallow: /auth/
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /admin/
+Disallow: /portail/
+Disallow: /fiduciaire/
+Disallow: /signer/
+
+Sitemap: https://zenfacture.ch/sitemap.xml

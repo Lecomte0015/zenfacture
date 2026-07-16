@@ -1,8 +1,16 @@
 import React from 'react';
 import { FaQuestionCircle, FaEnvelope, FaBook, FaComments } from 'react-icons/fa';
+import SEO from '../components/common/SEO';
 
 export const HelpPage = () => {
   return (
+    <>
+      <SEO
+        title="Centre d'aide"
+        description="Besoin d'aide avec ZenFacture ? Retrouvez la FAQ, la documentation et le contact direct de notre équipe basée en Suisse."
+        keywords="aide ZenFacture, support logiciel facturation suisse, contact ZenFacture"
+        url="https://zenfacture.ch/aide"
+      />
     <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-14">
         <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
@@ -112,6 +120,7 @@ export const HelpPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

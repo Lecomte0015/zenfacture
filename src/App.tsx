@@ -25,6 +25,8 @@ const HelpPage = React.lazy(() => import('@/pages/HelpPage'));
 const PricingPage = React.lazy(() => import('@/pages/PricingPage'));
 const DocumentationPage = React.lazy(() => import('@/pages/DocumentationPage'));
 const FaqPage = React.lazy(() => import('@/pages/FaqPage'));
+const BlogPage = React.lazy(() => import('@/pages/BlogPage'));
+const BlogArticlePage = React.lazy(() => import('@/pages/BlogArticlePage'));
 const CguPage = React.lazy(() => import('@/pages/CguPage'));
 const ConfidentialitePage = React.lazy(() => import('@/pages/ConfidentialitePage'));
 const NotFoundPage = React.lazy(() => import('@/pages/NotFoundPage'));
@@ -220,6 +222,8 @@ function App() {
         <Route path="/aide" element={<LazyLoad><HelpPage /></LazyLoad>} />
         <Route path="/documentation" element={<LazyLoad><DocumentationPage /></LazyLoad>} />
         <Route path="/faq" element={<LazyLoad><FaqPage /></LazyLoad>} />
+        <Route path="/blog" element={<LazyLoad><BlogPage /></LazyLoad>} />
+        <Route path="/blog/:slug" element={<LazyLoad><BlogArticlePage /></LazyLoad>} />
         <Route path="/cgu" element={<LazyLoad><CguPage /></LazyLoad>} />
         <Route path="/confidentialite" element={<LazyLoad><ConfidentialitePage /></LazyLoad>} />
 
