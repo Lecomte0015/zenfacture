@@ -33,6 +33,23 @@ export const loadGoogleAnalytics = () => {
   window.gtag = function gtag(...args: unknown[]) {
     window.dataLayer.push(args);
   };
+
+  // Consent Mode v2 : cette propriété a Google Signals activé, ce qui fait
+  // que Google attend un signal de consentement explicite avant d'envoyer le
+  // moindre hit — sans ça, gtag.js se charge et s'initialise normalement,
+  // mais retient silencieusement toutes les données (confirmé via Tag
+  // Assistant : "Aucun hit n'a été envoyé"). On ne charge cette fonction
+  // qu'après acceptation des cookies analytiques dans le CookieBanner, donc
+  // on peut directement déclarer ce consentement comme accordé. Les
+  // catégories liées à la publicité restent refusées : on ne fait pas de
+  // ciblage publicitaire.
+  window.gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'granted',
+  });
+
   window.gtag('js', new Date());
   window.gtag('config', GA_MEASUREMENT_ID, { send_page_view: false });
   // send_page_view: false — on envoie nous-mêmes les page_view à chaque
@@ -46,6 +63,9 @@ export const loadGoogleAnalytics = () => {
 export const disableGoogleAnalytics = () => {
   if (typeof window === 'undefined') return;
   (window as any)[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
+  if (window.gtag) {
+    window.gtag('consent', 'update', { analytics_storage: 'denied' });
+  }
 };
 
 /** À appeler à chaque changement de route (voir AnalyticsRouteTracker). */
