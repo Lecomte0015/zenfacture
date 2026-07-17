@@ -12,8 +12,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="ZenFacture" />
 
-    <!-- Canonical par défaut (surchargé par page via le composant SEO) -->
-    <link rel="canonical" href="https://www.zenfacture.ch/" />
+    <!-- Pas de balise canonical statique ici volontairement : chaque page
+         définit la sienne dynamiquement via le composant SEO (react-helmet-async).
+         Une balise canonical statique commune à toutes les routes désignerait
+         systématiquement l'accueil comme URL canonique de TOUTE page pour les
+         robots qui lisent le HTML avant exécution du JS — ce qui indique à
+         Google de traiter /tarifs, /fonctionnalites, etc. comme des doublons
+         de l'accueil au lieu de pages distinctes à indexer. -->
 
     <!-- Open Graph / réseaux sociaux — statique car les bots de partage (LinkedIn,
          WhatsApp, Slack, Facebook…) n'exécutent pas le JS et ne verraient jamais
