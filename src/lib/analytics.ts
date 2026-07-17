@@ -41,9 +41,14 @@ export const loadGoogleAnalytics = () => {
   dlog('balise <script> ajoutée au head, src =', script.src);
 
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag(...args: unknown[]) {
-    dlog('gtag() appelé avec', args);
-    window.dataLayer.push(args);
+  // Reproduit EXACTEMENT le motif officiel de Google (dataLayer.push(arguments),
+  // pas un tableau construit via spread) — gtag.js interne peut être sensible
+  // à la forme exacte de ce qui est poussé dans dataLayer.
+  window.gtag = function () {
+    // eslint-disable-next-line prefer-rest-params
+    dlog('gtag() appelé avec', arguments);
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer.push(arguments as unknown as unknown[]);
   };
 
   window.gtag('consent', 'default', {
