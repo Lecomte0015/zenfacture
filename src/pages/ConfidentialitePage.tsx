@@ -7,7 +7,7 @@ const ConfidentialitePage: React.FC = () => {
       <SEO
         title="Politique de Confidentialité"
         description="Politique de confidentialité de ZenFacture conforme à la loi suisse nLPD et au RGPD."
-        url="https://zenfacture.ch/confidentialite"
+        url="https://www.zenfacture.ch/confidentialite"
       />
 
       <div className="min-h-screen bg-gray-50 py-16 px-4 sm:px-6 lg:px-8">

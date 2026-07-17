@@ -9,7 +9,7 @@ export const HelpPage = () => {
         title="Centre d'aide"
         description="Besoin d'aide avec ZenFacture ? Retrouvez la FAQ, la documentation et le contact direct de notre équipe basée en Suisse."
         keywords="aide ZenFacture, support logiciel facturation suisse, contact ZenFacture"
-        url="https://zenfacture.ch/aide"
+        url="https://www.zenfacture.ch/aide"
       />
     <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-14">

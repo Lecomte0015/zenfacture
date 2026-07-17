@@ -64,7 +64,7 @@ export const FeaturesPage = () => {
         title="Fonctionnalités"
         description="QR-facture suisse conforme, devis en ligne, calcul automatique de la TVA, rappels administratifs et assistant IA : découvrez toutes les fonctionnalités de ZenFacture."
         keywords="fonctionnalités logiciel facturation suisse, QR-facture, devis en ligne, calcul TVA suisse, rappels AVS, assistant IA facturation"
-        url="https://zenfacture.ch/fonctionnalites"
+        url="https://www.zenfacture.ch/fonctionnalites"
       />
     <div className="min-h-screen bg-white">
       {/* Hero Section */}

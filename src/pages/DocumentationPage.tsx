@@ -41,7 +41,7 @@ export const DocumentationPage = () => {
         title="Documentation"
         description="Guides d'utilisation, documentation API et ressources pour prendre en main ZenFacture, le logiciel de facturation suisse pour PME et indépendants."
         keywords="documentation ZenFacture, guide facturation suisse, API facturation, tutoriel logiciel facturation"
-        url="https://zenfacture.ch/documentation"
+        url="https://www.zenfacture.ch/documentation"
       />
     <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-14">

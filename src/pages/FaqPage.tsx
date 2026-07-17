@@ -56,7 +56,7 @@ export const FaqPage = () => {
         title="FAQ"
         description="Les réponses aux questions les plus fréquentes sur ZenFacture : création de facture, QR-facture, essai gratuit, paiements et personnalisation."
         keywords="FAQ ZenFacture, questions facturation suisse, aide facture QR, essai gratuit facturation"
-        url="https://zenfacture.ch/faq"
+        url="https://www.zenfacture.ch/faq"
       />
       <Helmet>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>

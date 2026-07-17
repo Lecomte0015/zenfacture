@@ -104,7 +104,7 @@ export const PricingPage = () => {
         title="Tarifs"
         description="Des forfaits simples et transparents en francs suisses pour la facturation QR-facture, les devis et la TVA. 30 jours d'essai gratuit, sans carte bancaire."
         keywords="prix logiciel facturation suisse, tarif facturation PME, abonnement facturation CHF, logiciel devis facture indépendant suisse gratuit"
-        url="https://zenfacture.ch/tarifs"
+        url="https://www.zenfacture.ch/tarifs"
       />
       <Helmet>
         <script type="application/ld+json">{JSON.stringify(pricingFaqSchema)}</script>

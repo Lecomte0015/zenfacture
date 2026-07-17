@@ -97,12 +97,12 @@ export const BlogArticlePage = () => {
       name: 'ZenFacture',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://zenfacture.ch/icons/icon-512.png',
+        url: 'https://www.zenfacture.ch/icons/icon-512.png',
       },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://zenfacture.ch/blog/${article.slug}`,
+      '@id': `https://www.zenfacture.ch/blog/${article.slug}`,
     },
   };
 
@@ -112,7 +112,7 @@ export const BlogArticlePage = () => {
         title={article.title}
         description={article.metaDescription}
         keywords={article.metaKeywords}
-        url={`https://zenfacture.ch/blog/${article.slug}`}
+        url={`https://www.zenfacture.ch/blog/${article.slug}`}
         type="article"
       />
       <Helmet>

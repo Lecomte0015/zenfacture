@@ -19,4 +19,4 @@ Disallow: /portail/
 Disallow: /fiduciaire/
 Disallow: /signer/
 
-Sitemap: https://zenfacture.ch/sitemap.xml
+Sitemap: https://www.zenfacture.ch/sitemap.xml

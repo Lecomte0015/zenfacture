@@ -7,7 +7,7 @@ const CguPage: React.FC = () => {
       <SEO
         title="Conditions Générales d'Utilisation (CGU)"
         description="Conditions générales d'utilisation de ZenFacture, solution de facturation pour PME suisses."
-        url="https://zenfacture.ch/cgu"
+        url="https://www.zenfacture.ch/cgu"
       />
 
       <div className="min-h-screen bg-gray-50 py-16 px-4 sm:px-6 lg:px-8">

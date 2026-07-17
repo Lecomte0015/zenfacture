@@ -13,7 +13,7 @@ export const BlogPage = () => {
         title="Blog"
         description="Facturation, TVA, QR-facture : les guides pratiques ZenFacture pour gérer votre PME ou activité indépendante en Suisse en toute conformité."
         keywords="blog facturation suisse, guide TVA suisse, QR-facture, conseils PME suisse"
-        url="https://zenfacture.ch/blog"
+        url="https://www.zenfacture.ch/blog"
       />
       <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
