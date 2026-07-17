@@ -16,10 +16,20 @@ declare global {
 
 let loaded = false;
 
+// DIAGNOSTIC TEMPORAIRE — logs visibles dans la Console pour tracer
+// précisément où le chargement de GA4 s'arrête. À retirer une fois le bug
+// trouvé (voir tâche "Retirer les logs diagnostic GA4").
+const dlog = (...args: unknown[]) => console.log('[GA4 debug]', ...args);
+
 /** Injecte le script gtag.js et l'initialise. Idempotent : sans effet si déjà chargé. */
 export const loadGoogleAnalytics = () => {
-  if (loaded || typeof window === 'undefined') return;
+  dlog('loadGoogleAnalytics() appelé. loaded =', loaded);
+  if (loaded || typeof window === 'undefined') {
+    dlog('sortie anticipée : déjà chargé ou pas de window');
+    return;
+  }
   if (document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`)) {
+    dlog('script déjà présent dans le DOM, on marque loaded=true sans réinitialiser');
     loaded = true;
     return;
   }
@@ -28,21 +38,14 @@ export const loadGoogleAnalytics = () => {
   script.async = true;
   script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
   document.head.appendChild(script);
+  dlog('balise <script> ajoutée au head, src =', script.src);
 
   window.dataLayer = window.dataLayer || [];
   window.gtag = function gtag(...args: unknown[]) {
+    dlog('gtag() appelé avec', args);
     window.dataLayer.push(args);
   };
 
-  // Consent Mode v2 : cette propriété a Google Signals activé, ce qui fait
-  // que Google attend un signal de consentement explicite avant d'envoyer le
-  // moindre hit — sans ça, gtag.js se charge et s'initialise normalement,
-  // mais retient silencieusement toutes les données (confirmé via Tag
-  // Assistant : "Aucun hit n'a été envoyé"). On ne charge cette fonction
-  // qu'après acceptation des cookies analytiques dans le CookieBanner, donc
-  // on peut directement déclarer ce consentement comme accordé. Les
-  // catégories liées à la publicité restent refusées : on ne fait pas de
-  // ciblage publicitaire.
   window.gtag('consent', 'default', {
     ad_storage: 'denied',
     ad_user_data: 'denied',
@@ -51,12 +54,14 @@ export const loadGoogleAnalytics = () => {
   });
 
   window.gtag('js', new Date());
-  window.gtag('config', GA_MEASUREMENT_ID, { send_page_view: false });
-  // send_page_view: false — on envoie nous-mêmes les page_view à chaque
-  // changement de route (voir trackPageView), car dans une SPA React Router
-  // le gtag automatique ne se déclenche qu'une seule fois au premier chargement.
+  window.gtag('config', GA_MEASUREMENT_ID);
+  // Note diagnostic : send_page_view désormais laissé à sa valeur par défaut
+  // (true) le temps du test, pour se rapprocher au maximum de la balise
+  // brute qui, elle, a fonctionné — on réintroduira le tracking manuel de
+  // route une fois la cause du blocage confirmée.
 
   loaded = true;
+  dlog('loadGoogleAnalytics() terminé, loaded =', loaded, ', dataLayer =', window.dataLayer);
 };
 
 /** Coupe l'envoi de données GA (opt-out officiel Google), sans recharger la page. */
@@ -83,12 +88,17 @@ export const initAnalyticsFromStoredConsent = () => {
   if (typeof window === 'undefined') return;
   try {
     const consent = localStorage.getItem('cookieConsent');
+    dlog('initAnalyticsFromStoredConsent() — cookieConsent brut =', consent);
     if (!consent) return;
     const parsed = JSON.parse(consent);
+    dlog('consentement parsé =', parsed);
     if (parsed.analytics) {
+      dlog('analytics=true dans le consentement stocké, appel de loadGoogleAnalytics()');
       loadGoogleAnalytics();
+    } else {
+      dlog('analytics=false ou absent dans le consentement stocké, on ne charge rien');
     }
-  } catch {
-    // consentement illisible : on ne charge rien, le bandeau se réaffichera
+  } catch (e) {
+    dlog('erreur de lecture du consentement stocké', e);
   }
 };
