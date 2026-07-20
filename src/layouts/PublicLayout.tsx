@@ -205,7 +205,8 @@ export const PublicLayout = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
   const isLanding = ['/', '/fonctionnalites', '/tarifs', '/aide', '/faq',
     '/documentation', '/cgu', '/confidentialite'].includes(location.pathname)
-    || location.pathname.startsWith('/blog');
+    || location.pathname.startsWith('/blog')
+    || location.pathname.startsWith('/fonctionnalites/');
 
   return (
     <div className="min-h-screen bg-white flex flex-col">

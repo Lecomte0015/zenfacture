@@ -22,6 +22,10 @@ const RegisterPage = React.lazy(() => import('@/pages/RegisterPage'));
 const ForgotPasswordPage = React.lazy(() => import('@/pages/ForgotPasswordPage'));
 const ResetPasswordPage = React.lazy(() => import('@/pages/ResetPasswordPage'));
 const FeaturesPage = React.lazy(() => import('@/pages/FeaturesPage'));
+const ComptabiliteFeaturePage = React.lazy(() => import('@/pages/features/ComptabiliteFeaturePage'));
+const CommandesFeaturePage = React.lazy(() => import('@/pages/features/CommandesFeaturePage'));
+const SalairesFeaturePage = React.lazy(() => import('@/pages/features/SalairesFeaturePage'));
+const ContactsFeaturePage = React.lazy(() => import('@/pages/features/ContactsFeaturePage'));
 const HelpPage = React.lazy(() => import('@/pages/HelpPage'));
 const PricingPage = React.lazy(() => import('@/pages/PricingPage'));
 const DocumentationPage = React.lazy(() => import('@/pages/DocumentationPage'));
@@ -237,6 +241,10 @@ function App() {
       <Route element={<PublicLayout><Outlet /></PublicLayout>}>
         <Route path="/" element={<LazyLoad><HomePage /></LazyLoad>} />
         <Route path="/fonctionnalites" element={<LazyLoad><FeaturesPage /></LazyLoad>} />
+        <Route path="/fonctionnalites/comptabilite" element={<LazyLoad><ComptabiliteFeaturePage /></LazyLoad>} />
+        <Route path="/fonctionnalites/gestion-commandes" element={<LazyLoad><CommandesFeaturePage /></LazyLoad>} />
+        <Route path="/fonctionnalites/gestion-salaires" element={<LazyLoad><SalairesFeaturePage /></LazyLoad>} />
+        <Route path="/fonctionnalites/gestion-contacts" element={<LazyLoad><ContactsFeaturePage /></LazyLoad>} />
         <Route path="/tarifs" element={<LazyLoad><PricingPage /></LazyLoad>} />
         <Route path="/aide" element={<LazyLoad><HelpPage /></LazyLoad>} />
         <Route path="/documentation" element={<LazyLoad><DocumentationPage /></LazyLoad>} />

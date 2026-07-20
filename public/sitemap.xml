@@ -23,9 +23,41 @@
   <!-- Fonctionnalités -->
   <url>
     <loc>https://www.zenfacture.ch/fonctionnalites</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-07-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <!-- Fonctionnalité : Comptabilité automatisée -->
+  <url>
+    <loc>https://www.zenfacture.ch/fonctionnalites/comptabilite</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Fonctionnalité : Gestion des commandes fournisseurs -->
+  <url>
+    <loc>https://www.zenfacture.ch/fonctionnalites/gestion-commandes</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Fonctionnalité : Gestion des salaires -->
+  <url>
+    <loc>https://www.zenfacture.ch/fonctionnalites/gestion-salaires</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Fonctionnalité : Gestion des contacts -->
+  <url>
+    <loc>https://www.zenfacture.ch/fonctionnalites/gestion-contacts</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 
   <!-- Blog (index) -->

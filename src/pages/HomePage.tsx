@@ -4,6 +4,7 @@ import {
   CheckCircle, ArrowRight, Shield, FileText, Repeat,
   BarChart3, Mail, ChevronDown, ChevronUp, RefreshCw,
   Bell, Clock, Lock, Download, Users,
+  BookOpen, ShoppingCart, Wallet,
 } from 'lucide-react';
 import SEO from '../components/common/SEO';
 import ChatAssistant from '../components/chat/ChatAssistant';
@@ -493,7 +494,7 @@ const HomePage = () => {
           </div>
 
           <div className="grid sm:grid-cols-2 gap-5">
-            {[
+            {([
               { icon: <FileText className="w-4 h-4 text-blue-600" />, title: "QR-bill automatique sur chaque PDF", desc: "Conforme SIX · Compatible tous e-bankings suisses" },
               { icon: <Mail className="w-4 h-4 text-blue-600" />, title: "Envoi par email en un clic", desc: "PDF + QR-bill joints automatiquement · Historique d'envoi" },
               { icon: <Bell className="w-4 h-4 text-blue-600" />, title: "Relances automatiques (J+7, J+14, J+30)", desc: "Emails configurables · Notification de paiement reçu" },
@@ -502,17 +503,39 @@ const HomePage = () => {
               { icon: <RefreshCw className="w-4 h-4 text-blue-600" />, title: "Import bancaire CAMT.053", desc: "Format suisse natif · Rapprochement automatique" },
               { icon: <Users className="w-4 h-4 text-blue-600" />, title: "Gestion des clients et produits", desc: "Catalogue, historique, devis convertibles en factures" },
               { icon: <Download className="w-4 h-4 text-blue-600" />, title: "Export et archivage nLPD", desc: "PDF, CSV · Hébergement suisse · Conforme nLPD" },
-            ].map((f, i) => (
-              <div key={i} className="flex items-start gap-4 bg-white rounded-xl p-5 border border-gray-200 hover:border-blue-200 hover:shadow-sm transition-all">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-                  {f.icon}
+              { icon: <BookOpen className="w-4 h-4 text-blue-600" />, title: "Comptabilité automatisée", desc: "Plan comptable, grand livre, bilan et compte de résultat", href: "/fonctionnalites/comptabilite" },
+              { icon: <ShoppingCart className="w-4 h-4 text-blue-600" />, title: "Gestion des commandes", desc: "Suivi fournisseurs de l'envoi à la réception, lié au stock", href: "/fonctionnalites/gestion-commandes" },
+              { icon: <Wallet className="w-4 h-4 text-blue-600" />, title: "Gestion des salaires simplifiée", desc: "Déductions AVS/AC/LPP automatiques · Export Swissdec", href: "/fonctionnalites/gestion-salaires" },
+              { icon: <Users className="w-4 h-4 text-blue-600" />, title: "Gestion des contacts", desc: "Carnet clients clair et structuré, historique complet", href: "/fonctionnalites/gestion-contacts" },
+            ] as Array<{ icon: JSX.Element; title: string; desc: string; href?: string }>).map((f, i) => {
+              const cardContent = (
+                <>
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                    {f.icon}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 mb-0.5">{f.title}</p>
+                    <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
+                  </div>
+                </>
+              );
+              return f.href ? (
+                <Link
+                  key={i}
+                  to={f.href}
+                  className="flex items-start gap-4 bg-white rounded-xl p-5 border border-gray-200 hover:border-blue-200 hover:shadow-sm transition-all"
+                >
+                  {cardContent}
+                </Link>
+              ) : (
+                <div
+                  key={i}
+                  className="flex items-start gap-4 bg-white rounded-xl p-5 border border-gray-200 hover:border-blue-200 hover:shadow-sm transition-all"
+                >
+                  {cardContent}
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-900 mb-0.5">{f.title}</p>
-                  <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

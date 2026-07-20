@@ -1,18 +1,31 @@
 import { Link } from 'react-router-dom';
+import type { IconType } from 'react-icons';
 import SEO from '../components/common/SEO';
 import {
   FiCode,
-  FiPieChart, 
-  FiBell, 
-  FiMessageSquare, 
+  FiPieChart,
+  FiBell,
+  FiMessageSquare,
   FiSave,
   FiCheckCircle,
   FiClock,
   FiEye,
-  FiArrowRight
+  FiArrowRight,
+  FiBookOpen,
+  FiShoppingCart,
+  FiDollarSign,
+  FiUsers,
 } from 'react-icons/fi';
 
-const features = [
+interface Feature {
+  name: string;
+  description: string;
+  icon: IconType;
+  link?: string;
+  internalLink?: string;
+}
+
+const features: Feature[] = [
   {
     name: 'Factures QR-code suisses',
     description: 'Génération de factures QR-code conformes aux normes suisses (SIX Interbank Clearing).',
@@ -23,6 +36,30 @@ const features = [
     name: 'Dashboard intelligent',
     description: 'Calcule automatiquement vos charges, bénéfices et prévisions financières en temps réel.',
     icon: FiPieChart,
+  },
+  {
+    name: 'Comptabilité automatisée',
+    description: 'Plan comptable suisse, grand livre, bilan et compte de résultat générés automatiquement depuis vos factures et dépenses.',
+    icon: FiBookOpen,
+    internalLink: '/fonctionnalites/comptabilite',
+  },
+  {
+    name: 'Gestion des commandes',
+    description: 'Suivi des commandes fournisseurs de l\'envoi à la réception des marchandises, relié à votre stock.',
+    icon: FiShoppingCart,
+    internalLink: '/fonctionnalites/gestion-commandes',
+  },
+  {
+    name: 'Gestion des salaires simplifiée',
+    description: 'Calcul automatique des déductions légales suisses (AVS, AC, LPP) et export Swissdec de vos fiches de salaire.',
+    icon: FiDollarSign,
+    internalLink: '/fonctionnalites/gestion-salaires',
+  },
+  {
+    name: 'Gestion des contacts',
+    description: 'Un carnet clients clair et structuré, avec recherche instantanée et historique complet par contact.',
+    icon: FiUsers,
+    internalLink: '/fonctionnalites/gestion-contacts',
   },
   {
     name: 'Rappels administratifs',
@@ -101,10 +138,19 @@ export const FeaturesPage = () => {
                     <h3 className="ml-4 text-lg font-medium text-gray-900">{feature.name}</h3>
                   </div>
                   <p className="mt-3 text-base text-gray-600 flex-grow">{feature.description}</p>
+                  {feature.internalLink && (
+                    <Link
+                      to={feature.internalLink}
+                      className="mt-4 inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-800"
+                    >
+                      Voir le fonctionnement
+                      <FiArrowRight className="ml-1 h-4 w-4" />
+                    </Link>
+                  )}
                   {feature.link && (
-                    <a 
-                      href={feature.link} 
-                      target="_blank" 
+                    <a
+                      href={feature.link}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="mt-4 inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-800"
                     >
