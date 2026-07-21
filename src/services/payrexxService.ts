@@ -62,6 +62,22 @@ export async function createPaymentLink(params: CreatePaymentLinkParams): Promis
     });
 
     if (error) {
+      // Le SDK Supabase renvoie un message générique ("non-2xx status code")
+      // pour les erreurs HTTP renvoyées par l'Edge Function : le vrai détail
+      // (ex. message d'erreur Payrexx) est dans le corps de la réponse, pas
+      // dans error.message. On tente de le récupérer via error.context.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const context = (error as any)?.context;
+      if (context && typeof context.json === 'function') {
+        try {
+          const body = await context.json();
+          if (body?.error) {
+            return { success: false, error: body.error };
+          }
+        } catch {
+          // corps non-JSON : on retombe sur le message générique ci-dessous
+        }
+      }
       return { success: false, error: error.message || 'Erreur lors de la création du lien' };
     }
     if (data?.error) {
