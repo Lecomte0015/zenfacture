@@ -4,8 +4,7 @@ import { FiX, FiPrinter, FiDownload, FiEdit2, FiSave, FiMail, FiCreditCard, FiEx
 import { getInvoice, updateInvoice } from '../../services/invoiceService';
 import { generateInvoiceQrCode, formatIbanDisplay } from '../../services/swissQrService';
 import { sendInvoiceEmail, generatePdfBase64 } from '../../services/emailService';
-// Payrexx désactivé — nécessite un domaine déployé pour les webhooks
-// import { createPaymentLink, getExistingPaymentLink, toCents } from '../../services/payrexxService';
+import { createPaymentLink, getExistingPaymentLink, toCents } from '../../services/payrexxService';
 import { supabase } from '../../lib/supabase';
 
 interface InvoiceModalProps {
@@ -72,9 +71,10 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
   const [emailTo, setEmailTo] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailFeedback, setEmailFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  // Paiement en ligne (Payrexx — désactivé jusqu'au déploiement)
+  // Paiement en ligne (Payrexx / Stripe via create-payment-link)
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [isCreatingPaymentLink, setIsCreatingPaymentLink] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -796,8 +796,38 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
     doc.save(`facture-${invoice.invoice_number}.pdf`);
   };
 
-  // Payrexx désactivé — nécessite un domaine déployé
-  // handleCreatePaymentLink supprimé
+  const handleCreatePaymentLink = async () => {
+    if (!invoice) return;
+    setPaymentError(null);
+    setIsCreatingPaymentLink(true);
+    try {
+      // Réutiliser un lien existant non expiré plutôt que d'en recréer un
+      const existing = await getExistingPaymentLink(invoice.id);
+      if (existing) {
+        setPaymentLink(existing);
+        return;
+      }
+
+      const result = await createPaymentLink({
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.invoice_number,
+        amountCents: toCents(invoice.total),
+        currency: invoice.devise || 'CHF',
+        clientEmail: invoice.client_email,
+        description: `Facture ${invoice.invoice_number}`,
+      });
+
+      if (result.success && result.paymentUrl) {
+        setPaymentLink(result.paymentUrl);
+      } else {
+        setPaymentError(result.error || "Impossible de créer le lien de paiement.");
+      }
+    } catch (err: unknown) {
+      setPaymentError(err instanceof Error ? err.message : "Impossible de créer le lien de paiement.");
+    } finally {
+      setIsCreatingPaymentLink(false);
+    }
+  };
 
   const handleOpenEmailModal = () => {
     setEmailTo(invoice?.client_email || '');
@@ -949,12 +979,13 @@ export const InvoiceModal = ({ isOpen, onClose, invoiceId }: InvoiceModalProps) 
                           Envoyer
                         </button>
                         <button
-                          disabled
-                          title="Disponible après déploiement du projet (Payrexx requiert un domaine)"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-md cursor-not-allowed"
+                          onClick={handleCreatePaymentLink}
+                          disabled={isCreatingPaymentLink || invoice.status === 'paid'}
+                          title={invoice.status === 'paid' ? 'Facture déjà payée' : 'Générer un lien de paiement en ligne'}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 border border-transparent rounded-md hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <FiCreditCard className="w-4 h-4" />
-                          Payer en ligne
+                          {isCreatingPaymentLink ? 'Création...' : 'Payer en ligne'}
                         </button>
                       </>
                     )}

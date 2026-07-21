@@ -173,8 +173,10 @@ export async function getPortailParToken(token: string): Promise<PortailData | n
     .single();
 
   // 4. Récupérer les factures du client (par email)
+  // Table "factures" (et non "invoices", qui n'existe plus dans ce projet —
+  // voir migration 99999999999999_EXECUTE_MOI_EN_PREMIER.sql).
   const { data: factures } = await supabase
-    .from('invoices')
+    .from('factures')
     .select('id, invoice_number, date, due_date, status, total, devise, client_name, client_email')
     .eq('organisation_id', lien.organisation_id)
     .ilike('client_email', lien.client_email)

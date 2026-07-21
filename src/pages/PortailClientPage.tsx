@@ -17,6 +17,7 @@ import {
   getPortailParToken, PortailData, PortailDocument,
   getStatutLabel, getStatutColor,
 } from '../services/portailClientService';
+import { createPaymentLink, getExistingPaymentLink, toCents } from '../services/payrexxService';
 import { formatCurrency } from '../utils/format';
 
 export default function PortailClientPage() {
@@ -148,6 +149,7 @@ export default function PortailClientPage() {
                 expanded={expandedId === doc.id}
                 onToggle={() => setExpandedId(expandedId === doc.id ? null : doc.id)}
                 couleur={couleur}
+                clientEmail={lien.client_email}
               />
             ))}
           </div>
@@ -182,11 +184,12 @@ export default function PortailClientPage() {
 
 // ─── COMPOSANT LIGNE DOCUMENT ─────────────────────────────────────────────────
 
-function DocumentRow({ doc, expanded, onToggle, couleur }: {
+function DocumentRow({ doc, expanded, onToggle, couleur, clientEmail }: {
   doc: PortailDocument;
   expanded: boolean;
   onToggle: () => void;
   couleur: string;
+  clientEmail: string;
 }) {
   const typeLabels: Record<string, string> = {
     facture: 'Facture', devis: 'Devis', avoir: 'Avoir',
@@ -199,6 +202,41 @@ function DocumentRow({ doc, expanded, onToggle, couleur }: {
   const isOverdue = doc.type === 'facture' && doc.statut === 'overdue';
   const isPaid = doc.statut === 'paid';
   const isSigned = doc.statut === 'accepte';
+
+  const [payLoading, setPayLoading] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+
+  const handlePayer = async () => {
+    setPayError(null);
+    setPayLoading(true);
+    try {
+      // Réutiliser un lien existant non expiré plutôt que d'en recréer un
+      const existing = await getExistingPaymentLink(doc.id);
+      if (existing) {
+        window.location.href = existing;
+        return;
+      }
+
+      const result = await createPaymentLink({
+        invoiceId: doc.id,
+        invoiceNumber: doc.numero,
+        amountCents: toCents(doc.total),
+        currency: doc.devise,
+        clientEmail,
+        description: `Facture ${doc.numero}`,
+      });
+
+      if (result.success && result.paymentUrl) {
+        window.location.href = result.paymentUrl;
+      } else {
+        setPayError(result.error || 'Impossible de générer le lien de paiement.');
+        setPayLoading(false);
+      }
+    } catch (err: unknown) {
+      setPayError(err instanceof Error ? err.message : 'Erreur réseau.');
+      setPayLoading(false);
+    }
+  };
 
   return (
     <div className="px-4 py-3">
@@ -270,13 +308,20 @@ function DocumentRow({ doc, expanded, onToggle, couleur }: {
 
             {doc.type === 'facture' && !isPaid && (
               <button
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white rounded-lg"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white rounded-lg disabled:opacity-60"
                 style={{ backgroundColor: couleur }}
-                onClick={() => alert('Paiement en ligne — Intégrez votre lien Payrexx ici')}
+                onClick={handlePayer}
+                disabled={payLoading}
               >
                 <CreditCard className="w-3.5 h-3.5" />
-                Payer maintenant
+                {payLoading ? 'Redirection…' : 'Payer maintenant'}
               </button>
+            )}
+            {payError && (
+              <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-2 w-full">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                {payError}
+              </div>
             )}
 
             {doc.type === 'devis' && doc.statut === 'envoye' && (
