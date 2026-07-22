@@ -86,9 +86,12 @@ serve(async (req) => {
 
   try {
     // Ne jamais faire confiance au contenu du webhook : on revérifie la
-    // transaction directement auprès de Payrexx avec notre propre clé API.
+    // transaction directement auprès de Payrexx avec notre propre clé API,
+    // via le header X-API-KEY (méthode recommandée — voir
+    // https://developers.payrexx.com/reference/rest-api).
     const verifyResponse = await fetch(
-      `https://api.payrexx.com/v1.0/Transaction/${transactionId}/?instance=${encodeURIComponent(PAYREXX_INSTANCE)}&ApiSignature=${encodeURIComponent(PAYREXX_API_KEY)}`
+      `https://api.payrexx.com/v1.0/Transaction/${transactionId}/?instance=${encodeURIComponent(PAYREXX_INSTANCE)}`,
+      { headers: { 'X-API-KEY': PAYREXX_API_KEY } }
     );
 
     if (!verifyResponse.ok) {

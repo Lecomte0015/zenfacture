@@ -47,8 +47,12 @@ async function createPayrexxLink(params: {
 }): Promise<{ paymentUrl: string; externalId: string }> {
   const { invoiceId, invoiceNumber, amountCents, currency, clientEmail, description } = params;
 
-  // Payrexx utilise une API de signature HMAC
-  // Docs : https://developers.payrexx.com/reference/gateway
+  // Authentification Payrexx : header X-API-KEY (méthode recommandée).
+  // Docs : https://developers.payrexx.com/reference/rest-api
+  // (L'ancienne approche "apiSignature=<clé brute>" dans le corps n'est pas
+  // la bonne méthode : ApiSignature doit être un HMAC-SHA256 calculé à partir
+  // de la clé, pas la clé elle-même — d'où l'erreur "API secret is not
+  // correct" renvoyée par Payrexx. Le header X-API-KEY évite ce calcul.)
   const body = new URLSearchParams({
     amount: String(amountCents),
     currency: currency.toUpperCase(),
@@ -60,14 +64,16 @@ async function createPayrexxLink(params: {
     ...(clientEmail ? { email: clientEmail } : {}),
     // Activer TWINT, PostFinance et les principales cartes
     pm: 'twint;postfinance_card;visa;mastercard;american_express;apple_pay;google_pay',
-    apiSignature: PAYREXX_API_KEY,
   });
 
   const response = await fetch(
     `https://api.payrexx.com/v1.0/Gateway/?instance=${PAYREXX_INSTANCE}`,
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-API-KEY': PAYREXX_API_KEY,
+      },
       body: body.toString(),
     }
   );
