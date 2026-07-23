@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
@@ -17,6 +17,10 @@ const RegisterPage = () => {
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const { register } = useAuth();
   const { t } = useTranslation();
+  // Programme de parrainage : code capté depuis un lien du type
+  // /auth/register?ref=CODE (voir ParrainagePage.tsx pour la génération du lien).
+  const [searchParams] = useSearchParams();
+  const referredByCode = searchParams.get('ref') || undefined;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +33,7 @@ const RegisterPage = () => {
     setIsLoading(true);
 
     try {
-      const result = await register(name, email, password, organisationName);
+      const result = await register(name, email, password, organisationName, referredByCode);
 
       // Si l'inscription nécessite une confirmation par email
       if (result && 'requiresConfirmation' in result && result.requiresConfirmation) {
@@ -96,6 +100,13 @@ const RegisterPage = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {referredByCode && (
+            <div className="mb-4 bg-primary-50 border-l-4 border-primary-400 p-3">
+              <p className="text-sm text-primary-700">
+                Vous avez été invité·e par un utilisateur ZenFacture 🎉
+              </p>
+            </div>
+          )}
           {error && (
             <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-4">
               <div className="flex">

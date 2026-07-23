@@ -95,6 +95,77 @@ async function stripeGet(path: string) {
   return response.json();
 }
 
+async function stripePost(path: string, params: Record<string, string>) {
+  const response = await fetch(`https://api.stripe.com${path}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams(params).toString(),
+  });
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Stripe POST ${path} failed: ${response.status} ${err}`);
+  }
+  return response.json();
+}
+
+/**
+ * Programme de parrainage (migration 20260723000000_referral_program.sql) :
+ * si le profil qui vient de devenir payant (checkout.session.completed) a été
+ * parrainé et n'a pas encore déclenché de récompense, crédite le parrain d'un
+ * mois de son abonnement via le solde client Stripe (customer balance —
+ * appliqué automatiquement sur sa prochaine facture). Ne fait jamais échouer
+ * le webhook : une erreur ici est loguée mais n'empêche pas le reste de
+ * fonctionner.
+ */
+async function applyReferralRewardIfNeeded(referredProfileId: string): Promise<void> {
+  const { data: referred } = await supabase
+    .from('profils')
+    .select('referred_by_profile_id, referral_reward_granted_at')
+    .eq('id', referredProfileId)
+    .maybeSingle();
+
+  if (!referred?.referred_by_profile_id || referred.referral_reward_granted_at) return;
+
+  const { data: referrer } = await supabase
+    .from('profils')
+    .select('stripe_customer_id, stripe_price_id')
+    .eq('id', referred.referred_by_profile_id)
+    .maybeSingle();
+
+  // Sans stripe_customer_id, le parrain n'a jamais payé lui-même : rien à
+  // créditer pour l'instant (pas de facture sur laquelle appliquer un solde).
+  if (!referrer?.stripe_customer_id) return;
+
+  let amountCents = 1900; // Repli : prix mensuel Essentiel (19 CHF) si le prix du parrain est introuvable
+  if (referrer.stripe_price_id) {
+    try {
+      const price = await stripeGet(`/v1/prices/${referrer.stripe_price_id}`);
+      if (typeof price.unit_amount === 'number') {
+        // Un prix annuel doit créditer l'équivalent d'UN mois, pas l'année entière
+        amountCents = price.recurring?.interval === 'year'
+          ? Math.round(price.unit_amount / 12)
+          : price.unit_amount;
+      }
+    } catch (err) {
+      console.error('Parrainage: impossible de récupérer le prix du parrain, repli sur 19 CHF', err);
+    }
+  }
+
+  await stripePost(`/v1/customers/${referrer.stripe_customer_id}/balance_transactions`, {
+    amount: String(-amountCents),
+    currency: 'chf',
+    description: 'Récompense de parrainage ZenFacture : 1 mois offert',
+  });
+
+  await supabase
+    .from('profils')
+    .update({ referral_reward_granted_at: new Date().toISOString() })
+    .eq('id', referredProfileId);
+}
+
 serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
@@ -152,6 +223,12 @@ serve(async (req) => {
             subscription_status: 'active',
           })
           .eq('id', organisationId);
+
+        try {
+          await applyReferralRewardIfNeeded(organisationId);
+        } catch (referralErr) {
+          console.error('Erreur lors de l\'application de la récompense de parrainage:', referralErr);
+        }
         break;
       }
 

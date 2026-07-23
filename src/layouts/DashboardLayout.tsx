@@ -46,6 +46,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/dashboard/settings':                 'Paramètres',
   '/dashboard/billing':                  'Abonnement',
   '/dashboard/rappels':                   'Rappels & cotisations',
+  '/dashboard/parrainage':                'Programme de parrainage',
 };
 
 interface DashboardLayoutProps {

@@ -12,7 +12,7 @@ import {
   BookOpen, Zap, Shield, Archive,
   Timer, Wallet, Send, Boxes, PieChart, Layers,
   Mail, ShoppingCart, Link2, AlertOctagon, Globe,
-  Target, Truck, PenSquare, Bell, Settings2,
+  Target, Truck, PenSquare, Bell, Settings2, Gift,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -124,6 +124,7 @@ const navGroups: NavGroup[] = [
       { name: 'Multi-marques',  href: '/dashboard/marques',       icon: Layers,    profileKey: 'marques' },
       { name: 'Équipe',         href: '/dashboard/team',          icon: Users,     feature: 'multiUtilisateurs' },
       { name: 'API',            href: '/dashboard/api',           icon: Code,      feature: 'api' },
+      { name: 'Parrainage',     href: '/dashboard/parrainage',    icon: Gift },
       { name: 'Support',        href: '/dashboard/support',       icon: HelpCircle },
     ],
   },

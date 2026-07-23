@@ -44,7 +44,7 @@ type RegisterResponse = {
 type AuthContextType = {
   user: User;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, organisationName?: string) => Promise<RegisterResponse>;
+  register: (name: string, email: string, password: string, organisationName?: string, referredByCode?: string) => Promise<RegisterResponse>;
   logout: () => Promise<void>;
   updateUser: (data: Partial<User>) => Promise<void>;
   isAuthenticated: boolean;
@@ -285,7 +285,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (name: string, email: string, password: string, organisationName?: string): Promise<RegisterResponse> => {
+  const register = async (name: string, email: string, password: string, organisationName?: string, referredByCode?: string): Promise<RegisterResponse> => {
     setLoading(true);
     setError(null);
 
@@ -305,6 +305,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             organisation_name: organisationName || null,
             trial_start_date: trialStartDate,
             trial_end_date: trialEndDate.toISOString(),
+            // Code de parrainage transmis via ?ref=CODE (voir RegisterPage.tsx) —
+            // lu et résolu côté serveur par le trigger handle_new_user()
+            // (migration 20260723000000_referral_program.sql).
+            referred_by_code: referredByCode || null,
           },
           emailRedirectTo: `${window.location.origin}/dashboard`,
         },
