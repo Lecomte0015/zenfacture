@@ -12,9 +12,11 @@ import { fr } from 'date-fns/locale';
 
 interface Organisation {
   id: string;
-  nom_organisation: string;
-  created_at: string;
-  updated_at: string;
+  // La colonne réelle en base est `nom` (pas `nom_organisation` — celle-ci
+  // n'existe pas dans la table, ce qui faisait toujours afficher "Sans nom").
+  nom: string | null;
+  created_at: string | null;
+  updated_at: string | null;
   invoices_count?: number;
   users_count?: number;
 }
@@ -51,28 +53,44 @@ const AdminOrganisationsPage: React.FC = () => {
 
       if (orgsError) throw orgsError;
 
-      // Charger les compteurs pour chaque organisation
-      const orgsWithStats = await Promise.all(
-        (orgsData || []).map(async (org) => {
-          // Compter les factures
-          const { count: invoicesCount } = await supabase
-            .from('factures')
-            .select('*', { count: 'exact', head: true })
-            .eq('organisation_id', org.id);
+      // Compteurs : avant, on envoyait 2 requêtes HEAD PAR organisation (24
+      // requêtes en parallèle pour 12 organisations). En prod, ces requêtes HEAD
+      // échouaient systématiquement au niveau réseau ("Échec du chargement de
+      // Fetch" dans la console, probablement le service worker PWA qui gère mal
+      // les requêtes HEAD sous forte concurrence) — une seule requête rejetée
+      // suffisait à faire échouer tout le Promise.all et donc TOUTE la liste
+      // (d'où "Aucune organisation trouvée" alors que la requête principale
+      // au-dessus réussissait très bien). On regroupe maintenant en 2 requêtes
+      // au total, et un échec de ces compteurs n'empêche plus d'afficher la
+      // liste des organisations (repli sur 0).
+      let invoicesByOrg = new Map<string, number>();
+      let usersByOrg = new Map<string, number>();
+      try {
+        const orgIds = (orgsData || []).map((org) => org.id);
+        const [{ data: facturesData }, { data: uoData }] = await Promise.all([
+          supabase.from('factures').select('organisation_id').in('organisation_id', orgIds),
+          supabase.from('utilisateurs_organisations').select('organisation_id').in('organisation_id', orgIds),
+        ]);
+        (facturesData || []).forEach((f: { organisation_id: string | null }) => {
+          if (!f.organisation_id) return;
+          invoicesByOrg.set(f.organisation_id, (invoicesByOrg.get(f.organisation_id) || 0) + 1);
+        });
+        (uoData || []).forEach((u: { organisation_id: string | null }) => {
+          if (!u.organisation_id) return;
+          usersByOrg.set(u.organisation_id, (usersByOrg.get(u.organisation_id) || 0) + 1);
+        });
+      } catch (statsError) {
+        console.error('Erreur lors du chargement des compteurs (liste affichée quand même):', statsError);
+      }
 
-          // Compter les utilisateurs
-          const { count: usersCount } = await supabase
-            .from('utilisateurs_organisations')
-            .select('*', { count: 'exact', head: true })
-            .eq('organisation_id', org.id);
-
-          return {
-            ...org,
-            invoices_count: invoicesCount || 0,
-            users_count: usersCount || 0,
-          };
-        })
-      );
+      const orgsWithStats: Organisation[] = (orgsData || []).map((org) => ({
+        id: org.id,
+        nom: org.nom,
+        created_at: org.created_at,
+        updated_at: org.updated_at,
+        invoices_count: invoicesByOrg.get(org.id) || 0,
+        users_count: usersByOrg.get(org.id) || 0,
+      }));
 
       setOrganisations(orgsWithStats);
     } catch (error) {
@@ -86,7 +104,7 @@ const AdminOrganisationsPage: React.FC = () => {
 
   // Filtrage des organisations
   const filteredOrganisations = organisations.filter((org) => {
-    return org.nom_organisation?.toLowerCase().includes(searchTerm.toLowerCase());
+    return (org.nom || '').toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   if (loading) {
@@ -157,7 +175,7 @@ const AdminOrganisationsPage: React.FC = () => {
                     <Building2 className="w-5 h-5 text-gray-400 mr-3" />
                     <div>
                       <div className="text-sm font-medium text-gray-900">
-                        {org.nom_organisation || 'Sans nom'}
+                        {org.nom || 'Sans nom'}
                       </div>
                       <div className="text-sm text-gray-500">ID: {org.id.slice(0, 8)}...</div>
                     </div>
@@ -178,13 +196,13 @@ const AdminOrganisationsPage: React.FC = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-2" />
-                    {format(new Date(org.created_at), 'dd MMM yyyy', { locale: fr })}
+                    {org.created_at ? format(new Date(org.created_at), 'dd MMM yyyy', { locale: fr }) : '—'}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-2" />
-                    {format(new Date(org.updated_at), 'dd MMM yyyy', { locale: fr })}
+                    {org.updated_at ? format(new Date(org.updated_at), 'dd MMM yyyy', { locale: fr }) : '—'}
                   </div>
                 </td>
               </tr>
