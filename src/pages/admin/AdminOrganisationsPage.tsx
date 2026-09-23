@@ -23,6 +23,7 @@ const AdminOrganisationsPage: React.FC = () => {
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     loadOrganisations();
@@ -31,6 +32,7 @@ const AdminOrganisationsPage: React.FC = () => {
   const loadOrganisations = async () => {
     try {
       setLoading(true);
+      setLoadError(null);
 
       // Charger les organisations
       const { data: orgsData, error: orgsError } = await supabase
@@ -66,6 +68,8 @@ const AdminOrganisationsPage: React.FC = () => {
       setOrganisations(orgsWithStats);
     } catch (error) {
       console.error('Erreur lors du chargement des organisations:', error);
+      const message = error instanceof Error ? error.message : 'Erreur inconnue';
+      setLoadError(message);
     } finally {
       setLoading(false);
     }
@@ -93,6 +97,15 @@ const AdminOrganisationsPage: React.FC = () => {
           {filteredOrganisations.length} organisation{filteredOrganisations.length > 1 ? 's' : ''} trouvée{filteredOrganisations.length > 1 ? 's' : ''}
         </p>
       </div>
+
+      {/* Erreur de chargement (RLS, réseau, etc.) — visible au lieu d'être juste loguée en console */}
+      {loadError && (
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded mb-6">
+          <p className="text-sm text-red-700">
+            Erreur lors du chargement des organisations : {loadError}
+          </p>
+        </div>
+      )}
 
       {/* Search */}
       <div className="bg-white rounded-lg shadow border border-gray-200 p-6 mb-6">
