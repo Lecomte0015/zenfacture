@@ -52,6 +52,10 @@ const AdminUsersPage: React.FC = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
+      // Voir AdminOrganisationsPage.tsx : sur un chargement direct de cette page,
+      // la requête peut partir avant que la session Supabase soit prête et
+      // retomber en anonyme sous RLS. On force l'attente de la session.
+      await supabase.auth.getSession();
       const { data, error } = await supabase
         .from('profils')
         .select('*')

@@ -53,6 +53,11 @@ const AdminDashboard: React.FC = () => {
     try {
       setLoading(true);
 
+      // Voir AdminOrganisationsPage.tsx : sur un chargement direct de cette page,
+      // les requêtes peuvent partir avant que la session Supabase soit prête,
+      // ce qui les fait retomber en anonyme sous RLS (résultats à 0, sans erreur).
+      await supabase.auth.getSession();
+
       // Compter les utilisateurs
       const { count: usersCount } = await supabase
         .from('profils')

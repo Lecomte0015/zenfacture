@@ -34,6 +34,15 @@ const AdminOrganisationsPage: React.FC = () => {
       setLoading(true);
       setLoadError(null);
 
+      // Au chargement direct de cette page (F5 sur /dashboard/admin/organisations),
+      // le composant se monte et lance sa requête avant que le client Supabase ait
+      // fini de récupérer/rafraîchir la session (l'app a même vu un timeout de 5s
+      // sur ce parcours — voir AuthContext.createUserFromSupabase). La requête part
+      // alors sans jeton valide, RLS la traite comme anonyme et renvoie 0 ligne
+      // sans erreur — d'où le "Aucune organisation trouvée" alors que les données
+      // existent bien. On force l'attente de la session avant d'interroger.
+      await supabase.auth.getSession();
+
       // Charger les organisations
       const { data: orgsData, error: orgsError } = await supabase
         .from('organisations')
